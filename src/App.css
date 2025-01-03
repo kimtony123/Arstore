@@ -1,42 +1,72 @@
 #root {
-  max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+}
+
+.dark #root {
+  background-color: black;
+}
+
+.light #root {
+  background-color: rgb(247, 248, 250);
 }
 
 .logo {
-  height: 6em;
-  padding: 1.5em;
+  height: 3em;
+  /* padding: 1.5em; */
   will-change: filter;
   transition: filter 300ms;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
+@media (max-width: 968.98px) {
+  .logo {
+    height: 2.5em;
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+screen .logo:hover {
+  /* filter: drop-shadow(0 0 2em #646cffaa); */
+  filter: drop-shadow(0 0 1.2em #575c1b);
+}
+
+.activity-icon-container:hover {
+  filter: drop-shadow(0 0 1.2em #129a73);
+}
+
+@media (max-width: 768px) {
+  .sidebar-icon span {
+    display: none;
+  }
+
+  .sidebar-icon .tooltip-text {
+    display: none;
+  }
+
+  .w-64 {
+    width: 100%;
+  }
+
+  .navbar input {
+    width: 100%;
   }
 }
 
-.card {
-  padding: 2em;
+/* nav + content */
+.nav-content {
+  width: calc(100% - 76px);
 }
 
-.read-the-docs {
-  color: #888;
+/* end nav + content */
+/* Content */
+.content {
+  max-height: calc(100% - 77.23px);
+  width: 100%;
+  overflow-y: auto;
 }
+
+@media (max-width: 767.98px) {
+  .content {
+    max-height: calc(100% - 57.07px);
+  }
+}
+
+/* End Content */

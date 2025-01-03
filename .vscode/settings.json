@@ -1,0 +1,10 @@
+{
+  "Lua.diagnostics.globals": [
+    "tableToJson",
+    "getCurrentTime",
+    "generateTransactionId",
+    "currentTime",
+    "favoritesTable",
+    "Handlers"
+  ]
+}

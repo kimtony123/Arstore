@@ -1,0 +1,19 @@
+.sidebar-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1rem;
+  padding: 1rem;
+  transition: all 0.3s ease-in-out;
+}
+
+.sidebar-icon:hover {
+  background-color: rgba(12, 12, 12, 0.1);
+  cursor: pointer;
+}
+
+@media (min-width: 968.98px) {
+  .sidebar {
+    display: flex;
+  }
+}

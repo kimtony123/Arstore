@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Sidebar from "./components/sidebar/Sidebar";
 import Navbar from "./components/navbar/Navbar";
 import Home from "./pages/home/Home";
-import Aomemecoins from "./pages/aocomputer/memecoins/aomemecoins";
 import WalletConnectError from "./components/alerts/WalletConnectError";
 import Aocommunities from "./pages/aocomputer/communities/aocommunities";
 import Addaoprojects from "./pages/aocomputer/addaoprojects/addaoprojects";
@@ -61,10 +60,7 @@ function App() {
           {/* Pages Content go here */}
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route
-              path="aomemecoins"
-              element={walletAddress ? <Aomemecoins /> : <WalletConnectError />}
-            />
+
             <Route
               path="Aocommunities"
               element={

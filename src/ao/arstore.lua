@@ -9,8 +9,6 @@ ARS = "Gwx7lNgoDtObgJ0LC-kelDprvyv2zUdjIY6CTZeYYvk"
 RequestedAddresses = RequestedAddresses or {}
 
 Apps =  Apps or {}
--- Global tables
-Apps = {}
 reviewsTable = reviewsTable or {}
 upvotesTable = upvotesTable or {}
 downvotesTable = downvotesTable or {}
@@ -21,6 +19,7 @@ ratingsTable = ratingsTable or  {}
 helpfulRatingsTable = helpfulRatingsTable or {}
 unHelpfulRatingsTable = unHelpfulRatingsTable or  {}
 commentsTable =  commentsTable or {}
+
 
 
 -- Initialize transaction ID counter
@@ -62,49 +61,91 @@ end
 
 
 
--- Function to create the leaderboard for apps
 function createAppLeaderboard(Apps)
   local leaderboard = {}
 
+  -- Define category weights (you can tweak these)
+  local categoryWeights = {
+    ["Infrastructure"] = 2.0,
+    ["Developer Tooling"] = 1.8,
+    ["DEFI"] = 1.6,
+    ["Social"] = 1.4,
+    ["Gaming"] = 1.4,
+    ["Community"] = 1.2,
+    ["News and Knowledge"] = 1.2,
+    ["Publishing"] = 1.2,
+    ["Wallet"] = 1.2,
+    ["Analytics"] = 1.1,
+    ["Email"] = 1.0,
+    ["Exchanges"] = 1.0,
+    ["Incubators"] = 1.0,
+    ["Storage"] = 1.0,
+    ["Entertainment"] = 0.9,
+    ["Nfts and Metaverse"] = 0.9,
+    ["Memecoins"] = 0.5
+  }
+
   -- Iterate through appData to calculate scores for each app
   for appID, app in pairs(Apps) do
-    local categoryWeights = {
-      ["Infrastructure"] = 2.0,
-      ["Developer Tools"] = 1.6,
-      ["Educational"] = 1.2,
-      ["Social"] = 1.0,
-      ["Entertainment"] = 0.8,
-      ["Memecoins"] = 0.5
-    }
-    
-    -- Default weight if category not found
-    local categoryWeight = categoryWeights[app.Category] or 1.0
+    local categoryWeight = categoryWeights[app.ProjectType] or 1.0
 
-    -- Scoring weights
+    -- Access the correct values inside the tables
+    local upvotes = app.Upvotes and app.Upvotes.count or 0
+    local downvotes = app.Downvotes and app.Downvotes.count or 0
+    local comments = app.Comments and app.Comments.count or 0
+    local reviews = app.Reviews and app.Reviews.count or 0
+    local ratings = app.Ratings and app.Ratings.count or 0
+    local featureRequests = app.FeatureRequests and app.FeatureRequests.count or 0
+    local bugsReports = app.BugsReports and app.BugsReports.count or 0
+    local favorites = app.Favorites and #app.Favorites or 0
+    local helpfulRatings = app.HelpfulRatings and app.HelpfulRatings.count or 0
+    local unHelpfulRatings = app.UnHelpfulRatings and app.UnHelpfulRatings.count or 0
+
+    -- Scoring weights (you can tweak these)
     local upvoteWeight = 1.0
+    local downvotePenalty = 0.5
     local commentWeight = 0.8
-    local activeUserWeight = 1.2
-    local developerActivityWeight = 1.5
+    local reviewWeight = 1.2
+    local ratingWeight = 1.5
+    local featureRequestWeight = 1.1
+    local bugReportPenalty = 0.8
+    local favoriteWeight = 0.9
+    local helpfulRatingWeight = 1.3
+    local unhelpfulRatingPenalty = 0.7
 
     -- Calculate raw score
-    local rawScore = 
-      (app.Upvotes * upvoteWeight) + 
-      (app.Comments * commentWeight) + 
-      (app.ActiveUsers * activeUserWeight) + 
-      (app.DeveloperActivity * developerActivityWeight)
+    local rawScore =
+      (upvotes * upvoteWeight) -
+      (downvotes * downvotePenalty) +
+      (comments * commentWeight) +
+      (reviews * reviewWeight) +
+      (ratings * ratingWeight) +
+      (featureRequests * featureRequestWeight) -
+      (bugsReports * bugReportPenalty) +
+      (favorites * favoriteWeight) +
+      (helpfulRatings * helpfulRatingWeight) -
+      (unHelpfulRatings * unhelpfulRatingPenalty)
 
     -- Apply category multiplier
     local finalScore = rawScore * categoryWeight
-
+    
     -- Add app data to leaderboard
     leaderboard[appID] = {
-      name = app.Name,
+      name = app.AppName,
       score = finalScore,
-      category = app.Category,
-      upvotes = app.Upvotes,
-      comments = app.Comments,
-      activeUsers = app.ActiveUsers,
-      developerActivity = app.DeveloperActivity
+      category = app.ProjectType,
+      upvotes = upvotes,
+      downvotes = downvotes,
+      comments = comments,
+      reviews = reviews,
+      ratings = ratings,
+      featureRequests = featureRequests,
+      bugsReports = bugsReports,
+      favorites = favorites,
+      helpfulRatings = helpfulRatings,
+        unHelpfulRatings = unHelpfulRatings,
+        AppIconUrl = app.AppIconUrl
+      
     }
   end
 
@@ -123,20 +164,6 @@ function createAppLeaderboard(Apps)
   for rank, app in ipairs(sortableLeaderboard) do
     app.rank = rank
   end
-
-  -- Optional: Print out the leaderboard in a formatted way
-  local function printLeaderboard(leaderboard)
-    for _, app in ipairs(leaderboard) do
-      print(string.format(
-        "Rank: %d, App: %s, Score: %.2f, Category: %s, Upvotes: %d, Comments: %d, Active Users: %d, Developer Activity: %d",
-        app.rank, app.stats.name, app.stats.score, app.stats.category, 
-        app.stats.upvotes, app.stats.comments, app.stats.activeUsers, app.stats.developerActivity
-      ))
-    end
-  end
-
-  -- Uncomment the line below to print the leaderboard
-  -- printLeaderboard(sortableLeaderboard)
 
   return sortableLeaderboard
 end
@@ -226,6 +253,56 @@ Handlers.add(
 
 
 
+
+Handlers.add(
+    "GetProjectTypesAo",
+    Handlers.utils.hasMatchingTag("Action", "GetProjectTypesAo"),
+    function(m)
+        -- Check if all required m.Tags are present
+        local requiredTags = { "ProjectType", "Protocol" }
+
+        for _, tag in ipairs(requiredTags) do
+            if not m.Tags[tag] or m.Tags[tag] == "" then
+                print("Error: " .. tag .. " is nil or empty.")
+                ao.send({ Target = m.From, Data = tag .. " is missing or empty." })
+                return
+            end
+        end
+
+        -- Extract projectType and protocol from m.Tags
+        local projectType = m.Tags.ProjectType
+        local protocol = m.Tags.Protocol
+        print(projectType)
+        print(protocol)
+        -- Initialize a table to store filtered results
+        local filteredApps = {}
+
+        -- Loop through the Apps table and filter based on projectType and protocol
+        for AppId, appDetails in pairs(Apps) do
+            if appDetails.ProjectType == projectType and appDetails.Protocol == protocol then
+                -- Include only relevant fields in the response
+                filteredApps[AppId] = {
+                    AppName = appDetails.AppName,
+                    CompanyName = appDetails.CompanyName,
+                    WebsiteUrl = appDetails.WebsiteUrl,
+                    ProjectType = appDetails.ProjectType,
+                    Protocol = appDetails.Protocol,
+                    AppIconUrl = appDetails.AppIconUrl
+                }
+            end
+        end
+
+        -- Check if any apps were found
+        if next(filteredApps) == nil then
+            ao.send({ Target = m.From, Data = {} })
+        else
+            -- Send the filtered apps as a response
+            ao.send({ Target = m.From, Data = tableToJson(filteredApps) })
+        end
+    end
+)
+
+
 Handlers.add(
     "getApps",
     Handlers.utils.hasMatchingTag("Action", "getApps"),
@@ -239,20 +316,38 @@ Handlers.add(
     end
 )
 
+
 Handlers.add(
     "getFavoriteApps",
     Handlers.utils.hasMatchingTag("Action", "getFavoriteApps"),
     function(m)
+        local filteredFavorites = {}
 
-        local filteredTrades = {}
+        -- Loop through the favoritesTable to find the user's favorites
         for AppId, favorite in pairs(favoritesTable) do
             if favorite.user == m.From then
-                filteredTrades[AppId] = favorite
+                -- Retrieve the app details from the Apps table
+                local appDetails = Apps[AppId]
+                if appDetails then
+                    -- Format the app details to include only the required fields
+                    filteredFavorites[AppId] = {
+                        AppIconUrl = appDetails.AppIconUrl,
+                        AppName = appDetails.AppName,
+                        CompanyName = appDetails.CompanyName,
+                        ProjectType = appDetails.ProjectType,
+                        WebsiteUrl = appDetails.WebsiteUrl
+                    }
+                end
             end
         end
-        ao.send({ Target = m.From, Data = tableToJson(filteredTrades) })
+
+        -- Send the filtered favorites back to the user
+        ao.send({ Target = m.From, Data = tableToJson(filteredFavorites) })
     end
 )
+
+
+
 
 
 Handlers.add(
@@ -283,7 +378,8 @@ Handlers.add(
         if m.Tags.projectType then
             if not Apps or next(Apps) == nil then
             print("Apps table is empty or nil.")
-            ao.send({ Target = m.From, Data = "Apps table is empty or nil." }) -- Send an empty JSON if there are no trades
+
+            ao.send({ Target = m.From, Data = {} }) -- Send an empty JSON if there are no trades
             return
             end
             local filteredApps = {}
@@ -435,9 +531,6 @@ Handlers.add(
         ao.send({ Target = m.From, Data = "Thank you for your feedback!" })
     end
 )
-
-
-
 
 
 

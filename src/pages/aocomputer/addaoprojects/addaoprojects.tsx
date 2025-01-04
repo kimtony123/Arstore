@@ -93,11 +93,6 @@ const addaoprojects = () => {
     { key: "2", text: "Arweave", value: "Arweave" },
   ];
 
-  interface Tag {
-    name: string;
-    value: string;
-  }
-
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     switch (name) {
@@ -207,6 +202,24 @@ const addaoprojects = () => {
       }
       const data = Messages[0].Data;
       alert(data);
+      setAppname("");
+      setAppRatings("");
+      setAppReviews("");
+      setBanner1Url("");
+      setBanner2Url("");
+      setBanner3Url("");
+      setBanner4Url("");
+      setCompanyName("");
+      setAppIconUrl("");
+      setBugsReports("");
+      setCoverUrl("");
+      setDescription("");
+      setWebsiteUrl("");
+      setTwitterUrl("");
+      setDiscordUrl("");
+      setUpvotes("");
+      setDownvotes("");
+      setFeaturesRequests("");
     } catch (error) {
       alert("There was an error in the trade process: " + error);
       console.error(error);

@@ -5,6 +5,15 @@
     "generateTransactionId",
     "currentTime",
     "favoritesTable",
-    "Handlers"
+    "Handlers",
+    "reviewsTable",
+    "upvotesTable",
+    "downvotesTable",
+    "featureRequestsTable",
+    "bugsReportsTable",
+    "ratingsTable",
+    "helpfulRatingsTable",
+    "unHelpfulRatingsTable",
+    "commentsTable"
   ]
 }

@@ -97,19 +97,10 @@ interface FavoriteAppData {
   Description: string;
 }
 
-interface LeaderboardEntry {
-  name: any;
-  ratings: any;
-  rank: any;
-  AppIconUrl: any;
-}
-
 const Home = () => {
   const [apps, setApps] = useState<AppData[]>([]);
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loadingApps, setLoadingApps] = useState(true);
   const [isloadingFavoriteApps, setLoadingFavoriteApps] = useState(true);
-  const [loadingLeaderboard, setLoadingLeaderboard] = useState(true);
   const [FavoriteApps, setFavoriteApps] = useState<FavoriteAppData[]>([]);
 
   const ARS = "Gwx7lNgoDtObgJ0LC-kelDprvyv2zUdjIY6CTZeYYvk";
@@ -151,50 +142,6 @@ const Home = () => {
       }
     };
 
-    const fetchLeaderboard = async () => {
-      setLoadingLeaderboard(true);
-      try {
-        const messageResponse = await message({
-          process: ARS,
-          tags: [{ name: "Action", value: "fetch_app_leaderboard" }],
-          signer: createDataItemSigner(othent),
-        });
-
-        const resultResponse = await result({
-          message: messageResponse,
-          process: ARS,
-        });
-
-        const { Messages, Error } = resultResponse;
-
-        if (Error) {
-          alert("Error fetching leaderboard: " + Error);
-          return;
-        }
-
-        if (!Messages || Messages.length === 0) {
-          alert("No leaderboard data returned from AO.");
-          return;
-        }
-        // Parse and map the leaderboard data
-        const data: Record<string, any> = JSON.parse(Messages[0].Data);
-        console.log(data);
-        const mappedLeaderboard = Object.values(data)
-          .slice(0, 15) // Get top 15 apps
-          .map((app) => ({
-            rank: app.rank,
-            ratings: app.stats.ratings || 0,
-            name: app.stats.name,
-            AppIconUrl: app.stats.AppIconUrl || "", // Default to empty string if not available
-          }));
-        setLeaderboard(mappedLeaderboard);
-      } catch (error) {
-        console.error("Error fetching leaderboard:", error);
-      } finally {
-        setLoadingLeaderboard(false);
-      }
-    };
-
     const fetchFavoriteApps = async () => {
       setLoadingFavoriteApps(true);
       try {
@@ -233,7 +180,6 @@ const Home = () => {
 
     (async () => {
       await fetchFavoriteApps();
-      await fetchLeaderboard();
       await fetchApps();
     })();
   }, []);
@@ -248,84 +194,49 @@ const Home = () => {
         "content text-black dark:text-white flex flex-col h-full justify-between"
       )}
     >
-      <Grid columns="equal">
-        <GridColumn width={9}>
-          <Container>
-            {loadingApps ? (
-              <Loader active inline="centered" content="Loading Apps..." />
-            ) : (
-              <AlternatingCards apps={apps} />
-            )}
-            <Divider />
-          </Container>
-          <Divider />
-          <Button
-            onClick={handleAddAoprojects}
-            floated="right"
-            icon="add circle"
-            primary
-            size="large"
-          >
-            Add Project.
-          </Button>
-          <Header> Favorite Apps.</Header>
+      <Container>
+        {loadingApps ? (
+          <Loader active inline="centered" content="Loading Apps..." />
+        ) : (
+          <AlternatingCards apps={apps} />
+        )}
+        <Divider />
 
-          <Card>
-            <CardGroup itemsPerRow={3}>
-              {FavoriteApps.map((app, index) => (
-                <Card
-                  size="small"
-                  key={index}
-                  image={app.CoverUrl}
-                  header={app.AppName}
-                  meta={app.Company}
-                  description={app.Description}
-                  extra={
-                    <a
-                      href={app.WebsiteUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Visit Site
-                    </a>
-                  }
-                />
-              ))}
-            </CardGroup>
-          </Card>
-        </GridColumn>
-        <GridColumn>
-          <span className="font-bold">AOComputer Top 15</span>
-          <Divider />
-          {loadingLeaderboard ? (
-            <Loader active inline="centered" content="Loading Leaderboard..." />
-          ) : (
-            <Table celled>
-              <Table.Header>
-                <Table.Row>
-                  <Table.HeaderCell>Icon</Table.HeaderCell>
-                  <Table.HeaderCell>Name</Table.HeaderCell>
-                  <Table.HeaderCell>Rank</Table.HeaderCell>
-                  <Table.HeaderCell>Ratings</Table.HeaderCell>
-                </Table.Row>
-              </Table.Header>
-
-              <Table.Body>
-                {leaderboard.map((app, index) => (
-                  <Table.Row key={index}>
-                    <Table.Cell>
-                      <Image src={app.AppIconUrl} size="tiny" rounded />
-                    </Table.Cell>
-                    <Table.Cell>{app.name}</Table.Cell>
-                    <Table.Cell>{app.rank}</Table.Cell>
-                    <Table.Cell>{app.ratings}</Table.Cell>
-                  </Table.Row>
-                ))}
-              </Table.Body>
-            </Table>
-          )}
-        </GridColumn>
-      </Grid>
+        <Divider />
+        <Button
+          onClick={handleAddAoprojects}
+          floated="right"
+          icon="add circle"
+          primary
+          size="large"
+        >
+          Add Project.
+        </Button>
+        <Header as="h1"> Favorite Apps.</Header>
+        <Card>
+          <CardGroup itemsPerRow={3}>
+            {FavoriteApps.map((app, index) => (
+              <Card
+                size="small"
+                key={index}
+                image={app.CoverUrl}
+                header={app.AppName}
+                meta={app.Company}
+                description={app.Description}
+                extra={
+                  <a
+                    href={app.WebsiteUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Visit Site
+                  </a>
+                }
+              />
+            ))}
+          </CardGroup>
+        </Card>
+      </Container>
       <Footer />
     </div>
   );

@@ -5,8 +5,6 @@ local math = require("math")
 -- Credentials token
 ARS = "Gwx7lNgoDtObgJ0LC-kelDprvyv2zUdjIY6CTZeYYvk"
 
--- Table to track addresses that have requested tokens
-RequestedAddresses = RequestedAddresses or {}
 
 Apps =  Apps or {}
 reviewsTable = reviewsTable or {}
@@ -18,12 +16,16 @@ favoritesTable =  favoritesTable or {}
 ratingsTable = ratingsTable or  {}
 helpfulRatingsTable = helpfulRatingsTable or {}
 unHelpfulRatingsTable = unHelpfulRatingsTable or  {}
-commentsTable =  commentsTable or {}
+flagTable = flagTable or {}
+transactions = transactions or {}
+verifiedUsers = verifiedUsers or {}
+points  = points or {}
+transactionCounter    = transactionCounter or 0
+arsPoints = arsPoints or {}
+AppCounter  = AppCounter or 0
+ReviewCounter = ReviewCounter or 0
+ReplyCounter          = ReplyCounter or 0
 
-
-
--- Initialize transaction ID counter
-AppCounter = AppCounter or 0
 
 
 -- Function to get the current time in milliseconds
@@ -32,10 +34,28 @@ function getCurrentTime(msg)
 end
 
 
--- Function to generate a unique transaction ID
+-- Function to generate a unique App ID
 function generateAppId()
     AppCounter = AppCounter + 1
     return "TX" .. tostring(AppCounter)
+end
+
+-- Function to generate a unique review ID
+function generateReviewId()
+    ReviewCounter = ReviewCounter + 1
+    return "TX" .. tostring(ReviewCounter)
+end
+
+-- Function to generate a unique transaction ID
+function generateTransactionId()
+    transactionCounter = transactionCounter + 1
+    return "TX" .. tostring(transactionCounter)
+end
+
+-- Function to generate a unique transaction ID
+function generateReplyId()
+    ReplyCounter = ReplyCounter + 1
+    return "TX" .. tostring(ReplyCounter)
 end
 
 
@@ -169,8 +189,36 @@ function createAppLeaderboard(Apps)
 end
 
 
+Handlers.add(
+    "AddAddress",
+    Handlers.utils.hasMatchingTag("Action", "AddAddress"),
+    function(m)
+        local userId = m.From
+        local address = m.Tags.address
 
--- Add App Handler Function
+        -- Validate input
+        if not userId or not address then
+            ao.send({ Target = m.From, Data = "userId or address is missing." })
+            return
+        end
+
+        -- Initialize the verifiedUsers table if it doesn't exist
+        verifiedUsers = verifiedUsers or {}
+
+        -- Check if the user already exists in the table
+        if not verifiedUsers[userId] then
+            verifiedUsers[userId] = {
+                addresses = {}
+            }
+        end
+        -- Add the address to the user's record
+        table.insert(verifiedUsers[userId].addresses, address)
+
+        ao.send({ Target = m.From, Data = "Address added successfully for user: " .. userId })
+    end
+)
+
+
 Handlers.add(
     "AddApp",
     Handlers.utils.hasMatchingTag("Action", "AddApp"),
@@ -179,11 +227,9 @@ Handlers.add(
         local requiredTags = {
             "AppName", "description", "protocol", "websiteUrl", "twitterUrl",
             "discordUrl", "coverUrl", "banner1Url", "banner2Url", "banner3Url",
-            "banner4Url", "companyName", "appIconUrl", "appReviews", "appRatings",
-            "upvotes", "downvotes", "featureRequests", "bugsReports", "projectType", "username"
+            "banner4Url", "companyName", "appIconUrl",  "projectType", "username","profileUrl"
         }
 
-        -- Iterate over required tags and check for nil values
         for _, tag in ipairs(requiredTags) do
             if m.Tags[tag] == nil then
                 print("Error: " .. tag .. " is nil.")
@@ -194,20 +240,57 @@ Handlers.add(
 
         local currentTime = getCurrentTime(m)
         local AppId = generateAppId()
+        local ReviewId = generateReviewId()
+        local replyId = generateReplyId()
         local user = m.From
         local username = m.Tags.username
+        local profileUrl = m.Tags.profileUrl
 
-        -- Populate the tables with initial values
-        reviewsTable[AppId] = { user, username, count = 0 ,currentTime }
-        upvotesTable[AppId] = { user, username, count = 1 , currentTime}
-        downvotesTable[AppId] = { count = 0 ,user,currentTime}
-        featureRequestsTable[AppId] = { user, username, currentTime, count = 0, comments = {} }
-        bugsReportsTable[AppId] = { user, username, currentTime ,count = 0, comments = {} }
-        favoritesTable[AppId] = { user }
-        ratingsTable[AppId] = { user, count = 0, currentTime }
-        helpfulRatingsTable[AppId] = { count = 0, user,currentTime }
-        unHelpfulRatingsTable[AppId] = { count = 0, user ,currentTime}
-        commentsTable[AppId] = { count = 0, user , currentTime}
+    
+        -- Initialize reviewsTable for the app
+        reviewsTable[AppId] = {
+        reviews = {
+            {
+            reviewId = ReviewId,
+            user = user,
+            username = username,
+            comment = "Great app!",
+            rating = 5,
+            timestamp = currentTime,
+            profileUrl = profileUrl,
+            upvotes = 1,
+            downvotes = 0,
+            helpfulVotes = 1,
+            unhelpfulVotes = 0,
+            voters = {
+                upvoted = {user = user},
+                downvoted = {},
+                foundHelpful = {user = user},
+                foundUnhelpful = {}
+            },
+            replies = { -- Replies are stored here
+                {
+                    replyId = replyId,
+                    user = user,
+                    comment = "Thank you for your feedback!",
+                    timestamp = currentTime,
+                    upvotes = 1,
+                    downvotes = 0,
+                    voters = {
+                    upvoted = {user = user },
+                    downvoted = {},
+                    foundHelpful = {user = user},
+                    foundUnhelpful = {},}}}}}}
+
+        upvotesTable[AppId] = { user = user, username = username, count = 1, currentTime = currentTime }
+        downvotesTable[AppId] = { count = 0, user = user, currentTime = currentTime }
+        featureRequestsTable[AppId] = { user = user, username = username, currentTime = currentTime, count = 0, comment = "" }
+        bugsReportsTable[AppId] = { user = user, username = username, currentTime = currentTime, count = 0, comment = "" }
+        favoritesTable[AppId] = { user = user , currentTime = currentTime }
+        ratingsTable[AppId] = { user = user, rating = 5, currentTime = currentTime }
+        helpfulRatingsTable[AppId] = { rating = 1, user = user, currentTime = currentTime }
+        unHelpfulRatingsTable[AppId] = { rating = 0, user = user, currentTime = currentTime }
+        flagTable[AppId] = { count = 0, user = user, currentTime = currentTime }
 
         -- Create the App record
         Apps[AppId] = {
@@ -221,6 +304,7 @@ Handlers.add(
             TwitterUrl = m.Tags.twitterUrl,
             DiscordUrl = m.Tags.discordUrl,
             CoverUrl = m.Tags.coverUrl,
+            profileUrl = profileUrl,
             BannerUrls = {
                 m.Tags.banner1Url,
                 m.Tags.banner2Url,
@@ -240,8 +324,40 @@ Handlers.add(
             Favorites = favoritesTable,
             HelpfulRatings = helpfulRatingsTable,
             UnHelpfulRatings = unHelpfulRatingsTable,
-            Comments = commentsTable
+            Comments = commentsTable,
+            FlagTable = flagTable,
         }
+
+        -- Award points to the user
+        local points = 100
+        if arsPoints[user] then
+            arsPoints[user].points = arsPoints[user].points + points
+        else
+            arsPoints[user] = { user = user, points = points }
+        end
+
+        -- Transfer tokens to the user
+        local amount = 500
+        ao.send({
+            Target = ARS,
+            Action = "Transfer",
+            Quantity = tostring(amount),
+            Recipient = tostring(user)
+        })
+
+        local balance = arsPoints[user].points
+
+        -- Record the transaction
+        if not transactions then transactions = {} end
+        local transactionId = generateTransactionId()
+        table.insert(transactions, {
+            user = user,
+            transactionid = transactionId,
+            type = "App Creation",
+            amount = amount,
+            points = balance,
+            timestamp = currentTime
+        })
 
         -- Debugging: Print the Apps table
         print("Apps table after update: " .. tableToJson(Apps))
@@ -250,8 +366,6 @@ Handlers.add(
         ao.send({ Target = m.From, Data = "Successfully Created The App" })
     end
 )
-
-
 
 
 Handlers.add(
@@ -282,6 +396,7 @@ Handlers.add(
             if appDetails.ProjectType == projectType and appDetails.Protocol == protocol then
                 -- Include only relevant fields in the response
                 filteredApps[AppId] = {
+                    AppId = appDetails.AppId,
                     AppName = appDetails.AppName,
                     CompanyName = appDetails.CompanyName,
                     WebsiteUrl = appDetails.WebsiteUrl,
@@ -304,17 +419,118 @@ Handlers.add(
 
 
 Handlers.add(
-    "getApps",
-    Handlers.utils.hasMatchingTag("Action", "getApps"),
+    "DeleteApp",
+    Handlers.utils.hasMatchingTag("Action", "DeleteApp"),
     function(m)
-        if not Apps or next(Apps) == nil then
-            print("Apps table is empty or nil.")
-            ao.send({ Target = m.From, Data = "Apps table is empty or nil." }) -- Send an empty JSON if there are no trades
+        -- Check if the required AppId tag is present
+        if not m.Tags.AppId or m.Tags.AppId == "" then
+            print("Error: AppId is nil or empty.")
+            ao.send({ Target = m.From, Data = "AppId is missing or empty." })
             return
         end
-        ao.send({ Target = m.From, Data = tableToJson(Apps) })
+
+        local appId = m.Tags.AppId
+
+        -- Check if the app exists
+        if not Apps[appId] then
+            print("Error: App with AppId " .. appId .. " not found.")
+            ao.send({ Target = m.From, Data = "App not found." })
+            return
+        end
+
+        -- Get the app owner
+        local appOwner = Apps[appId].Owner
+
+        -- Check if the caller is the app owner or the process admin
+        if m.From == appOwner or m.From == env.Process.Id then
+            -- Delete the app from the Apps table
+            Apps[appId] = nil
+
+            -- Delete the app's data from associated tables
+            reviewsTable[appId] = nil
+            upvotesTable[appId] = nil
+            downvotesTable[appId] = nil
+            featureRequestsTable[appId] = nil
+            bugsReportsTable[appId] = nil
+            favoritesTable[appId] = nil
+            ratingsTable[appId] = nil
+            helpfulRatingsTable[appId] = nil
+            unHelpfulRatingsTable[appId] = nil
+            commentsTable[appId] = nil
+            flagTable[appId] = nil
+
+            -- Debugging: Print confirmation
+            print("App with AppId " .. appId .. " and all associated data deleted successfully.")
+
+            -- Send success message
+            ao.send({ Target = m.From, Data = "Successfully deleted the app and all associated data." })
+        else
+            -- If the caller is not the owner or admin, send an error message
+            print("Unauthorized delete attempt by " .. m.From)
+            ao.send({ Target = m.From, Data = "You are not the app owner or admin." })
+        end
     end
 )
+
+
+Handlers.add(
+    "AppInfo",
+    Handlers.utils.hasMatchingTag("Action", "AppInfo"),
+    function(m)
+        -- Check if the required AppId tag is present
+        if not m.Tags.AppId or m.Tags.AppId == "" then
+            print("Error: AppId is nil or empty.")
+            ao.send({ Target = m.From, Data = "AppId is missing or empty." })
+            return
+        end
+
+        -- Extract the AppId from the message
+        local AppId = m.Tags.AppId
+
+        -- Check if the Apps table exists and contains the requested AppId
+        if not Apps or next(Apps) == nil or not Apps[AppId] then
+            print("App with AppId " .. AppId .. " not found.")
+            ao.send({ Target = m.From, Data = "App not found." })
+            return
+        end
+
+        -- Fetch the app details
+        local appDetails = Apps[AppId]
+
+        -- Prepare the response with all relevant app details
+        local AppInfoResponse = {
+            AppId = appDetails.AppId,
+            AppName = appDetails.AppName,
+            Description = appDetails.Description,
+            Protocol = appDetails.Protocol,
+            WebsiteUrl = appDetails.WebsiteUrl,
+            TwitterUrl = appDetails.TwitterUrl,
+            DiscordUrl = appDetails.DiscordUrl,
+            CoverUrl = appDetails.CoverUrl,
+            BannerUrls = appDetails.BannerUrls,
+            CompanyName = appDetails.CompanyName,
+            AppIconUrl = appDetails.AppIconUrl,
+            Reviews = appDetails.Reviews,
+            Ratings = appDetails.Ratings,
+            Upvotes = appDetails.Upvotes,
+            Downvotes = appDetails.Downvotes,
+            FeatureRequests = appDetails.FeatureRequests,
+            BugsReports = appDetails.BugsReports,
+            ProjectType = appDetails.ProjectType,
+            CreatedTime = appDetails.CreatedTime,
+            Favorites = appDetails.Favorites
+        }
+
+        -- Send the app info as a JSON response
+        ao.send({ Target = m.From, Data = tableToJson(AppInfoResponse) })
+
+        -- Debugging: Print the app info to the console
+        print("App Info for AppId " .. AppId .. ": " .. tableToJson(AppInfoResponse))
+    end
+)
+
+
+
 
 
 Handlers.add(
@@ -349,106 +565,38 @@ Handlers.add(
 
 
 
-
 Handlers.add(
-    "OwnerApps",
-    Handlers.utils.hasMatchingTag("Action", "OwnerApps"),
+    "getMyApps",
+    Handlers.utils.hasMatchingTag("Action", "getMyApps"),
     function(m)
+        local owner = m.From
+
+        -- Check if the Apps table is empty
         if not Apps or next(Apps) == nil then
             print("Apps table is empty or nil.")
-            ao.send({ Target = m.From, Data = "Apps table is empty or nil." }) -- Send an empty JSON if there are no trades
+            ao.send({ Target = owner, Data = "No apps found." })
             return
         end
 
+        -- Filter apps owned by the user
         local filteredApps = {}
         for AppId, App in pairs(Apps) do
-            if App.Owner == m.From then
-                filteredApps[AppId] = App
+            if App.Owner == owner then
+                filteredApps[AppId] = {
+                    AppId = App.AppId,
+                    AppName = App.AppName,
+                    Description = App.Description,
+                    CompanyName = App.CompanyName,
+                    ProjectType = App.ProjectType,
+                    WebsiteUrl = App.WebsiteUrl,
+                    AppIconUrl = App.AppIconUrl,
+                    CreatedTime = App.CreatedTime
+                }
             end
         end
-        ao.send({ Target = m.From, Data = tableToJson(filteredApps) })
-    end
-)
 
-
-Handlers.add(
-    "AppTypeao",
-    Handlers.utils.hasMatchingTag("Action", "Apptypeao"),
-    function(m)
-        if m.Tags.projectType then
-            if not Apps or next(Apps) == nil then
-            print("Apps table is empty or nil.")
-
-            ao.send({ Target = m.From, Data = {} }) -- Send an empty JSON if there are no trades
-            return
-            end
-            local filteredApps = {}
-            for AppId, App in pairs(Apps) do
-            if App.projectType == m.Tags.projectType and App.protocol =="aocomputer" then
-                filteredApps[AppId] = App
-            end
-            ao.send({ Target = m.From, Data = tableToJson(filteredApps) })  
-            end
-            else
-            -- Print error message for missing tags
-            print("Missing required tags for getting Data.")
-            ao.send({ Target = m.From, Data = "Missing required tags for gettingData." })
-            end   
-        end 
-)
-
-
-Handlers.add(
-    "AppTypear",
-    Handlers.utils.hasMatchingTag("Action", "Apptypear"),
-    function(m)
-        if m.Tags.projectType then
-            if not Apps or next(Apps) == nil then
-            print("Apps table is empty or nil.")
-            ao.send({ Target = m.From, Data = "Apps table is empty or nil." }) -- Send an empty JSON if there are no trades
-            return
-            end
-            local filteredApps = {}
-            for AppId, App in pairs(Apps) do
-            if App.projectType == m.Tags.projectType and App.protocol =="aocomputer" then
-                filteredApps[AppId] = App
-            end
-            ao.send({ Target = m.From, Data = tableToJson(filteredApps) })  
-            end
-            else
-            -- Print error message for missing tags
-            print("Missing required tags for getting Data.")
-            ao.send({ Target = m.From, Data = "Missing required tags for gettingData." })
-            end   
-        end 
-)
-
-
-
--- claim  Handler Function
-Handlers.add(
-    "claim",
-    Handlers.utils.hasMatchingTag("Action", "claim"),
-    function(Msg)
-        local requesterAddress = Msg.From
-        -- Check if the address has already requested tokens
-        if RequestedAddresses[requesterAddress] then
-            ao.send({Target = requesterAddress, Data = "Already requested tokens."})
-        else
-            -- Grant tokens and record the request
-            local amount = 6
-            ao.send({
-                Target = ARS,
-                Action = "Transfer",
-                Quantity = tostring(amount),
-                Recipient = requesterAddress,
-            })
-            print("Transferred: " .. amount .. " successfully to " .. requesterAddress)
-            -- Record the address as having requested tokens
-            RequestedAddresses[requesterAddress] = true
-            -- Send a success message
-            ao.send({Target = requesterAddress, Data = "Successfully recieved" .. amount..  "tokens."})
-        end
+        -- Send the filtered apps to the user
+        ao.send({ Target = owner, Data = tableToJson(filteredApps) })
     end
 )
 
@@ -482,13 +630,110 @@ Handlers.add(
     end
 )
 
+
+Handlers.add(
+    "AddReviewApp",
+    Handlers.utils.hasMatchingTag("Action", "AddReviewApp"),
+    function(m)
+
+        -- Check if all required m.Tags are present
+        local requiredTags = {
+            "username", "profileUrl", "AppId", "comment", "rating"
+        }
+
+        for _, tag in ipairs(requiredTags) do
+            if m.Tags[tag] == nil then
+                print("Error: " .. tag .. " is nil.")
+                ao.send({ Target = m.From, Data = tag .. " is missing or empty." })
+                return
+            end
+        end
+
+        local appId = m.Tags.AppId
+        local comment = m.Tags.comment
+        local user = m.From
+        local username = m.Tags.username
+        local profileUrl = m.Tags.profileUrl
+        local rating = tonumber(m.Tags.rating)
+        local currentTime = getCurrentTime(m)
+
+        -- Validate rating
+        if not rating or rating < 1 or rating > 5 then
+            ao.send({ Target = m.From, Data = "Invalid rating. Please provide a rating between 1 and 5." })
+            return
+        end
+
+        -- Check if the app exists
+        if not reviewsTable[appId] then
+            reviewsTable[appId] = { reviews = {} }
+        end
+
+        -- Prevent duplicate reviews by the same user
+        for _, review in ipairs(reviewsTable[appId].reviews) do
+            if review.user == user then
+                ao.send({ Target = m.From, Data = "You have already reviewed this app." })
+                return
+            end
+        end
+
+        -- Generate unique ID for the review
+        local reviewId = generateReviewId()
+
+        -- Add the new review
+        table.insert(reviewsTable[appId].reviews, {
+            reviewId = reviewId,
+            user = user,
+            username = username,
+            comment = comment,
+            rating = rating,
+            timestamp = currentTime,
+            profileUrl = profileUrl,
+            upvotes = 1,
+            downvotes = 0,
+            helpfulVotes = 1,
+            unhelpfulVotes = 0,
+            voters = {
+                upvoted = {user},
+                downvoted = {},
+                foundHelpful = {user},
+                foundUnhelpful = {}
+            },
+            replies = {}
+        })
+
+        -- Optional: Notify app owner about new review
+        local appOwner = Apps[appId] and Apps[appId].Owner
+        if appOwner then
+            ao.send({ Target = appOwner, Data = "New review added by " .. username .. "." })
+        end
+
+        ao.send({ Target = m.From, Data = "Review added successfully." })
+    end
+)
+
+
 -- Add Helpful Rating Handler
 Handlers.add(
-    "HelpfulRating",
+    "HelpfulRatingApp",
     Handlers.utils.hasMatchingTag("Action", "HelpfulRating"),
     function(m)
+
+        -- Check if all required m.Tags are present
+        local requiredTags = {
+            "AppId"
+        }
+
+        for _, tag in ipairs(requiredTags) do
+            if m.Tags[tag] == nil then
+                print("Error: " .. tag .. " is nil.")
+                ao.send({ Target = m.From, Data = tag .. " is missing or empty." })
+                return
+            end
+        end
+
         local AppId = m.Tags.AppId
         local user = m.From
+        local currentTime = getCurrentTime(m)
 
         -- Check if the user has already marked the rating as helpful
         if helpfulRatingsTable[AppId] and helpfulRatingsTable[AppId][user] then
@@ -501,7 +746,10 @@ Handlers.add(
         helpfulRatingsTable[AppId][user] = true
 
         -- Increment the helpful count
-        helpfulRatingsTable[AppId].count = (helpfulRatingsTable[AppId].count or 0) + 1
+        helpfulRatingsTable[AppId].rating = (helpfulRatingsTable[AppId].rating or 0) + 1
+
+        -- Add time 
+        helpfulRatingsTable[AppId].currentTime = currentTime
 
         ao.send({ Target = m.From, Data = "Thank you for your feedback!" })
     end
@@ -509,11 +757,26 @@ Handlers.add(
 
 -- Add Unhelpful Rating Handler
 Handlers.add(
-    "UnhelpfulRating",
+    "UnhelpfulRatingApp",
     Handlers.utils.hasMatchingTag("Action", "UnhelpfulRating"),
     function(m)
+
+        -- Check if all required m.Tags are present
+        local requiredTags = {
+            "AppId"
+        }
+
+        for _, tag in ipairs(requiredTags) do
+            if m.Tags[tag] == nil then
+                print("Error: " .. tag .. " is nil.")
+                ao.send({ Target = m.From, Data = tag .. " is missing or empty." })
+                return
+            end
+        end
+
         local AppId = m.Tags.AppId
         local user = m.From
+        local currentTime = getCurrentTime(m)
 
         -- Check if the user has already marked the rating as unhelpful
         if unHelpfulRatingsTable[AppId] and unHelpfulRatingsTable[AppId][user] then
@@ -526,12 +789,14 @@ Handlers.add(
         unHelpfulRatingsTable[AppId][user] = true
 
         -- Increment the unhelpful count
-        unHelpfulRatingsTable[AppId].count = (unHelpfulRatingsTable[AppId].count or 0) + 1
+        unHelpfulRatingsTable[AppId].rating = (unHelpfulRatingsTable[AppId].rating or 0) + 1
+
+           -- Add time
+        unHelpfulRatingsTable[AppId].currentTime = currentTime
 
         ao.send({ Target = m.From, Data = "Thank you for your feedback!" })
     end
 )
-
 
 
 
@@ -540,8 +805,22 @@ Handlers.add(
     "UpvoteApp",
     Handlers.utils.hasMatchingTag("Action", "UpvoteApp"),
     function(m)
+        -- Check if all required m.Tags are present
+        local requiredTags = {
+            "AppId"
+        }
+
+        for _, tag in ipairs(requiredTags) do
+            if m.Tags[tag] == nil then
+                print("Error: " .. tag .. " is nil.")
+                ao.send({ Target = m.From, Data = tag .. " is missing or empty." })
+                return
+            end
+        end
+        
         local AppId = m.Tags.AppId
         local user = m.From
+        local currentTime = getCurrentTime(m)
 
         -- Check if user has already upvoted
         if upvotesTable[AppId] and upvotesTable[AppId][user] then
@@ -554,7 +833,9 @@ Handlers.add(
         upvotesTable[AppId][user] = true
 
         -- Increment count
-        upvotesTable[AppId].count = (upvotesTable[AppId].count or 0) + 1
+        upvotesTable[AppId].rating = (upvotesTable[AppId].rating or 0) + 1
+             -- 
+        upvotesTable[AppId].currentTime = currentTime
 
         ao.send({ Target = m.From, Data = "Upvote successful!" })
     end
@@ -565,8 +846,22 @@ Handlers.add(
     "DownvoteApp",
     Handlers.utils.hasMatchingTag("Action", "DownvoteApp"),
     function(m)
+
+        -- Check if all required m.Tags are present
+        local requiredTags = {
+            "AppId"
+        }
+
+        for _, tag in ipairs(requiredTags) do
+            if m.Tags[tag] == nil then
+                print("Error: " .. tag .. " is nil.")
+                ao.send({ Target = m.From, Data = tag .. " is missing or empty." })
+                return
+            end
+        end
         local AppId = m.Tags.AppId
         local user = m.From
+        local currentTime = getCurrentTime(m)
 
         -- Allow downvoting twice
         if downvotesTable[AppId] and downvotesTable[AppId][user] then
@@ -578,60 +873,342 @@ Handlers.add(
         downvotesTable[AppId] = downvotesTable[AppId] or {}
         downvotesTable[AppId][user] = (downvotesTable[AppId][user] or 0) + 1
 
-        -- Limit downvotes to 2 per user
-        if downvotesTable[AppId][user] > 2 then
-            downvotesTable[AppId][user] = 2
-        else
-            -- Increment count
-            downvotesTable[AppId].count = (downvotesTable[AppId].count or 0) + 1
+        --Add time
+        downvotesTable[AppId].currentTime = currentTime
+
+        -- Check if user has already upvoted
+        if downvotesTable[AppId] and downvotesTable[AppId][user] then
+            ao.send({ Target = m.From, Data = "You have already downvoted this app." })
+            return
         end
+
+          -- Increment count
+        downvotesTable[AppId].rating = (downvotesTable[AppId].rating or 0) + 1
 
         ao.send({ Target = m.From, Data = "Downvote successful!" })
     end
 )
 
--- Add Rating Handler
-Handlers.add(
-    "RateApp",
-    Handlers.utils.hasMatchingTag("Action", "RateApp"),
-    function(m)
-        local AppId = m.Tags.AppId
-        local user = m.From
-        local rating = tonumber(m.Tags.Rating)
 
-        -- Validate rating (e.g., between 1 and 5)
-        if not rating or rating < 1 or rating > 5 then
-            ao.send({ Target = m.From, Data = "Invalid rating. Please provide a rating between 1 and 5." })
+Handlers.add(
+    "AddReviewReply",
+    Handlers.utils.hasMatchingTag("Action", "AddReviewReply"),
+    function(m)
+        -- Check required tags
+        local requiredTags = { "AppId", "ReviewId", "username", "comment" ,"profileUrl"}
+        for _, tag in ipairs(requiredTags) do
+            if m.Tags[tag] == nil then
+                ao.send({ Target = m.From, Data = tag .. " is missing or empty." })
+                return
+            end
+        end
+        local appId = m.Tags.AppId
+        local reviewId = m.Tags.ReviewId
+        local comment = m.Tags.comment
+        local user = m.From
+        local profileUrl = m.From.profileUrl
+        local username = m.From.username
+        local currentTime = getCurrentTime(m)
+
+        -- Check if the app exists
+        if not Apps[appId] then
+            ao.send({ Target = m.From, Data = "App not found." })
             return
         end
 
-        -- Allow user to rate multiple times (overwrite previous rating)
-        ratingsTable[AppId] = ratingsTable[AppId] or {}
-        ratingsTable[AppId][user] = rating
+        -- Check if the user is the app owner
+        if Apps[appId].Owner ~= user then
+            ao.send({ Target = m.From, Data = "Only the app owner can reply to reviews." })
+            return
+        end
 
-        ao.send({ Target = m.From, Data = "Rating submitted!" })
+        -- Find the review by ID
+        if not reviewsTable[appId] or not reviewsTable[appId].reviews then
+            ao.send({ Target = m.From, Data = "Reviews not found for this app." })
+            return
+        end
+
+        local targetReview
+        for _, review in ipairs(reviewsTable[appId].reviews) do
+            if review.reviewId == reviewId then
+                targetReview = review
+                break
+            end
+        end
+
+        if not targetReview then
+            ao.send({ Target = m.From, Data = "Review not found." })
+            return
+        end
+
+        -- Generate a unique ID for the reply
+        local replyId = generateReplyId()
+
+        -- Add the reply to the review
+        if not targetReview.replies then
+            targetReview.replies = {}
+        end
+
+      table.insert(reviewsTable[appId].reviews, {
+        reviewId = reviewId,
+        user = user,
+        username = username,
+        comment = comment,
+        rating = ratingsTable[appId][user].rating,
+        timestamp = currentTime,
+        profileUrl = profileUrl,
+        upvotes = 1,
+        downvotes = 0,
+        helpfulVotes = 1,
+        unhelpfulVotes = 0,
+        voters = {
+        upvoted = {user = user},
+        downvoted = {},
+        foundHelpful = {user = user},
+        foundUnhelpful = {}
+            },
+        replies = {}})
+
+
+        -- Notify the review author
+        local reviewAuthor = targetReview.user
+        ao.send({ Target = reviewAuthor, Data = "The app owner has replied to your review." })
+
+        ao.send({ Target = m.From, Data = "Reply added successfully." })
     end
 )
 
--- Add Comment Handler
-Handlers.add(
-    "CommentApp",
-    Handlers.utils.hasMatchingTag("Action", "CommentApp"),
-    function(m)
-        local AppId = m.Tags.AppId
-        local user = m.From
-        local comment = m.Tags.Comment
 
-        -- Check if comment is empty
-        if not comment or comment == "" then
-            ao.send({ Target = m.From, Data = "Comment cannot be empty." })
+
+
+
+Handlers.add(
+    "MarkHelpfulReview",
+    Handlers.utils.hasMatchingTag("Action", "MarkHelpfulReview"),
+    function(m)
+        local appId = m.Tags.AppId
+        local reviewId = m.Tags.ReviewId
+        local user = m.From
+
+        -- Check if the app and review exist
+        if not reviewsTable[appId] or not reviewsTable[appId].reviews[reviewId] then
+            ao.send({ Target = m.From, Data = "App or review not found." })
             return
         end
 
-        -- Add comment to comments table
-        commentsTable[AppId] = commentsTable[AppId] or {}
-        table.insert(commentsTable[AppId], { user = user, comment = comment })
+        local review = reviewsTable[appId].reviews[reviewId]
 
-        ao.send({ Target = m.From, Data = "Comment added!" })
+        -- Check if the user already marked it as helpful
+        if review.voters.foundHelpful[user] then
+            ao.send({ Target = m.From, Data = "You already marked this review as helpful." })
+            return
+        end
+
+        -- Update helpful vote count and record the voter
+        review.helpfulVotes = review.helpfulVotes + 1
+        review.voters.foundHelpful[user] = true
+
+        ao.send({ Target = m.From, Data = "Review marked as helpful successfully." })
+    end
+)
+
+Handlers.add(
+    "MarkUnhelpfulReview",
+    Handlers.utils.hasMatchingTag("Action", "MarkUnhelpfulReview"),
+    function(m)
+        local appId = m.Tags.AppId
+        local reviewId = m.Tags.ReviewId
+        local user = m.From
+
+        -- Check if the app and review exist
+        if not reviewsTable[appId] or not reviewsTable[appId].reviews[reviewId] then
+            ao.send({ Target = m.From, Data = "App or review not found." })
+            return
+        end
+
+        local review = reviewsTable[appId].reviews[reviewId]
+
+        -- Check if the user already marked it as unhelpful
+        if review.voters.foundUnhelpful[user] then
+            ao.send({ Target = m.From, Data = "You already marked this review as unhelpful." })
+            return
+        end
+
+        -- Update unhelpful vote count and record the voter
+        review.unhelpfulVotes = review.unhelpfulVotes + 1
+        review.voters.foundUnhelpful[user] = true
+
+        ao.send({ Target = m.From, Data = "Review marked as unhelpful successfully." })
+    end
+)
+
+Handlers.add(
+    "UpvoteReview",
+    Handlers.utils.hasMatchingTag("Action", "UpvoteReview"),
+    function(m)
+        local appId = m.Tags.AppId
+        local reviewId = m.Tags.ReviewId
+        local user = m.From
+
+        -- Check if the app and review exist
+        if not reviewsTable[appId] or not reviewsTable[appId].reviews[reviewId] then
+            ao.send({ Target = m.From, Data = "App or review not found." })
+            return
+        end
+
+        local review = reviewsTable[appId].reviews[reviewId]
+
+        -- Check if the user has already upvoted
+        if review.voters.upvoted[user] then
+            ao.send({ Target = m.From, Data = "You have already upvoted this review." })
+            return
+        end
+
+        -- Update the upvote count and mark the user as an upvoter
+        review.upvotes = review.upvotes + 1
+        review.voters.upvoted[user] = true
+
+        ao.send({ Target = m.From, Data = "Review upvoted successfully." })
+    end
+)
+
+Handlers.add(
+    "DownvoteReview",
+    Handlers.utils.hasMatchingTag("Action", "DownvoteReview"),
+    function(m)
+        local appId = m.Tags.AppId
+        local reviewId = m.Tags.ReviewId
+        local user = m.From
+
+        -- Check if the app and review exist
+        if not reviewsTable[appId] or not reviewsTable[appId].reviews[reviewId] then
+            ao.send({ Target = m.From, Data = "App or review not found." })
+            return
+        end
+
+        local review = reviewsTable[appId].reviews[reviewId]
+
+        -- Check if the user has already downvoted
+        if review.voters.downvoted[user] then
+            ao.send({ Target = m.From, Data = "You have already downvoted this review." })
+            return
+        end
+
+        -- Update the downvote count and record the voter
+        review.downvotes = review.downvotes + 1
+        review.voters.downvoted[user] = true
+
+        ao.send({ Target = m.From, Data = "Review downvoted successfully." })
+    end
+)
+
+
+Handlers.add(
+    "TransferAppOwnership",
+    Handlers.utils.hasMatchingTag("Action", "TransferAppOwnership"),
+    function(m)
+        local appId = m.Tags.AppId
+        local newOwner = m.Tags.NewOwner
+        local currentOwner = m.From
+
+        -- Validate input
+        if not appId or not newOwner then
+            ao.send({ Target = m.From, Data = "AppId or NewOwner is missing." })
+            return
+        end
+
+        -- Check if the app exists
+        if not Apps[appId] then
+            ao.send({ Target = m.From, Data = "App not found." })
+            return
+        end
+
+        -- Check if the user making the request is the current owner
+        if Apps[appId].Owner ~= currentOwner then
+            ao.send({ Target = m.From, Data = "You are not the owner of this app." })
+            return
+        end
+
+        -- Transfer ownership
+        Apps[appId].Owner = newOwner
+        ao.send({ Target = m.From, Data = "Ownership transferred to " .. newOwner })
+    end
+)
+
+
+Handlers.add(
+    "UpdateAppDetails",
+    Handlers.utils.hasMatchingTag("Action", "UpdateAppDetails"),
+    function(m)
+        local appId = m.Tags.AppId
+        local updateOption = m.Tags.UpdateOption
+        local newValue = m.Tags.NewValue
+        local currentOwner = m.From
+
+        -- Validate input
+        if not appId or not updateOption or not newValue then
+            ao.send({ Target = m.From, Data = "AppId, UpdateOption, or NewValue is missing." })
+            return
+        end
+
+        -- Check if the app exists
+        if not Apps[appId] then
+            ao.send({ Target = m.From, Data = "App not found." })
+            return
+        end
+
+        -- Check if the user making the request is the current owner
+        if Apps[appId].Owner ~= currentOwner then
+            ao.send({ Target = m.From, Data = "You are not the owner of this app." })
+            return
+        end
+
+        -- Update the requested field
+        local validUpdateOptions = {
+            appName = true,
+            description = true,
+            websiteUrl = true,
+            discordUrl = true,
+            twitterUrl = true,
+            coverUrl = true,
+            banner1Url = true,
+            banner2Url = true,
+            banner3Url = true,
+            banner4Url = true,
+            companyName = true,
+            appIconUrl = true
+        }
+
+        if not validUpdateOptions[updateOption] then
+            ao.send({ Target = m.From, Data = "Invalid UpdateOption." })
+            return
+        end
+
+        -- Perform the update
+        Apps[appId][updateOption] = newValue
+        ao.send({ Target = m.From, Data = updateOption .. " updated successfully." })
+    end
+)
+
+
+
+-- Handler to view all transactions
+Handlers.add(
+    "view_transactions",
+    Handlers.utils.hasMatchingTag("Action", "view_transactions"),
+    function(m)
+        local user = m.From
+        local user_transactions = {}
+        
+        -- Filter transactions for the specific user
+        for _, transaction in ipairs(transactions) do
+            -- Skip nil transactions
+            if transaction ~= nil and transaction.user == user then
+                table.insert(user_transactions, transaction)
+            end
+        end
+        
+        -- Send the filtered transactions back to the user
+        ao.send({ Target = user, Data = tableToJson(user_transactions) })
     end
 )

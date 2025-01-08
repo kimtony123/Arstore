@@ -1,13 +1,10 @@
 import "./Sidebar.css";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaWallet } from "react-icons/fa";
+import { FaWallet, FaErlang } from "react-icons/fa";
 import {
   Squares2X2Icon,
-  ChartBarIcon,
   HomeIcon,
-  ArrowLeftIcon,
-  ArrowRightIcon,
   SunIcon,
   MoonIcon,
   TrophyIcon,
@@ -44,17 +41,18 @@ const Sidebar: React.FC<SidebarBarProps> = ({
     { icon: <HomeIcon className="size-4 md:size-5" />, tooltip: "Home" },
     {
       icon: <Squares2X2Icon className="size-4 md:size-5" />,
-      tooltip: "Aocommunities",
+      tooltip: "aocomputer",
     },
     {
-      icon: <ChartBarIcon className="size-4 md:size-5" />,
-      tooltip: "Aomemecoins",
+      icon: <Squares2X2Icon className="size-4 md:size-5" />,
+      tooltip: "arweave",
     },
+    { icon: <FaWallet className="size-4 md:size-5" />, tooltip: "Wallet" },
     {
       icon: <TrophyIcon className="size-4 md:size-5" />,
       tooltip: "LeaderBoard",
     },
-    { icon: <FaWallet className="size-4 md:size-5" />, tooltip: "Wallet" },
+    { icon: <FaErlang className="size-4 md:size-5" />, tooltip: "myapps" },
   ];
 
   return (

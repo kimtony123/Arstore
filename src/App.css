@@ -3,11 +3,11 @@
 }
 
 .dark #root {
-  background-color: black;
+  background-color: rgb(29, 26, 26);
 }
 
 .light #root {
-  background-color: rgb(247, 248, 250);
+  background-color: rgb(191, 201, 219);
 }
 
 .logo {

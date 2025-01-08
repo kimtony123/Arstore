@@ -1,18 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { FaBell, FaAngleDoubleRight, FaSpinner } from "react-icons/fa";
+import { FaGoogle, FaAngleDoubleRight } from "react-icons/fa";
 import { SparklesIcon, Bars3Icon, XMarkIcon } from "@heroicons/react/24/solid";
 import classNames from "classnames";
 import { useLocation } from "react-router-dom";
-
-import { PermissionType } from "arconnect";
+import * as othent from "@othent/kms";
 import { connect, disconnect } from "@othent/kms";
-
-const permissions: PermissionType[] = [
-  "ACCESS_ADDRESS",
-  "SIGNATURE",
-  "SIGN_TRANSACTION",
-  "DISPATCH",
-];
+import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
 
 interface NavbarProps {
   theme: string;
@@ -27,43 +20,105 @@ const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const locationURL = useLocation();
   const { pathname } = locationURL;
+
+  // State variables
   const [address, setAddress] = useState<string | null>(null);
   const [username, setUsername] = useState<string | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
   const [profilePic, setProfilePic] = useState<string | null>(null);
-  const [isSigningIn, setIsSigningIn] = useState(false); // New state for sign-in loading
-  const [isSigningOut, setIsSigningOut] = useState(false); // New state for sign-out loading
+  const [isConnected, setIsConnected] = useState(false);
+  const [isSigningIn, setIsSigningIn] = useState(false);
+  const [isAddingVerified, setIsAddingVerified] = useState(false);
 
+  const ARS = "Gwx7lNgoDtObgJ0LC-kelDprvyv2zUdjIY6CTZeYYvk";
+
+  // Load saved connection details on page load
+  useEffect(() => {
+    const savedAddress = localStorage.getItem("walletAddress");
+    const savedProfilePic = localStorage.getItem("profilePic");
+    const savedUsername = localStorage.getItem("username");
+
+    if (savedAddress) {
+      setAddress(savedAddress);
+      setProfilePic(savedProfilePic);
+      setUsername(savedUsername);
+      setIsConnected(true);
+    }
+  }, []);
+
+  // Function to add address for trading
+  const addVerified = async (walletAddress: string) => {
+    setIsAddingVerified(true);
+    try {
+      const tradeMessage = await message({
+        process: ARS,
+        tags: [
+          { name: "Action", value: "AddAddress" },
+          { name: "address", value: walletAddress },
+        ],
+        signer: createDataItemSigner(othent),
+      });
+
+      const { Messages, Error } = await result({
+        message: tradeMessage,
+        process: ARS,
+      });
+
+      if (Error) {
+        alert("Error adding address: " + Error);
+        return;
+      }
+
+      if (!Messages || Messages.length === 0) {
+        alert("No messages returned. Please try again later.");
+        return;
+      }
+
+      alert(Messages[0].Data);
+    } catch (error) {
+      alert("Error during verification process: " + error);
+      console.error(error);
+    } finally {
+      setIsAddingVerified(false);
+    }
+  };
+
+  // Handle user connection
   const handleConnect = async () => {
-    setIsSigningIn(true); // Start loading spinner for sign-in
+    setIsSigningIn(true);
     try {
       const res = await connect();
-      setAddress(res.walletAddress);
+      const walletAddress = res.walletAddress;
+
+      setAddress(walletAddress);
       setProfilePic(res.picture);
       setUsername(res.name);
 
-      // Save to localStorage
-      localStorage.setItem("walletAddress", res.walletAddress);
+      // Save connection details
+      localStorage.setItem("walletAddress", walletAddress);
       localStorage.setItem("profilePic", res.picture);
       localStorage.setItem("username", res.name);
 
       setIsConnected(true);
+
+      // Add the address for trading
+      await addVerified(walletAddress);
     } catch (error) {
       console.error("Connection failed", error);
     } finally {
-      setIsSigningIn(false); // Stop loading spinner for sign-in
+      setIsSigningIn(false);
     }
   };
 
+  // Handle user disconnection
   const handleDisconnect = async () => {
-    setIsSigningOut(true); // Start loading spinner for sign-out
+    setIsSigningIn(true);
     try {
       await disconnect();
       setAddress(null);
       setProfilePic(null);
       setUsername(null);
 
-      // Remove from localStorage
+      // Remove saved connection details
       localStorage.removeItem("walletAddress");
       localStorage.removeItem("profilePic");
       localStorage.removeItem("username");
@@ -72,54 +127,54 @@ const Navbar: React.FC<NavbarProps> = ({
     } catch (error) {
       console.error("Disconnection failed", error);
     } finally {
-      setIsSigningOut(false); // Stop loading spinner for sign-out
+      setIsSigningIn(false);
     }
   };
-  // Capitalize the first letter
-  const capitalizeFirstLetter = (text: string) => {
-    return text.charAt(0).toUpperCase() + text.slice(1);
-  };
 
-  // Remove the leading slash
-  const cleanPathname = pathname.startsWith("/") ? pathname.slice(1) : pathname;
-
-  // Handle Sidebar Collapse Toggle
+  // Toggle sidebar collapse
   const handleCollapseToggle = () => {
     setIsCollapsed(!isCollapsed);
   };
 
+  // Capitalize the first letter
+  const capitalizeFirstLetter = (text: string) =>
+    text.charAt(0).toUpperCase() + text.slice(1);
+
+  // Remove leading slash from pathname
+  const cleanPathname = pathname.startsWith("/") ? pathname.slice(1) : pathname;
+
   return (
     <nav
       className={classNames(
-        "text-sm md:text-lg flex items-center justify-between p-3 md:p-4 shadow-md border-b border-b-neutral-700 transition-all duration-300",
+        "flex items-center justify-between p-4 bg-gray-800 shadow-lg",
         {
-          "bg-black": theme == "dark",
-          "bg-gray-900": theme == "light",
+          "bg-black text-white": theme === "dark",
+          "bg-gray-100 text-black": theme === "light",
         }
       )}
     >
-      <div className="flex items-center space-x-2">
-        <div className="activity-icon-container rounded-lg p-2 md:p-3 bg-emerald-600 ">
-          <SparklesIcon className="size-4 md:size-5" />
+      {/* Left Section */}
+      <div className="flex items-center space-x-4">
+        <div className="bg-emerald-600 p-2 rounded-lg">
+          <SparklesIcon className="h-6 w-6 text-white" />
         </div>
-        <FaAngleDoubleRight className="size-3" />
+        <FaAngleDoubleRight className="text-gray-400" />
         <div className="font-bold text-white">
           {cleanPathname !== ""
             ? capitalizeFirstLetter(cleanPathname)
             : "Overview"}
         </div>
       </div>
-      {/* </div> */}
 
-      <div className="flex items-center space-x-3 md:space-x-4">
-        {/* <div className="text-white hidden md:block">ArConnect</div> */}
+      {/* Right Section */}
+      <div className="flex items-center space-x-4">
         {isConnected && (
           <div className="flex items-center space-x-3">
             {profilePic && (
               <img
                 src={profilePic}
-                alt="Profile picture"
-                className="w-8 h-8 rounded-full"
+                alt="Profile"
+                className="w-10 h-10 rounded-full border border-gray-300"
               />
             )}
             {username && (
@@ -127,16 +182,13 @@ const Navbar: React.FC<NavbarProps> = ({
             )}
             {address && (
               <div className="flex items-center space-x-2">
-                <span className="text-gray-300 text-xs md:text-sm truncate">
-                  {address}
-                </span>
+                <span className="text-gray-400 text-xs">{address}</span>
                 <button
-                  type="button"
+                  className="text-blue-500 hover:text-white"
                   onClick={() => {
                     navigator.clipboard.writeText(address);
-                    alert("Wallet address copied to clipboard!");
+                    alert("Wallet address copied!");
                   }}
-                  className="text-blue-500 hover:text-white transition"
                 >
                   Copy
                 </button>
@@ -144,44 +196,27 @@ const Navbar: React.FC<NavbarProps> = ({
             )}
           </div>
         )}
-        <label className="relative inline-flex cursor-pointer items-center">
-          <input
-            id="switch-2"
-            type="checkbox"
-            className="peer sr-only"
-            checked={isConnected} // Bind to connection state
-            onChange={isConnected ? handleDisconnect : handleConnect}
-            disabled={isSigningOut}
-          />
-          <label htmlFor="switch-2" className="hidden"></label>
-          <div
-            className="peer h-3 md:h-4 w-9 md:w-11 rounded-full bg-slate-500 after:absolute after:-top-1 after:left-0 after:h-5 after:w-5 md:after:h-6 md:after:w-6 after:rounded-full 
-          after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-amber-400 peer-checked:after:translate-x-full 
-          peer-focus:ring-emerald-600"
-          ></div>
-        </label>
-        {/* <label className="relative inline-flex cursor-pointer items-center">
-                    <input id="switch" type="checkbox" className="peer sr-only" />
-                    <label htmlFor="switch" className="hidden"></label>
-                    <div className="peer h-6 w-11 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-0.5 after:h-5 after:w-5 after:rounded-full  after:bg-white after:transition-all after:content-[''] peer-checked:bg-emerald-600 peer-checked:after:translate-x-full peer-focus:ring-green-300"></div>
-                </label> */}
 
-        <div
-          className={classNames("flex md:hidden text-center", {
-            "p-1 border border-red-400 rounded-lg text-red-400 shadow shadow-red-600":
-              !isCollapsed,
-          })}
+        {/* Google Sign-In Button */}
+        <button
+          onClick={isConnected ? handleDisconnect : handleConnect}
+          className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          disabled={isSigningIn}
         >
+          <FaGoogle className="h-5 w-5" />
+          <span>{isConnected ? "Sign Out" : "Sign In via Google"}</span>
+        </button>
+
+        {/* Mobile Sidebar Toggle */}
+        <div className="md:hidden">
           <button onClick={handleCollapseToggle}>
             {isCollapsed ? (
-              <Bars3Icon className="size-6 transition-transform duration-300 ease-in-out" />
+              <Bars3Icon className="h-6 w-6 text-white" />
             ) : (
-              <XMarkIcon className="size-3 transition-transform duration-300 ease-in-out" />
+              <XMarkIcon className="h-6 w-6 text-white" />
             )}
           </button>
         </div>
-
-        {/* <FaBell className="text-white" /> */}
       </div>
     </nav>
   );

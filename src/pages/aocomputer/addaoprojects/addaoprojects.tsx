@@ -30,28 +30,23 @@ const addaoprojects = () => {
   const [banner4Url, setBanner4Url] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [appIconUrl, setAppIconUrl] = useState("");
-  const [appReviews, setAppReviews] = useState("");
-  const [appRatings, setAppRatings] = useState("");
-  const [upvotes, setUpvotes] = useState("");
-  const [downvotes, setDownvotes] = useState("");
-  const [featureRequests, setFeaturesRequests] = useState("");
-  const [bugsReports, setBugsReports] = useState("");
   const [isaddproject, setIsAddProject] = useState(false);
   const [selectedProtocol, setSelectedProtocol] = useState<string | undefined>(
     undefined
   );
-  const [selectedProjectType, setSelectedProjectType] = useState<
-    string | undefined
-  >(undefined);
   const [protocolValue, setProtocolValue] = useState<string | undefined>();
   const [projectTypeValue, setProjectTypeValue] = useState<
     string | undefined
   >();
+  const [selectedProjectType, setSelectedProjectType] = useState<
+    string | undefined
+  >(undefined);
 
   const ARS = "Gwx7lNgoDtObgJ0LC-kelDprvyv2zUdjIY6CTZeYYvk";
 
   // Check if user has connected to Arweave Wallet
   const username = localStorage.getItem("username");
+  const profileUrl = localStorage.getItem("profileUrl");
 
   const projectOptions = [
     { key: "1", text: "Analytics", value: "analytics" },
@@ -123,24 +118,6 @@ const addaoprojects = () => {
       case "appIconUrl":
         setAppIconUrl(value);
         break;
-      case "appReviews":
-        setAppReviews(value);
-        break;
-      case "appRatings":
-        setAppRatings(value);
-        break;
-      case "upvotes":
-        setUpvotes(value);
-        break;
-      case "downvotes":
-        setDownvotes(value);
-        break;
-      case "featureRequests":
-        setFeaturesRequests(value);
-        break;
-      case "bugsReports":
-        setBugsReports(value);
-        break;
       case "websiteUrl":
         setWebsiteUrl(value);
         break;
@@ -177,12 +154,7 @@ const addaoprojects = () => {
           { name: "banner4Url", value: String(banner4Url) },
           { name: "companyName", value: String(companyName) },
           { name: "appIconUrl", value: String(appIconUrl) },
-          { name: "appReviews", value: String(appReviews) },
-          { name: "appRatings", value: String(appRatings) },
-          { name: "upvotes", value: String(upvotes) },
-          { name: "downvotes", value: String(downvotes) },
-          { name: "featureRequests", value: String(featureRequests) },
-          { name: "bugsReports", value: String(bugsReports) },
+          { name: "profileUrl", value: String(profileUrl) },
           { name: "username", value: String(username) },
         ],
         signer: createDataItemSigner(othent),
@@ -203,23 +175,17 @@ const addaoprojects = () => {
       const data = Messages[0].Data;
       alert(data);
       setAppname("");
-      setAppRatings("");
-      setAppReviews("");
       setBanner1Url("");
       setBanner2Url("");
       setBanner3Url("");
       setBanner4Url("");
       setCompanyName("");
       setAppIconUrl("");
-      setBugsReports("");
       setCoverUrl("");
       setDescription("");
       setWebsiteUrl("");
       setTwitterUrl("");
       setDiscordUrl("");
-      setUpvotes("");
-      setDownvotes("");
-      setFeaturesRequests("");
     } catch (error) {
       alert("There was an error in the trade process: " + error);
       console.error(error);
@@ -378,66 +344,6 @@ const addaoprojects = () => {
                 placeholder="App Icon url"
               />
             </FormField>
-            <FormField required>
-              <label>Apps reviews</label>
-              <Input
-                type="text"
-                name="appReviews"
-                value={appReviews}
-                onChange={handleInputChange}
-                placeholder="reviews"
-              />
-            </FormField>
-            <FormField type="number" required>
-              <label> Overall Ratings</label>
-              <Input
-                type="number"
-                name="appRatings"
-                value={appRatings}
-                onChange={handleInputChange}
-                placeholder="Ratings"
-              />
-            </FormField>
-            <FormField type="number" required>
-              <label>Total Upvotes.</label>
-              <Input
-                type="number"
-                name="upvotes"
-                value={upvotes}
-                onChange={handleInputChange}
-                placeholder="Upvotes"
-              />
-            </FormField>
-            <FormField type="number" required>
-              <label>Total Downvotes.</label>
-              <Input
-                type="number"
-                name="downvotes"
-                value={downvotes}
-                onChange={handleInputChange}
-                placeholder="Downvotes"
-              />
-            </FormField>
-            <FormField type="number" required>
-              <label>Feature Requests.</label>
-              <Input
-                type="number"
-                name="featureRequests"
-                value={featureRequests}
-                onChange={handleInputChange}
-                placeholder="Requests"
-              />
-            </FormField>
-            <FormField type="number" required>
-              <label>Bugs.</label>
-              <Input
-                type="text"
-                name="bugsReports"
-                value={bugsReports}
-                onChange={handleInputChange}
-                placeholder="Bugs Identified"
-              />
-            </FormField>
             <Divider />
             <Button
               loading={isaddproject}
@@ -449,7 +355,6 @@ const addaoprojects = () => {
             </Button>
           </Form>
         </Container>
-
         <Divider />
       </div>
       <Footer />

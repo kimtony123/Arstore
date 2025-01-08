@@ -27,7 +27,7 @@ interface Project {
   CompanyName: string;
   ProjectType: string;
   ratings: number;
-  id: string;
+  AppId: string;
   AppIconUrl: string;
   WebsiteUrl: string;
   AppName: string;
@@ -35,6 +35,7 @@ interface Project {
 
 const aocommunities = () => {
   const projectTypes = [
+    "Infrastructure",
     "Analytics",
     "Community",
     "DEFI",
@@ -43,7 +44,6 @@ const aocommunities = () => {
     "Exchanges",
     "Gaming",
     "Incubators",
-    "Infrastructure",
     "Memecoins",
     "News and Knowledge",
     "NFTs and Metaverse",
@@ -63,6 +63,10 @@ const aocommunities = () => {
 
   const handleAddAoprojects = () => {
     navigate("/Addaoprojects");
+  };
+
+  const handleProjectInfo = (appId: string) => {
+    navigate(`/project/${appId}`);
   };
 
   useEffect(() => {
@@ -102,6 +106,7 @@ const aocommunities = () => {
       }
 
       const data = JSON.parse(Messages[0].Data);
+      console.log(data);
       setProjects(Object.values(data));
       setErrorMessage("");
     } catch (error) {
@@ -116,7 +121,7 @@ const aocommunities = () => {
     render: () => (
       <TabPane attached={false}>
         <Container>
-          <Header>{type} Ratings</Header>
+          <Header>{type} Project. </Header>
           <Divider />
           <Button
             onClick={handleAddAoprojects}
@@ -153,7 +158,9 @@ const aocommunities = () => {
                         Visit Site
                       </a>
                       <Divider />
-                      <Button>App Info.</Button>
+                      <Button onClick={() => handleProjectInfo(app.AppId)}>
+                        App Info
+                      </Button>
                     </>
                   }
                 />

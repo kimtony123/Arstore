@@ -4,10 +4,20 @@ import Sidebar from "./components/sidebar/Sidebar";
 import Navbar from "./components/navbar/Navbar";
 import Home from "./pages/home/Home";
 import WalletConnectError from "./components/alerts/WalletConnectError";
-import Aocommunities from "./pages/aocomputer/communities/aocommunities";
+import Aocomputer from "./pages/aocomputer/communities/aocomputer";
+import Arweave from "./pages/arweave/communities/arweave";
 import Addaoprojects from "./pages/aocomputer/addaoprojects/addaoprojects";
 import WalletPage from "./pages/wallet/WalletPage";
+import ProjectInfo from "./pages/aocomputer/AppInfo/appInfo";
 import "./App.css";
+import RatingsBarChart from "./pages/aocomputer/AppInfo/ratingsBarChart";
+import LeaderBoard from "./pages/leaderboard/leaderboard";
+import MyApps from "./pages/myapps/myapps";
+import AppReviews from "./pages/myapps/appReviews";
+import AppStats from "./pages/myapps/appStatistics";
+import AppAirdrops from "./pages/myapps/appAirdrops";
+import AppUpdates from "./pages/myapps/appUpdates";
+import Ownerchange from "./pages/myapps/changeOwner";
 
 function App() {
   const [theme, setTheme] = useState("");
@@ -59,13 +69,18 @@ function App() {
           />
           {/* Pages Content go here */}
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route
+              path="/"
+              element={walletAddress ? <Home /> : <WalletConnectError />}
+            />
 
             <Route
-              path="Aocommunities"
-              element={
-                walletAddress ? <Aocommunities /> : <WalletConnectError />
-              }
+              path="aocomputer"
+              element={walletAddress ? <Aocomputer /> : <WalletConnectError />}
+            />
+            <Route
+              path="arweave"
+              element={walletAddress ? <Arweave /> : <WalletConnectError />}
             />
             <Route
               path="Addaoprojects"
@@ -74,8 +89,51 @@ function App() {
               }
             />
             <Route
+              path="/project/:AppId"
+              element={walletAddress ? <ProjectInfo /> : <WalletConnectError />}
+            />
+            <Route
+              path="/projectreviews/:AppId"
+              element={walletAddress ? <AppReviews /> : <WalletConnectError />}
+            />
+            <Route
+              path="/projectstats/:AppId"
+              element={walletAddress ? <AppStats /> : <WalletConnectError />}
+            />
+            <Route
+              path="/projectairdrops/:AppId"
+              element={walletAddress ? <AppAirdrops /> : <WalletConnectError />}
+            />
+            <Route
+              path="/projectupdates/:AppId"
+              element={walletAddress ? <AppUpdates /> : <WalletConnectError />}
+            />
+
+            <Route
+              path="/ownerchange/:AppId"
+              element={walletAddress ? <Ownerchange /> : <WalletConnectError />}
+            />
+            <Route
+              path="RatingsChart"
+              element={
+                walletAddress ? (
+                  <RatingsBarChart ratingsData={{}} />
+                ) : (
+                  <WalletConnectError />
+                )
+              }
+            />
+            <Route
               path="wallet"
               element={walletAddress ? <WalletPage /> : <WalletConnectError />}
+            />
+            <Route
+              path="leaderboard"
+              element={walletAddress ? <LeaderBoard /> : <WalletConnectError />}
+            />
+            <Route
+              path="myapps"
+              element={walletAddress ? <MyApps /> : <WalletConnectError />}
             />
           </Routes>
         </div>

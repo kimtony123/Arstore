@@ -20,9 +20,9 @@ local utils = {
 Variant = "0.0.3"
 
 -- token should be idempotent and not change previous state updates
-Denomination = Denomination or 12
-Balances = Balances or { [ao.id] = utils.toBalanceValue(100000 * 10 ^ Denomination) }
-TotalSupply = TotalSupply or utils.toBalanceValue(100000 * 10 ^ Denomination)
+Denomination = Denomination or 6
+Balances = Balances or { [ao.id] = utils.toBalanceValue(10000000000 * 10 ^ Denomination) }
+TotalSupply = TotalSupply or utils.toBalanceValue(10000000000 * 10 ^ Denomination)
 Name = Name or 'Arstore'
 Ticker = Ticker or 'ARS'
 Logo = Logo or 'SBCCXwwecBlDqRLUjb8dYABExTJXLieawf7m2aBJ-KY'

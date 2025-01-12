@@ -5,9 +5,7 @@ import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
 import { FaSpinner } from "react-icons/fa"; // Spinner Icon
 import OverviewSection from "../../components/walletOverview/WalletOverview";
 import {
-  Button,
   Container,
-  Divider,
   Grid,
   GridRow,
   Header,
@@ -33,20 +31,9 @@ const WalletPage: React.FC = () => {
   }
 
   const [arsBalance, setArsBalance] = useState(0);
-  const [arsPoints, setArsPoints] = useState(0);
+
   const [transactionlist, setTransactionDetails] = useState<Transaction[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true); // New loading state for fetching data
-
-  // Function to reload the page.
-  function reloadPage(forceReload = false): void {
-    if (forceReload) {
-      // Force reload from the server
-      location.href = location.href;
-    } else {
-      // Reload using the cache
-      location.reload();
-    }
-  }
 
   useEffect(() => {
     const fetchArsBalance = async () => {
@@ -132,7 +119,7 @@ const WalletPage: React.FC = () => {
   return (
     <div className="content text-black h-full dark:text-white">
       {isLoadingData ? (
-        <div className="flex justify-center h-full items-center h-64">
+        <div className="flex justify-center h-full items-center">
           <FaSpinner className="animate-spin text-3xl" />{" "}
           {/* Loading Spinner */}
         </div>

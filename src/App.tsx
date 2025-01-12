@@ -15,9 +15,11 @@ import LeaderBoard from "./pages/leaderboard/leaderboard";
 import MyApps from "./pages/myapps/myapps";
 import AppReviews from "./pages/myapps/appReviews";
 import AppStats from "./pages/myapps/appStatistics";
-import AppAirdrops from "./pages/myapps/appAirdrops";
+import AppAirdrops from "./pages/myapps/airdrop/appAirdrops";
 import AppUpdates from "./pages/myapps/appUpdates";
 import Ownerchange from "./pages/myapps/changeOwner";
+import Airdrops from "./pages/airdrops/airdrops";
+import AirdropInfo from "./pages/myapps/airdrop/airdropInfo";
 
 function App() {
   const [theme, setTheme] = useState("");
@@ -114,6 +116,10 @@ function App() {
               element={walletAddress ? <Ownerchange /> : <WalletConnectError />}
             />
             <Route
+              path="/airdropinfo/:AirdropId"
+              element={walletAddress ? <AirdropInfo /> : <WalletConnectError />}
+            />
+            <Route
               path="RatingsChart"
               element={
                 walletAddress ? (
@@ -134,6 +140,10 @@ function App() {
             <Route
               path="myapps"
               element={walletAddress ? <MyApps /> : <WalletConnectError />}
+            />
+            <Route
+              path="airdrops"
+              element={walletAddress ? <Airdrops /> : <WalletConnectError />}
             />
           </Routes>
         </div>

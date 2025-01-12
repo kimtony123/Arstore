@@ -1,98 +1,46 @@
 import classNames from "classnames";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Button,
-  Card,
-  CardGroup,
-  CommentGroup,
-  CommentMetadata,
-  CommentText,
   Container,
   Divider,
-  DropdownProps,
   Form,
   FormField,
-  FormSelect,
-  FormTextArea,
-  Grid,
-  GridColumn,
-  GridRow,
   Header,
-  Icon,
   Input,
-  Label,
-  List,
-  ListContent,
-  ListDescription,
-  ListHeader,
-  ListIcon,
-  ListItem,
-  Loader,
   Menu,
   MenuItem,
   MenuMenu,
-  Statistic,
-  StatisticLabel,
-  StatisticValue,
-  TextArea,
 } from "semantic-ui-react";
 import { useParams } from "react-router-dom";
 
-import { Comment as SUIComment } from "semantic-ui-react";
-
 import * as othent from "@othent/kms";
-import { FaSpinner } from "react-icons/fa"; // Spinner Icon
 
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
 import Footer from "../../components/footer/Footer";
 import { useNavigate } from "react-router-dom";
 
-interface AppData {
-  AppName: string;
-  CompanyName: string;
-  WebsiteUrl: string;
-  ProjectType: string;
-  AppIconUrl: string;
-  CoverUrl: string;
-  Company: string;
-  Description: string;
-  Ratings: Array<number>; // Assuming ratings are numbers
-  AppId: string;
-  BannerUrls: Array<string>; // Assuming banner URLs are strings
-  CreatedTime: number;
-  DiscordUrl: string;
-  Downvotes: Array<string>; // Assuming downvotes are strings (user IDs)
-  Protocol: string;
-  Reviews: Array<string>; // Assuming reviews are strings
-  TwitterUrl: string;
-  Upvotes: Array<string>; // Assuming upvotes are strings (user IDs)
-}
-
-interface LeaderboardEntry {
-  name: any;
-  ratings: any;
-  rank: any;
-  AppIconUrl: any;
-}
-
 const aoprojectsinfo = () => {
-  const ratingsData = {
-    1: 20,
-    2: 10,
-    3: 15,
-    4: 25,
-    5: 30,
-  };
+  const { AppId: paramAppId } = useParams();
+  const AppId = paramAppId || "defaultAppId"; // Ensure AppId is always a valid string
 
-  const { AppId } = useParams();
-  const [apps, setAppInfo] = useState<AppData[]>([]);
-  const [getProjectInfo, setGetProjectInfo] = useState("");
-  const [loadingApps, setLoadingApps] = useState(true);
-  const [loadingAppInfo, setLoadingAppInfo] = useState(true);
-  const [rating, setRating] = useState(0); // ✅ State to hold the rating value
+  const [newOwner, setNewOwner] = useState("");
+
+  const [, setUpdatingNewOwner] = useState(true);
 
   const ARS = "Gwx7lNgoDtObgJ0LC-kelDprvyv2zUdjIY6CTZeYYvk";
   const navigate = useNavigate();
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    switch (name) {
+      case "newowner":
+        setNewOwner(value);
+        break;
+      default:
+        break;
+    }
+  };
 
   // Ensure AppId is never undefined
   const handleProjectReviewsInfo = (appId: string | undefined) => {
@@ -120,52 +68,46 @@ const aoprojectsinfo = () => {
     navigate(`/ownerchange/${appId}`);
   };
 
-  useEffect(() => {
-    const fetchAppInfo = async () => {
-      if (!AppId) return;
-      console.log(AppId);
-      setLoadingAppInfo(true);
+  const changeowner = async (AppId: string) => {
+    if (!AppId) return;
+    console.log(AppId);
 
-      try {
-        const messageResponse = await message({
-          process: ARS,
-          tags: [
-            { name: "Action", value: "AppInfo" },
-            { name: "AppId", value: String(AppId) },
-          ],
-          signer: createDataItemSigner(othent),
-        });
+    setUpdatingNewOwner(true);
+    try {
+      const getTradeMessage = await message({
+        process: ARS,
+        tags: [
+          { name: "Action", value: "UpdateAppDetails" },
+          { name: "AppId", value: String(AppId) },
+          { name: "NewValue", value: String(newOwner) },
+        ],
+        signer: createDataItemSigner(othent),
+      });
+      const { Messages, Error } = await result({
+        message: getTradeMessage,
+        process: ARS,
+      });
 
-        const resultResponse = await result({
-          message: messageResponse,
-          process: ARS,
-        });
-
-        const { Messages, Error } = resultResponse;
-
-        if (Error) {
-          alert("Error fetching app info: " + Error);
-          return;
-        }
-
-        if (Messages && Messages.length > 0) {
-          const data = JSON.parse(Messages[0].Data);
-          console.log(data);
-          setAppInfo(Object.values(data));
-        }
-      } catch (error) {
-        console.error("Error fetching app info:", error);
-      } finally {
-        setLoadingAppInfo(false);
+      if (Error) {
+        alert("Error Updating Project:" + Error);
+        return;
       }
-    };
-
-    (async () => {
-      await fetchAppInfo();
-    })();
-  }, [AppId]);
-
-  const src = "AO.svg";
+      if (!Messages || Messages.length === 0) {
+        alert("No messages were returned from ao. Please try later.");
+        return;
+      }
+      const data = Messages[0].Data;
+      alert(data);
+      setNewOwner("");
+      // ✅ Redirect to the homepage after successful change
+      navigate("/");
+    } catch (error) {
+      alert("There was an error in the trade process: " + error);
+      console.error(error);
+    } finally {
+      setUpdatingNewOwner(false);
+    }
+  };
 
   return (
     <div
@@ -196,11 +138,29 @@ const aoprojectsinfo = () => {
               />
               <MenuItem
                 onClick={() => handleOwnerChange(AppId)}
-                name="change owner"
+                name="changeowner"
               />
             </MenuMenu>
           </Menu>
-          <Header as="h1"> Hey 5 </Header>
+          <Header textAlign="center" as="h1">
+            Change App ownership.
+          </Header>
+          <Form>
+            <FormField required>
+              <label>New Owner Address.</label>
+              <Input
+                type="text"
+                name="newowner"
+                value={newOwner}
+                onChange={handleInputChange}
+                placeholder="New Owner Address."
+              />
+            </FormField>
+            <Button color="purple" onClick={() => changeowner(AppId)}>
+              {" "}
+              Change Owner.
+            </Button>
+          </Form>
         </Container>
         <Divider />
       </div>

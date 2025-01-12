@@ -142,7 +142,7 @@ const aocommunities = () => {
             <Card>
               {projects.map((app, index) => (
                 <Card
-                  size="large"
+                  size="mini"
                   key={index}
                   image={app.AppIconUrl}
                   header={app.AppName}
@@ -158,7 +158,10 @@ const aocommunities = () => {
                         Visit Site
                       </a>
                       <Divider />
-                      <Button onClick={() => handleProjectInfo(app.AppId)}>
+                      <Button
+                        primary
+                        onClick={() => handleProjectInfo(app.AppId)}
+                      >
                         App Info
                       </Button>
                     </>

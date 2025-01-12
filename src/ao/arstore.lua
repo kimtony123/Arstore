@@ -20,12 +20,14 @@ flagTable = flagTable or {}
 transactions = transactions or {}
 verifiedUsers = verifiedUsers or {}
 points  = points or {}
-transactionCounter    = transactionCounter or 0
+transactionCounter  = transactionCounter or 0
+usersTable = usersTable or {}
 arsPoints = arsPoints or {}
 AppCounter  = AppCounter or 0
 ReviewCounter = ReviewCounter or 0
-ReplyCounter          = ReplyCounter or 0
-
+ReplyCounter = ReplyCounter or 0
+Airdrops = Airdrops or {}
+AidropCounter = AidropCounter or 0
 
 
 -- Function to get the current time in milliseconds
@@ -56,6 +58,18 @@ end
 function generateReplyId()
     ReplyCounter = ReplyCounter + 1
     return "TX" .. tostring(ReplyCounter)
+end
+
+-- Function to generate a unique transaction ID
+function generateReplyId()
+    ReplyCounter = ReplyCounter + 1
+    return "TX" .. tostring(ReplyCounter)
+end
+
+-- Function to generate a unique transaction ID
+function generateAirdropId()
+    AidropCounter = AidropCounter + 1
+    return "TX" .. tostring(AidropCounter)
 end
 
 
@@ -246,6 +260,30 @@ Handlers.add(
         local username = m.Tags.username
         local profileUrl = m.Tags.profileUrl
 
+        local function initializeUserTable(user, currentTime)
+        return {
+        upvotesTable = {status = true, currentTime = currentTime},
+        downvotesTable = {status = false, currentTime = currentTime},
+        favoritesTable = {status = true, currentTime = currentTime},
+        ratingsTable = {status = true, currentTime = currentTime},
+        reviewsTable = {status = true, currentTime = currentTime},
+        helpfulRatingsTable = {status = true, currentTime = currentTime},
+        unHelpfulRatingsTable = {status = false, currentTime = currentTime},
+        flagTable = {status = true, currentTime = currentTime},
+        reviewsVotes = {
+            upvoted = {status = true, currentTime = currentTime},
+            downvoted = {status = false, currentTime = currentTime},
+            foundHelpful = {status = true, currentTime = currentTime},
+            foundUnhelpful = {status = false, currentTime = currentTime}
+        },
+        repliesVotes = {
+            upvoted = {status = true, currentTime = currentTime},
+            downvoted = {status = false, currentTime = currentTime},
+            foundHelpful = {status = true, currentTime = currentTime},
+            foundUnhelpful = {status = false, currentTime = currentTime}
+            }
+            }
+        end
     
         -- Initialize reviewsTable for the app
         reviewsTable[AppId] = {
@@ -263,10 +301,10 @@ Handlers.add(
             helpfulVotes = 1,
             unhelpfulVotes = 0,
             voters = {
-                upvoted = {user = user},
-                downvoted = {},
-                foundHelpful = {user = user},
-                foundUnhelpful = {}
+                upvoted = {status = true , currentTime = currentTime},
+                downvoted = {status = false , currentTime = currentTime},
+                foundHelpful = {status = true , currentTime = currentTime},
+                foundUnhelpful = {status = false , currentTime = currentTime}
             },
             replies = { -- Replies are stored here
                 {
@@ -275,22 +313,26 @@ Handlers.add(
                     comment = "Thank you for your feedback!",
                     timestamp = currentTime,
                     upvotes = 1,
+                    helpfulVotes = 1,
+                    unhelpfulVotes = 0,
                     downvotes = 0,
                     voters = {
-                    upvoted = {user = user },
-                    downvoted = {},
-                    foundHelpful = {user = user},
-                    foundUnhelpful = {},}}}}}}
+                    upvoted = {status = true , currentTime = currentTime },
+                    downvoted = {status = false , currentTime = currentTime},
+                    foundHelpful = {status = true , currentTime = currentTime},
+                    foundUnhelpful = {status = false , currentTime = currentTime},
+                }}}}}}
 
-        upvotesTable[AppId] = { user = user, username = username, count = 1, currentTime = currentTime }
-        downvotesTable[AppId] = { count = 0, user = user, currentTime = currentTime }
+        upvotesTable[AppId] = { count = 1 }
+        downvotesTable[AppId] = { count = 0 }
         featureRequestsTable[AppId] = { user = user, username = username, currentTime = currentTime, count = 0, comment = "" }
         bugsReportsTable[AppId] = { user = user, username = username, currentTime = currentTime, count = 0, comment = "" }
-        favoritesTable[AppId] = { user = user , currentTime = currentTime }
-        ratingsTable[AppId] = { user = user, rating = 5, currentTime = currentTime }
-        helpfulRatingsTable[AppId] = { rating = 1, user = user, currentTime = currentTime }
-        unHelpfulRatingsTable[AppId] = { rating = 0, user = user, currentTime = currentTime }
-        flagTable[AppId] = { count = 0, user = user, currentTime = currentTime }
+        favoritesTable[AppId] = { count = 0}
+        ratingsTable[AppId] = { count = 1 , Totalratings = 5}
+        helpfulRatingsTable[AppId] = { count = 1 }
+        unHelpfulRatingsTable[AppId] = { count = 0, }
+        flagTable[AppId] = { count = 0 }
+        usersTable[AppId] = {users = {[user] = initializeUserTable(user, currentTime)}}
 
         -- Create the App record
         Apps[AppId] = {
@@ -313,21 +355,21 @@ Handlers.add(
             },
             CompanyName = m.Tags.companyName,
             AppIconUrl = m.Tags.appIconUrl,
-            Reviews = reviewsTable,
-            Ratings = ratingsTable,
-            Upvotes = upvotesTable,
-            Downvotes = downvotesTable,
-            FeatureRequests = featureRequestsTable,
-            BugsReports = bugsReportsTable,
+            reviewsTable = reviewsTable,
+            TotalReviews = reviewsTable[AppId].count,
+            Ratings = ratingsTable[AppId].Totalratings,
+            RatingsCount = ratingsTable[AppId].count,
+            Upvotes = upvotesTable[AppId].count,
+            Downvotes = downvotesTable[AppId].count,
+            FeatureRequests = featureRequestsTable[AppId].count,
+            BugsReports = bugsReportsTable[AppId].count,
             ProjectType = m.Tags.projectType,
             CreatedTime = currentTime,
-            Favorites = favoritesTable,
-            HelpfulRatings = helpfulRatingsTable,
-            UnHelpfulRatings = unHelpfulRatingsTable,
-            Comments = commentsTable,
-            FlagTable = flagTable,
+            Favorites = favoritesTable[AppId].count,
+            HelpfulRatings = helpfulRatingsTable[AppId].count,
+            UnHelpfulRatings = unHelpfulRatingsTable[AppId].count,
+            FlagTable = flagTable[AppId].count,
         }
-
         -- Award points to the user
         local points = 100
         if arsPoints[user] then
@@ -337,7 +379,7 @@ Handlers.add(
         end
 
         -- Transfer tokens to the user
-        local amount = 500
+        local amount = 5000
         ao.send({
             Target = ARS,
             Action = "Transfer",
@@ -358,10 +400,8 @@ Handlers.add(
             points = balance,
             timestamp = currentTime
         })
-
         -- Debugging: Print the Apps table
         print("Apps table after update: " .. tableToJson(Apps))
-
         -- Send success message to the user
         ao.send({ Target = m.From, Data = "Successfully Created The App" })
     end
@@ -472,7 +512,6 @@ Handlers.add(
     end
 )
 
-
 Handlers.add(
     "AppInfo",
     Handlers.utils.hasMatchingTag("Action", "AppInfo"),
@@ -510,15 +549,17 @@ Handlers.add(
             BannerUrls = appDetails.BannerUrls,
             CompanyName = appDetails.CompanyName,
             AppIconUrl = appDetails.AppIconUrl,
-            Reviews = appDetails.Reviews,
+            Reviews =  appDetails.Reviews,
             Ratings = appDetails.Ratings,
+            RatingsCount = appDetails.Ratings,
             Upvotes = appDetails.Upvotes,
             Downvotes = appDetails.Downvotes,
             FeatureRequests = appDetails.FeatureRequests,
             BugsReports = appDetails.BugsReports,
             ProjectType = appDetails.ProjectType,
             CreatedTime = appDetails.CreatedTime,
-            Favorites = appDetails.Favorites
+            Favorites = appDetails.Favorites,
+            Flags = appDetails.FlagTable
         }
 
         -- Send the app info as a JSON response
@@ -531,6 +572,43 @@ Handlers.add(
 
 
 
+Handlers.add(
+    "FetchAppReviews",
+    Handlers.utils.hasMatchingTag("Action", "FetchAppReviews"),
+    function(m)
+        local appId = m.Tags.AppId
+
+        -- Validate input
+        if not appId then
+            ao.send({ Target = m.From, Data = "AppId is missing." })
+            return
+        end
+
+        -- Check if the app exists in the reviews table
+        if not reviewsTable[appId] then
+            ao.send({ Target = m.From, Data = "No reviews found for this app." })
+            return
+        end
+
+        -- Fetch the reviews
+        local appReviews = reviewsTable[appId].reviews
+
+        -- Check if there are reviews
+        if not appReviews or #appReviews == 0 then
+            ao.send({ Target = m.From, Data = "No reviews available for this app." })
+            return
+        end
+
+        -- Convert reviews to JSON for sending
+        local reviewsJson = tableToJson(appReviews)
+
+        -- Send the reviews back to the user
+        ao.send({
+            Target = m.From,
+            Data = reviewsJson
+        })
+    end
+)
 
 
 Handlers.add(
@@ -561,8 +639,6 @@ Handlers.add(
         ao.send({ Target = m.From, Data = tableToJson(filteredFavorites) })
     end
 )
-
-
 
 
 Handlers.add(
@@ -980,8 +1056,6 @@ Handlers.add(
 
 
 
-
-
 Handlers.add(
     "MarkHelpfulReview",
     Handlers.utils.hasMatchingTag("Action", "MarkHelpfulReview"),
@@ -1140,6 +1214,20 @@ Handlers.add(
     "UpdateAppDetails",
     Handlers.utils.hasMatchingTag("Action", "UpdateAppDetails"),
     function(m)
+
+         -- Check if all required m.Tags are present
+        local requiredTags = {
+        "NewValue", "AppId", "UpdateOption",
+        }
+
+        for _, tag in ipairs(requiredTags) do
+            if m.Tags[tag] == nil then
+                print("Error: " .. tag .. " is nil.")
+                ao.send({ Target = m.From, Data = tag .. " is missing or empty." })
+                return
+            end
+        end
+
         local appId = m.Tags.AppId
         local updateOption = m.Tags.UpdateOption
         local newValue = m.Tags.NewValue
@@ -1165,7 +1253,7 @@ Handlers.add(
 
         -- Update the requested field
         local validUpdateOptions = {
-            appName = true,
+            AppName = true,
             description = true,
             websiteUrl = true,
             discordUrl = true,
@@ -1176,7 +1264,10 @@ Handlers.add(
             banner3Url = true,
             banner4Url = true,
             companyName = true,
-            appIconUrl = true
+            appIconUrl = true,
+            username = true,
+            profileUrl = true
+
         }
 
         if not validUpdateOptions[updateOption] then
@@ -1212,3 +1303,212 @@ Handlers.add(
         ao.send({ Target = user, Data = tableToJson(user_transactions) })
     end
 )
+
+
+Handlers.add(
+    "DepositConfirmed",
+    Handlers.utils.hasMatchingTag("Action", "DepositConfirmed"),
+    function(m)
+        local userId = m.From
+        local appId = m.Tags.AppId
+        local tokenId = m.Tags.processId
+        local amount = tonumber(m.Tags.Amount)
+        
+        print("Handler triggered with message:", m)
+        print("UserId:", userId, "AppId:", appId, "TokenId:", tokenId, "Amount:", amount)
+        
+        -- Validate input
+        if not appId or not tokenId or not amount then
+            ao.send({ Target = m.From, Data = "AppId, processId, or Amount is missing." })
+            return
+        end
+
+        if not Apps[appId] then
+            ao.send({ Target = m.From, Data = "Invalid AppId: " .. tostring(appId) })
+            return
+        end
+        
+        local Appname = Apps[appId].AppName or "Unknown"
+        local currentTime = getCurrentTime(m)
+        local airdropId = generateAirdropId()
+        local status = "Pending"
+
+        -- Create a new entry for the deposit
+        table.insert(Airdrops[airdropId], {
+            userId = userId,
+            appId = appId,
+            tokenId = tokenId,
+            amount = amount,
+            timestamp = currentTime,
+            appname = Appname,
+            airdropId = airdropId,
+            status = status
+        })
+        
+        -- Send confirmation back to the sender
+        ao.send({ Target = m.From, Data = "Deposit confirmed for AppId: " .. appId .. ", ProcessId: " .. tokenId .. ", Amount: " .. amount })
+    end
+)
+
+
+
+Handlers.add(
+    "getAllAirdrops",
+    Handlers.utils.hasMatchingTag("Action", "getAllAirdrops"),
+    function(m)
+        -- Check if the airdrops table exists
+        if not Airdrops or next(Airdrops) == nil then
+            ao.send({ Target = m.From, Data = "{}" }) -- Send an empty JSON if there are no airdrops
+            return
+        end
+        -- Convert the entire airdrops table to JSON and send it
+        ao.send({ Target = m.From, Data = tableToJson(Airdrops) })
+    end
+)
+
+
+
+Handlers.add(
+    "getOwnerAirdrops",
+    Handlers.utils.hasMatchingTag("Action", "getOwnerAirdrops"),
+    function(m)
+        local userId = m.From
+
+        -- Check if the airdrops table exists
+        if not Airdrops or next(Airdrops) == nil then
+            ao.send({ Target = m.From, Data = "{}" }) -- Send an empty JSON if there are no airdrops
+            return
+        end
+        -- Filter airdrops by owner
+        local ownerAirdrops = {}
+        for id, airdrop in pairs(Airdrops) do
+            if airdrop.userId == userId then
+                ownerAirdrops[id] = airdrop
+            end
+        end
+
+        -- Convert the filtered table to JSON and send it
+        ao.send({ Target = m.From, Data = tableToJson(ownerAirdrops) })
+    end
+)
+
+Handlers.add(
+    "FetchAirdropData",
+    Handlers.utils.hasMatchingTag("Action", "FetchAirdropData"),
+    function(m)
+        local owner = m.From
+        local AirdropId = m.Tags.airdropId
+
+        print("airdropId ".. (AirdropId or "nil") .. " is this")
+
+        -- Validate input
+        if not AirdropId then
+            ao.send({ Target = m.From, Data = "AirdropId is missing." })
+            return
+        end
+
+        -- Check if the Airdrop exists
+        local airdropFound = nil
+        for _, airdrop in ipairs(Airdrops) do
+            if airdrop.airdropId == AirdropId then
+                airdropFound = airdrop
+                break
+            end
+        end
+
+        if not airdropFound then
+            ao.send({ Target = m.From, Data = "No such Airdrop found." })
+            return
+        end
+
+        -- Validate ownership
+        if airdropFound.userId ~= owner then
+            ao.send({ Target = m.From, Data = "You are not the owner of this Airdrop." })
+            return
+        end
+
+        -- Send the Airdrop data back to the user
+        ao.send({
+            Target = m.From,
+            Data = tableToJson(airdropFound)
+        })
+    end
+)
+
+Handlers.add(
+    "FinalizeAirdrop",
+    Handlers.utils.hasMatchingTag("Action", "FinalizeAirdrop"),
+    function(m)
+        local airdropId = m.Tags.airdropId
+        local airdropsReceivers = m.Tags.airdropsreceivers
+        local startTime = m.Tags.startTime
+        local endTime = m.Tags.endTime
+
+        print("Finalizing Airdrop with ID: " .. (airdropId or "nil"))
+
+        -- Validate input
+        if not airdropId then
+            ao.send({ Target = m.From, Data = "AirdropId is missing." })
+            return
+        end
+        if not airdropsReceivers then
+            ao.send({ Target = m.From, Data = "AirdropsReceivers is missing." })
+            return
+        end
+        if not startTime then
+            ao.send({ Target = m.From, Data = "StartTime is missing." })
+            return
+        end
+        if not endTime then
+            ao.send({ Target = m.From, Data = "EndTime is missing." })
+            return
+        end
+
+        -- Look up the airdrop in the table
+        local airdropFound = nil
+        for _, airdrop in ipairs(Airdrops) do
+            if airdrop.airdropId == airdropId then
+                airdropFound = airdrop
+                break
+            end
+        end
+
+        if not airdropFound then
+            ao.send({ Target = m.From, Data = "No such Airdrop found with ID: " .. airdropId })
+            return
+        end
+
+        -- Update the Airdrop with new information
+        airdropFound.airdropsReceivers = airdropsReceivers
+        airdropFound.startTime = startTime
+        airdropFound.endTime = endTime
+        airdropFound.status = "Ongoing" -- Update status to Ongoing
+
+        -- Confirm success
+        ao.send({
+            Target = m.From,
+            Data = "Airdrop finalized successfully for ID: " .. airdropId
+        })
+
+        -- Log the updated Airdrop (Optional)
+        print("Updated Airdrop: " .. tableToJson(airdropFound))
+    end
+)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -3,7 +3,7 @@
 }
 
 .dark #root {
-  background-color: rgb(29, 26, 26);
+  background-color: rgb(8, 8, 8);
 }
 
 .light #root {
@@ -15,6 +15,14 @@
   /* padding: 1.5em; */
   will-change: filter;
   transition: filter 300ms;
+}
+
+/* aoprojectsinfo.css */
+.highlight-tile {
+  background-color: #007bff;
+  color: white;
+  border-radius: 50%;
+  font-weight: bold;
 }
 
 @media (max-width: 968.98px) {
@@ -48,6 +56,33 @@ screen .logo:hover {
   .navbar input {
     width: 100%;
   }
+}
+
+.card-container {
+  width: 80%;
+  margin: auto;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.card-image {
+  width: 100%;
+  height: 250px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 10px 10px 0 0;
+}
+
+.card-content {
+  padding: 20px;
+}
+
+.youtube-icon {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  color: red;
 }
 
 /* nav + content */

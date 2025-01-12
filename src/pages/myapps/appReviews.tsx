@@ -2,94 +2,73 @@ import classNames from "classnames";
 import React, { useState, useEffect } from "react";
 import {
   Button,
-  Card,
-  CardGroup,
+  CommentAction,
   CommentGroup,
-  CommentMetadata,
-  CommentText,
   Container,
   Divider,
-  DropdownProps,
   Form,
-  FormField,
-  FormSelect,
   FormTextArea,
   Grid,
   GridColumn,
-  GridRow,
   Header,
   Icon,
-  Input,
-  Label,
-  List,
-  ListContent,
-  ListDescription,
-  ListHeader,
-  ListIcon,
-  ListItem,
   Loader,
   Menu,
   MenuItem,
   MenuMenu,
+  Rating,
+  Segment,
   Statistic,
   StatisticLabel,
   StatisticValue,
-  TextArea,
+  Image,
 } from "semantic-ui-react";
 import { useParams } from "react-router-dom";
-
 import { Comment as SUIComment } from "semantic-ui-react";
-
 import * as othent from "@othent/kms";
-import { FaSpinner } from "react-icons/fa"; // Spinner Icon
-
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
 import Footer from "../../components/footer/Footer";
 import { useNavigate } from "react-router-dom";
 
+interface Review {
+  reviewId: string;
+  username: string;
+  comment: string;
+  rating: number;
+  timestamp: number;
+  upvotes: number;
+  downvotes: number;
+  helpfulVotes: number;
+  unhelpfulVotes: number;
+  profileUrl: string;
+  voters: Record<string, any>;
+  replies: Reply[];
+}
+
+interface Reply {
+  replyId: string;
+  comment: string;
+  timestamp: number;
+  upvotes: number;
+  downvotes: number;
+  user: string;
+}
+
 interface AppData {
   AppName: string;
   CompanyName: string;
-  WebsiteUrl: string;
-  ProjectType: string;
-  AppIconUrl: string;
-  CoverUrl: string;
-  Company: string;
-  Description: string;
-  Ratings: Array<number>; // Assuming ratings are numbers
+  Reviews: Record<string, Review[]>;
   AppId: string;
-  BannerUrls: Array<string>; // Assuming banner URLs are strings
-  CreatedTime: number;
-  DiscordUrl: string;
-  Downvotes: Array<string>; // Assuming downvotes are strings (user IDs)
-  Protocol: string;
-  Reviews: Array<string>; // Assuming reviews are strings
-  TwitterUrl: string;
-  Upvotes: Array<string>; // Assuming upvotes are strings (user IDs)
-}
-
-interface LeaderboardEntry {
-  name: any;
-  ratings: any;
-  rank: any;
-  AppIconUrl: any;
 }
 
 const aoprojectsinfo = () => {
-  const ratingsData = {
-    1: 20,
-    2: 10,
-    3: 15,
-    4: 25,
-    5: 30,
-  };
+  const { AppId: paramAppId } = useParams();
+  const AppId = paramAppId || "defaultAppId"; // Provide a default AppId
 
-  const { AppId } = useParams();
-  const [apps, setAppInfo] = useState<AppData[]>([]);
-  const [getProjectInfo, setGetProjectInfo] = useState("");
-  const [loadingApps, setLoadingApps] = useState(true);
-  const [loadingAppInfo, setLoadingAppInfo] = useState(true);
-  const [rating, setRating] = useState(0); // ✅ State to hold the rating value
+  const [appReviews, setAppReviews] = useState<Record<string, any> | null>(
+    null
+  );
+  const [loadingAppReviews, setLoadingAppReviews] = useState(true);
 
   const ARS = "Gwx7lNgoDtObgJ0LC-kelDprvyv2zUdjIY6CTZeYYvk";
   const navigate = useNavigate();
@@ -119,53 +98,50 @@ const aoprojectsinfo = () => {
     if (!appId) return;
     navigate(`/ownerchange/${appId}`);
   };
-
   useEffect(() => {
-    const fetchAppInfo = async () => {
-      if (!AppId) return;
-      console.log(AppId);
-      setLoadingAppInfo(true);
-
+    const fetchAppReviews = async () => {
+      setLoadingAppReviews(true);
       try {
         const messageResponse = await message({
-          process: ARS,
+          process: "Gwx7lNgoDtObgJ0LC-kelDprvyv2zUdjIY6CTZeYYvk",
           tags: [
-            { name: "Action", value: "AppInfo" },
-            { name: "AppId", value: String(AppId) },
+            { name: "Action", value: "FetchAppReviews" },
+            { name: "AppId", value: AppId },
           ],
           signer: createDataItemSigner(othent),
         });
 
         const resultResponse = await result({
           message: messageResponse,
-          process: ARS,
+          process: "Gwx7lNgoDtObgJ0LC-kelDprvyv2zUdjIY6CTZeYYvk",
         });
 
         const { Messages, Error } = resultResponse;
 
         if (Error) {
-          alert("Error fetching app info: " + Error);
+          alert("Error fetching app reviews: " + Error);
           return;
         }
 
         if (Messages && Messages.length > 0) {
           const data = JSON.parse(Messages[0].Data);
           console.log(data);
-          setAppInfo(Object.values(data));
+          setAppReviews(data);
         }
       } catch (error) {
-        console.error("Error fetching app info:", error);
+        console.error("Error fetching app reviews:", error);
       } finally {
-        setLoadingAppInfo(false);
+        setLoadingAppReviews(false);
       }
     };
 
-    (async () => {
-      await fetchAppInfo();
-    })();
+    fetchAppReviews();
   }, [AppId]);
 
-  const src = "AO.svg";
+  const formatDate = (timestamp: number) => {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString() + " " + date.toLocaleTimeString();
+  };
 
   return (
     <div
@@ -173,122 +149,195 @@ const aoprojectsinfo = () => {
         "content text-black dark:text-white flex flex-col h-full justify-between"
       )}
     >
-      <div className="text-white flex flex-col items-center lg:items-start">
-        <Container>
-          <Divider />
-          <Menu>
+      <Container>
+        <Menu pointing>
+          <MenuItem
+            onClick={() => handleProjectReviewsInfo(AppId)}
+            name="Reviews"
+          />
+          <MenuItem
+            onClick={() => handleOwnerStatisticsInfo(AppId)}
+            name="Statistics"
+          />
+          <MenuItem
+            onClick={() => handleOwnerAirdropInfo(AppId)}
+            name="Airdrops"
+          />
+          <MenuMenu position="right">
             <MenuItem
-              onClick={() => handleProjectReviewsInfo(AppId)}
-              name="Reviews"
+              onClick={() => handleOwnerUpdatesInfo(AppId)}
+              name="Update"
             />
             <MenuItem
-              onClick={() => handleOwnerStatisticsInfo(AppId)}
-              name="Statistics"
+              onClick={() => handleOwnerChange(AppId)}
+              name="change owner"
             />
-            <MenuItem
-              onClick={() => handleOwnerAirdropInfo(AppId)}
-              name="Airdrops"
-            />
-            <MenuMenu position="right">
-              <MenuItem
-                onClick={() => handleOwnerUpdatesInfo(AppId)}
-                name="Update"
-              />
-              <MenuItem
-                onClick={() => handleOwnerChange(AppId)}
-                name="change owner"
-              />
-            </MenuMenu>
-          </Menu>
-          <Header as="h1"> Reviews. </Header>
-          <Header as="h4">
-            {" "}
-            Rates and Reviews are made by approved verified gmail accounts{" "}
-          </Header>
-          <Divider />
-          <Grid columns="equal">
-            {apps.length > 0 && (
-              <>
-                <GridRow>
-                  <GridColumn>
-                    <Statistic>
-                      <StatisticLabel>App Name</StatisticLabel>
-                      <Statistic.Value>
-                        {" "}
-                        <Header>{apps[0].AppName} </Header>{" "}
-                      </Statistic.Value>
-                    </Statistic>
-                  </GridColumn>
-                  <GridColumn>
-                    <Statistic>
-                      <StatisticLabel>Company Name</StatisticLabel>
-                      <Statistic.Value>{apps[0].CompanyName}</Statistic.Value>
-                    </Statistic>
-                  </GridColumn>
-                  <GridColumn>
-                    <Statistic>
-                      <StatisticLabel>Website URL</StatisticLabel>
-                      <Statistic.Value>{apps[0].WebsiteUrl}</Statistic.Value>
-                    </Statistic>
-                  </GridColumn>
-                </GridRow>
-                <Divider />
-                <GridRow>
-                  <CommentGroup>
-                    <Header as="h3" dividing>
-                      Comments
-                    </Header>
+          </MenuMenu>
+        </Menu>
 
-                    <SUIComment>
-                      <SUIComment.Avatar src="https://react.semantic-ui.com/images/avatar/small/matt.jpg" />
+        <Header as="h1">Reviews</Header>
+        <Divider />
+
+        {loadingAppReviews ? (
+          <Loader active inline="centered" />
+        ) : appReviews ? (
+          <>
+            <Container>
+              <Grid columns="equal">
+                <GridColumn>
+                  <Statistic>
+                    <StatisticLabel>Views</StatisticLabel>
+                    <StatisticValue>40,509</StatisticValue>
+                  </Statistic>
+                </GridColumn>
+                <GridColumn>
+                  <Statistic>
+                    <StatisticLabel>Views</StatisticLabel>
+                    <StatisticValue>40,509</StatisticValue>
+                  </Statistic>
+                </GridColumn>
+                <GridColumn>
+                  <Statistic>
+                    <StatisticLabel>Views</StatisticLabel>
+                    <StatisticValue>40,509</StatisticValue>
+                  </Statistic>
+                </GridColumn>
+              </Grid>
+              <Divider />
+              <Grid>
+                <CommentGroup threaded>
+                  {Object.entries(appReviews).map(([key, review]) => (
+                    <SUIComment key={review.reviewId}>
+                      <SUIComment.Avatar
+                        src={
+                          review.profileUrl ||
+                          "https://react.semantic-ui.com/images/avatar/small/matt.jpg"
+                        }
+                      />
                       <SUIComment.Content>
                         <SUIComment.Author as="a">
-                          {apps[0].Reviews[2]}
+                          {review.username || "Anonymous"}
                         </SUIComment.Author>
                         <SUIComment.Metadata>
-                          <div>{apps[0].Reviews[3]}</div>
+                          <span>{formatDate(review.timestamp)}</span>
+                          <Rating
+                            icon="star"
+                            defaultRating={review.rating}
+                            maxRating={5}
+                            disabled
+                          />
                         </SUIComment.Metadata>
-                        <SUIComment.Text></SUIComment.Text>
+                        <SUIComment.Text>
+                          {review.comment || "No comment provided."}
+                        </SUIComment.Text>
                         <SUIComment.Actions>
                           <SUIComment.Action>
-                            <SUIComment.Action>
-                              <Button color="blue" size="mini" icon>
-                                <Icon name="thumbs up" />
-                                Upvote.
-                              </Button>
-                            </SUIComment.Action>
                             <Button color="blue" size="mini" icon>
-                              <Icon name="thumbs up" />
-                              Upvote.
+                              <Icon name="thumbs up" /> {review.upvotes || 0}{" "}
+                              Upvotes
+                            </Button>
+                            <Button color="red" size="mini" icon>
+                              <Icon name="thumbs down" />{" "}
+                              {review.downvotes || 0} Downvotes
                             </Button>
                           </SUIComment.Action>
+                        </SUIComment.Actions>
+                        <SUIComment.Text>
+                          {review.helpfulVotes} Found This Review Helpful. Did
+                          You find this Review Helpful ?
+                        </SUIComment.Text>
+                        <SUIComment.Actions>
                           <SUIComment.Action>
+                            <Button color="blue" size="mini" icon>
+                              <Icon name="thumbs up" />
+                              Yes.
+                            </Button>
                             <Button color="red" size="mini" icon>
                               <Icon name="thumbs down" />
-                              Downvote.
+                              No.
                             </Button>
                           </SUIComment.Action>
                         </SUIComment.Actions>
                       </SUIComment.Content>
+                      <SUIComment.Group>
+                        {Object.entries(review.replies || {}).map(
+                          ([replyKey, reply]) => {
+                            const typedReply = reply as Reply; // 👈 Type assertion
+
+                            return (
+                              <SUIComment key={typedReply.replyId}>
+                                <SUIComment.Avatar src="https://react.semantic-ui.com/images/avatar/small/matt.jpg" />
+                                <SUIComment.Content>
+                                  <SUIComment.Author as="a">
+                                    {typedReply.user || "Anonymous"}
+                                  </SUIComment.Author>
+                                  <SUIComment.Metadata>
+                                    <span>
+                                      {formatDate(typedReply.timestamp)}
+                                    </span>
+                                  </SUIComment.Metadata>
+                                  <SUIComment.Text>
+                                    {typedReply.comment ||
+                                      "No comment provided."}
+                                  </SUIComment.Text>
+                                  <SUIComment.Actions>
+                                    <SUIComment.Action>
+                                      <Button color="blue" size="mini" icon>
+                                        <Icon name="thumbs up" />{" "}
+                                        {typedReply.upvotes || 0} Upvotes
+                                      </Button>
+                                      <Button color="red" size="mini" icon>
+                                        <Icon name="thumbs down" />{" "}
+                                        {typedReply.downvotes || 0} Downvotes
+                                      </Button>
+                                    </SUIComment.Action>
+                                  </SUIComment.Actions>
+                                  <SUIComment.Text>
+                                    {typedReply.downvotes} Found This Review
+                                    Helpful. Did You find this Response Helpful?
+                                  </SUIComment.Text>
+                                  <SUIComment.Actions>
+                                    <SUIComment.Action>
+                                      <Button color="blue" size="mini" icon>
+                                        <Icon name="thumbs up" />
+                                        Yes.
+                                      </Button>
+                                      <Button color="red" size="mini" icon>
+                                        <Icon name="thumbs down" />
+                                        No.
+                                      </Button>
+                                    </SUIComment.Action>
+                                  </SUIComment.Actions>
+                                </SUIComment.Content>
+                              </SUIComment>
+                            );
+                          }
+                        )}
+                      </SUIComment.Group>
+
+                      <Form reply>
+                        <FormTextArea />
+                        <Button
+                          content="Reply"
+                          labelPosition="left"
+                          icon="edit"
+                          primary
+                        />
+                      </Form>
                     </SUIComment>
-                    <Divider />
-                    <Grid columns="equal">
-                      <GridColumn>
-                        <Header>Was this review Helpful</Header>
-                      </GridColumn>
-                      <GridColumn>
-                        <Button primary>Yes.</Button>
-                        <Button color="red">No.</Button>
-                      </GridColumn>
-                    </Grid>
-                  </CommentGroup>
-                </GridRow>
-              </>
-            )}
-          </Grid>
-        </Container>
+                  ))}
+                </CommentGroup>
+              </Grid>
+            </Container>
+          </>
+        ) : (
+          <Header as="h4" color="grey">
+            No reviews found for this app.
+          </Header>
+        )}
+
         <Divider />
-      </div>
+      </Container>
       <Footer />
     </div>
   );

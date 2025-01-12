@@ -25,6 +25,16 @@
     "generateReviewId",
     "createAppLeaderboard",
     "arsPoints",
-    "generateReplyId"
+    "generateReplyId",
+    "pendingAirdrops",
+    "ongoingAirdrops",
+    "completedAirdrops",
+    "generateAirdropId",
+    "findAirdropReceivers",
+    "receivers",
+    "sendAirdropRewards",
+    "usersTable",
+    "selectedUsers",
+    "users"
   ]
 }

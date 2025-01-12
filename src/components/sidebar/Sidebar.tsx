@@ -1,7 +1,7 @@
 import "./Sidebar.css";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaWallet, FaErlang } from "react-icons/fa";
+import { FaWallet, FaErlang, FaCoins } from "react-icons/fa";
 import {
   Squares2X2Icon,
   HomeIcon,
@@ -52,6 +52,8 @@ const Sidebar: React.FC<SidebarBarProps> = ({
       icon: <TrophyIcon className="size-4 md:size-5" />,
       tooltip: "LeaderBoard",
     },
+    { icon: <FaCoins className="size-4 md:size-5" />, tooltip: "airdrops" },
+
     { icon: <FaErlang className="size-4 md:size-5" />, tooltip: "myapps" },
   ];
 

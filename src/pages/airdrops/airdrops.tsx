@@ -19,28 +19,34 @@ import * as othent from "@othent/kms";
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
 import { useNavigate } from "react-router-dom";
 
-interface LeaderboardEntry {
-  name: any;
-  ratings: any;
-  rank: any;
-  AppIconUrl: any;
-  category: string;
+// Home Component
+interface AppAirdropData {
+  userId: string;
+  appId: string;
+  tokenId: string;
+  amount: number;
+  timestamp: number;
+  appname: string;
+  airdropId: string;
+  status: string;
 }
 
 const Home = () => {
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [loadingLeaderboard, setLoadingLeaderboard] = useState(true);
+  const [loadingAirdrops, setLoadingAirdrops] = useState(true);
+  const [airdropData, setAppAirdropData] = useState<AppAirdropData[]>([]);
+
+  const [deletingApp, setDeletingApp] = useState(true);
 
   const ARS = "Gwx7lNgoDtObgJ0LC-kelDprvyv2zUdjIY6CTZeYYvk";
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchLeaderboard = async () => {
-      setLoadingLeaderboard(true);
+    const fetchAirdrops = async () => {
+      setLoadingAirdrops(true);
       try {
         const messageResponse = await message({
           process: ARS,
-          tags: [{ name: "Action", value: "fetch_app_leaderboard" }],
+          tags: [{ name: "Action", value: "getAllAirdrops" }],
           signer: createDataItemSigner(othent),
         });
 
@@ -52,41 +58,34 @@ const Home = () => {
         const { Messages, Error } = resultResponse;
 
         if (Error) {
-          alert("Error fetching leaderboard: " + Error);
+          alert("Error fetching Airdrops: " + Error);
           return;
         }
 
         if (!Messages || Messages.length === 0) {
-          alert("No leaderboard data returned from AO.");
+          alert("No messages returned from AO. Please try later.");
           return;
         }
-        // Parse and map the leaderboard data
-        const data: Record<string, any> = JSON.parse(Messages[0].Data);
+        const data = JSON.parse(Messages[0].Data);
         console.log(data);
-        const mappedLeaderboard = Object.values(data)
-          .slice(0, 15) // Get top 15 apps
-          .map((app) => ({
-            rank: app.rank,
-            ratings: app.stats.ratings || 0,
-            name: app.stats.name,
-            AppIconUrl: app.stats.AppIconUrl || "", // Default to empty string if not available
-            category: app.stats.category,
-          }));
-        setLeaderboard(mappedLeaderboard);
+        setAppAirdropData(Object.values(data));
       } catch (error) {
-        console.error("Error fetching leaderboard:", error);
+        console.error("Error fetching Airdrops:", error);
       } finally {
-        setLoadingLeaderboard(false);
+        setLoadingAirdrops(false);
       }
     };
-
     (async () => {
-      await fetchLeaderboard();
+      await fetchAirdrops();
     })();
   }, []);
 
   const handleAddAoprojects = () => {
     navigate("/Addaoprojects");
+  };
+
+  const handleProjectInfo = (appId: string) => {
+    navigate(`/project/${appId}`);
   };
 
   return (
@@ -96,8 +95,7 @@ const Home = () => {
       )}
     >
       <Container>
-        <Header as="h1"> Arweave and acomputer Top 15.</Header>
-        <Divider />
+        <Header as="h1"> Airdrops List</Header>
         <Button
           onClick={handleAddAoprojects}
           floated="right"
@@ -108,30 +106,33 @@ const Home = () => {
           Add Project.
         </Button>
         <Divider />
-        {loadingLeaderboard ? (
-          <Loader active inline="centered" content="Loading Leaderboard..." />
+        <Header> Airdrops list.</Header>
+        {loadingAirdrops ? (
+          <Loader active inline="centered" content="Loading My Apps..." />
         ) : (
           <Table celled>
             <Table.Header>
               <Table.Row>
-                <Table.HeaderCell>Icon.</Table.HeaderCell>
-                <Table.HeaderCell>Name.</Table.HeaderCell>
-                <Table.HeaderCell>Rank.</Table.HeaderCell>
-                <Table.HeaderCell>Ratings.</Table.HeaderCell>
-                <Table.HeaderCell>Category.</Table.HeaderCell>
+                <Table.HeaderCell>App Name</Table.HeaderCell>
+                <Table.HeaderCell> Amount</Table.HeaderCell>
+                <Table.HeaderCell>Status</Table.HeaderCell>
+                <Table.HeaderCell>App Info</Table.HeaderCell>
               </Table.Row>
             </Table.Header>
-
             <Table.Body>
-              {leaderboard.map((app, index) => (
+              {airdropData.map((app, index) => (
                 <Table.Row key={index}>
+                  <Table.Cell>{app.appname}</Table.Cell>
+                  <Table.Cell>{app.amount}</Table.Cell>
+                  <Table.Cell>{app.status}</Table.Cell>
                   <Table.Cell>
-                    <Image src={app.AppIconUrl} size="tiny" rounded />
+                    <Button
+                      primary
+                      onClick={() => handleProjectInfo(app.appId)}
+                    >
+                      App Info
+                    </Button>
                   </Table.Cell>
-                  <Table.Cell>{app.name}</Table.Cell>
-                  <Table.Cell>{app.rank}</Table.Cell>
-                  <Table.Cell>{app.ratings}</Table.Cell>
-                  <Table.Cell>{app.category}</Table.Cell>
                 </Table.Row>
               ))}
             </Table.Body>

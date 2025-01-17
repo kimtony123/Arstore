@@ -35,6 +35,9 @@
     "sendAirdropRewards",
     "usersTable",
     "selectedUsers",
-    "users"
+    "users",
+    "whatsNewTable",
+    "getOrInitializeUserPoints",
+    "newTable"
   ]
 }

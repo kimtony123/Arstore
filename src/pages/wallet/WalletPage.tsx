@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import * as othent from "@othent/kms";
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
-
+import { useNavigate } from "react-router-dom";
 import { FaSpinner } from "react-icons/fa"; // Spinner Icon
 import OverviewSection from "../../components/walletOverview/WalletOverview";
 import {
+  Button,
   Container,
   Grid,
   GridRow,
@@ -14,7 +15,7 @@ import {
 } from "semantic-ui-react";
 
 const WalletPage: React.FC = () => {
-  const ARS = "Gwx7lNgoDtObgJ0LC-kelDprvyv2zUdjIY6CTZeYYvk";
+  const ARS = "e-lOufTQJ49ZUX1vPxO-QxjtYXiqM8RQgKovrnJKJ18";
 
   interface Tag {
     name: string;
@@ -26,14 +27,18 @@ const WalletPage: React.FC = () => {
     transactionid: string;
     amount: string;
     type: string;
-    balance: string;
+    balance: number;
     timestamp: string;
   }
 
   const [arsBalance, setArsBalance] = useState(0);
+  const [arsPoints, setArsPoints] = useState(0);
 
   const [transactionlist, setTransactionDetails] = useState<Transaction[]>([]);
+
   const [isLoadingData, setIsLoadingData] = useState(true); // New loading state for fetching data
+  const [isLoadingArsPoints, setIsLoadingArsPoints] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchArsBalance = async () => {
@@ -60,6 +65,7 @@ const WalletPage: React.FC = () => {
       } catch (error) {
         console.error("Error fetching balances or transactions:", error);
       } finally {
+        setIsLoadingData(false);
       }
     };
 
@@ -91,7 +97,7 @@ const WalletPage: React.FC = () => {
           transactionid: typedDetails.transactionid,
           amount: String(typedDetails.amount),
           type: typedDetails.type,
-          balance: String(typedDetails.balance),
+          balance: typedDetails.balance,
           timestamp: new Date(typedDetails.timestamp).toLocaleString("en-US", {
             year: "numeric",
             month: "2-digit",
@@ -106,12 +112,43 @@ const WalletPage: React.FC = () => {
       setIsLoadingData(false); // Stop loading for data
     };
 
+    const fetchArsPoints = async () => {
+      setIsLoadingArsPoints(true);
+      try {
+        const getTradeMessage = await message({
+          process: ARS,
+          tags: [{ name: "Action", value: "FetchArsPoints" }],
+          signer: createDataItemSigner(othent),
+        });
+        const { Messages, Error } = await result({
+          message: getTradeMessage,
+          process: ARS,
+        });
+
+        if (Error) {
+          alert("Error Getting ArsPoints:" + Error);
+          return;
+        }
+        if (!Messages || Messages.length === 0) {
+          alert("No messages were returned from ao. Please try later.");
+          return;
+        }
+        const data = Messages[0].Data;
+        setArsPoints(data);
+      } catch (error) {
+        alert("There was an error in the fetch process: " + error);
+        console.error(error);
+      } finally {
+        setIsLoadingArsPoints(false);
+      }
+    };
+
     (async () => {
       await fetchArsBalance();
       await fetchTransactions();
+      await fetchArsPoints();
     })();
   }, []);
-
   useEffect(() => {
     // Fetch balances and transactions in sequence
   }, []);
@@ -128,6 +165,7 @@ const WalletPage: React.FC = () => {
           <OverviewSection arsBalance={arsBalance} />
           <Container>
             <Grid centered>
+              <Header as="h1">{arsPoints} </Header>
               <GridRow>
                 <Header as="h1" dividing>
                   Rewards.
@@ -146,11 +184,9 @@ const WalletPage: React.FC = () => {
                         <Table.HeaderCell>User.</Table.HeaderCell>
                         <Table.HeaderCell>Amount.</Table.HeaderCell>
                         <Table.HeaderCell>Type.</Table.HeaderCell>
-                        <Table.HeaderCell>ARS points.</Table.HeaderCell>
                         <Table.HeaderCell>Timestamp.</Table.HeaderCell>
                       </Table.Row>
                     </Table.Header>
-
                     <Table.Body>
                       {transactionlist.map((transaction, index) => (
                         <Table.Row key={index}>
@@ -160,7 +196,6 @@ const WalletPage: React.FC = () => {
                           </Table.Cell>
                           <Table.Cell>{transaction.amount}</Table.Cell>
                           <Table.Cell>{transaction.type}</Table.Cell>
-                          <Table.Cell>{transaction.balance}</Table.Cell>
                           <Table.Cell>{transaction.timestamp}</Table.Cell>
                         </Table.Row>
                       ))}

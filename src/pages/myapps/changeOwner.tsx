@@ -28,7 +28,7 @@ const aoprojectsinfo = () => {
 
   const [, setUpdatingNewOwner] = useState(true);
 
-  const ARS = "Gwx7lNgoDtObgJ0LC-kelDprvyv2zUdjIY6CTZeYYvk";
+  const ARS = "e-lOufTQJ49ZUX1vPxO-QxjtYXiqM8RQgKovrnJKJ18";
   const navigate = useNavigate();
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {

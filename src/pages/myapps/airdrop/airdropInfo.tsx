@@ -13,12 +13,7 @@ import {
   Grid,
   GridColumn,
   Header,
-  Icon,
   Loader,
-  Rating,
-  Statistic,
-  StatisticLabel,
-  StatisticValue,
   Table,
 } from "semantic-ui-react";
 import { useParams } from "react-router-dom";
@@ -105,7 +100,7 @@ const aoprojectsinfo = () => {
     { key: "5", text: "Feature Requesters", value: "featureRequestsTable" },
     { key: "6", text: "Bug Reporters", value: "bugReportTables" },
   ];
-  const ARS = "Gwx7lNgoDtObgJ0LC-kelDprvyv2zUdjIY6CTZeYYvk";
+  const ARS = "e-lOufTQJ49ZUX1vPxO-QxjtYXiqM8RQgKovrnJKJ18";
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -114,7 +109,7 @@ const aoprojectsinfo = () => {
       console.log(AppId);
       try {
         const messageResponse = await message({
-          process: "Gwx7lNgoDtObgJ0LC-kelDprvyv2zUdjIY6CTZeYYvk",
+          process: ARS,
           tags: [
             { name: "Action", value: "FetchAirdropData" },
             { name: "airdropId", value: String(AppId) },
@@ -124,7 +119,7 @@ const aoprojectsinfo = () => {
 
         const resultResponse = await result({
           message: messageResponse,
-          process: "Gwx7lNgoDtObgJ0LC-kelDprvyv2zUdjIY6CTZeYYvk",
+          process: ARS,
         });
 
         const { Messages, Error } = resultResponse;

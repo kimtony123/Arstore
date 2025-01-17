@@ -4,12 +4,8 @@ import {
   Button,
   Container,
   Divider,
-  DropdownProps,
   Form,
   FormField,
-  FormSelect,
-  Grid,
-  GridColumn,
   Header,
   Input,
   Loader,
@@ -17,7 +13,6 @@ import {
   MenuItem,
   MenuMenu,
   Table,
-  Image,
 } from "semantic-ui-react";
 import { useParams } from "react-router-dom";
 import Calendar from "react-calendar";

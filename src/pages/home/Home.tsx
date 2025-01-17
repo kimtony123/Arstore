@@ -103,7 +103,7 @@ const Home = () => {
   const [isloadingFavoriteApps, setLoadingFavoriteApps] = useState(true);
   const [FavoriteApps, setFavoriteApps] = useState<FavoriteAppData[]>([]);
 
-  const ARS = "Gwx7lNgoDtObgJ0LC-kelDprvyv2zUdjIY6CTZeYYvk";
+  const ARS = "e-lOufTQJ49ZUX1vPxO-QxjtYXiqM8RQgKovrnJKJ18";
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -201,7 +201,6 @@ const Home = () => {
           <AlternatingCards apps={apps} />
         )}
         <Divider />
-
         <Divider />
         <Button
           onClick={handleAddAoprojects}

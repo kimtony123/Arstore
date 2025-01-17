@@ -29,7 +29,7 @@ const Navbar: React.FC<NavbarProps> = ({
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [isAddingVerified, setIsAddingVerified] = useState(false);
 
-  const ARS = "Gwx7lNgoDtObgJ0LC-kelDprvyv2zUdjIY6CTZeYYvk";
+  const ARS = "e-lOufTQJ49ZUX1vPxO-QxjtYXiqM8RQgKovrnJKJ18";
 
   // Load saved connection details on page load
   useEffect(() => {

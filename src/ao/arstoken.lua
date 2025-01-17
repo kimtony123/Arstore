@@ -25,7 +25,7 @@ Balances = Balances or { [ao.id] = utils.toBalanceValue(10000000000 * 10 ^ Denom
 TotalSupply = TotalSupply or utils.toBalanceValue(10000000000 * 10 ^ Denomination)
 Name = Name or 'Arstore'
 Ticker = Ticker or 'ARS'
-Logo = Logo or 'SBCCXwwecBlDqRLUjb8dYABExTJXLieawf7m2aBJ-KY'
+Logo = Logo or 'Ayx4457G_p3xZxv-joIrcjwABct8RUAaInSzYcxi_Wk'
 
 
 Handlers.add('info', Handlers.utils.hasMatchingTag("Action", "Info"), function(msg)

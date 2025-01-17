@@ -9,10 +9,9 @@ import {
   FormField,
   FormSelect,
   Input,
-  TextArea,
+  Confirm,
 } from "semantic-ui-react";
 import * as othent from "@othent/kms";
-import { FaSpinner } from "react-icons/fa"; // Spinner Icon
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
 
 import Footer from "../../../components/footer/Footer";
@@ -41,12 +40,13 @@ const addaoprojects = () => {
   const [selectedProjectType, setSelectedProjectType] = useState<
     string | undefined
   >(undefined);
+  const [confirmOpen, setConfirmOpen] = useState(false); // State for Confirm dialog
 
-  const ARS = "Gwx7lNgoDtObgJ0LC-kelDprvyv2zUdjIY6CTZeYYvk";
+  const ARS = "e-lOufTQJ49ZUX1vPxO-QxjtYXiqM8RQgKovrnJKJ18";
 
   // Check if user has connected to Arweave Wallet
   const username = localStorage.getItem("username");
-  const profileUrl = localStorage.getItem("profileUrl");
+  const profileUrl = localStorage.getItem("profilePic");
 
   const projectOptions = [
     { key: "1", text: "Analytics", value: "analytics" },
@@ -133,7 +133,7 @@ const addaoprojects = () => {
   };
 
   // In addproject function, use these values directly
-  const addproject = async () => {
+  const addProject = async () => {
     setIsAddProject(true);
     try {
       const getTradeMessage = await message({
@@ -194,6 +194,15 @@ const addaoprojects = () => {
     }
   };
 
+  const handleConfirm = () => {
+    setConfirmOpen(false); // Close the Confirm popup
+    addProject(); // Proceed with adding the project
+  };
+
+  const handleCancel = () => {
+    setConfirmOpen(false); // Close the Confirm popup without adding the project
+  };
+
   return (
     <div
       className={classNames(
@@ -221,7 +230,7 @@ const addaoprojects = () => {
                 name="description"
                 value={description}
                 onChange={handleInputChange}
-                placeholder="App name"
+                placeholder="Briefly Describe Your Project"
               />
             </FormField>
             <FormField required>
@@ -346,14 +355,19 @@ const addaoprojects = () => {
             </FormField>
             <Divider />
             <Button
-              loading={isaddproject}
-              size="large"
-              onClick={addproject}
               primary
+              loading={isaddproject}
+              onClick={() => setConfirmOpen(true)} // Open the Confirm popup
             >
-              Submit
+              Add Project
             </Button>
           </Form>
+          <Confirm
+            open={confirmOpen}
+            onCancel={handleCancel}
+            onConfirm={handleConfirm}
+            content="Are you sure you want to add this project?"
+          />
         </Container>
         <Divider />
       </div>

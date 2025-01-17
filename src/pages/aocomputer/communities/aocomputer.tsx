@@ -36,8 +36,8 @@ interface Project {
 const aocommunities = () => {
   const projectTypes = [
     "Infrastructure",
+    "community",
     "Analytics",
-    "Community",
     "DEFI",
     "Developer Tooling",
     "Email",
@@ -58,7 +58,7 @@ const aocommunities = () => {
   const [activeProjectType, setActiveProjectType] = useState(projectTypes[0]);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const ARS = "Gwx7lNgoDtObgJ0LC-kelDprvyv2zUdjIY6CTZeYYvk";
+  const ARS = "e-lOufTQJ49ZUX1vPxO-QxjtYXiqM8RQgKovrnJKJ18";
   const navigate = useNavigate();
 
   const handleAddAoprojects = () => {
@@ -104,7 +104,6 @@ const aocommunities = () => {
         alert("No messages returned from AO. Please try later.");
         return;
       }
-
       const data = JSON.parse(Messages[0].Data);
       console.log(data);
       setProjects(Object.values(data));

@@ -91,7 +91,7 @@ const aoprojectsinfo = () => {
   const [loadingAppInfo, setLoadingAppInfo] = useState(true);
   const [rating, setRating] = useState(0); // ✅ State to hold the rating value
 
-  const ARS = "Gwx7lNgoDtObgJ0LC-kelDprvyv2zUdjIY6CTZeYYvk";
+  const ARS = "e-lOufTQJ49ZUX1vPxO-QxjtYXiqM8RQgKovrnJKJ18";
   const navigate = useNavigate();
 
   // Ensure AppId is never undefined

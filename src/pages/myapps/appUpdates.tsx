@@ -93,7 +93,7 @@ const aoprojectsinfo = () => {
   const [loadingApps, setLoadingApps] = useState(true);
   const [loadingAppInfo, setLoadingAppInfo] = useState(true);
   const [rating, setRating] = useState(0); // ✅ State to hold the rating value
-  const [updateApp, setUpdatingApp] = useState(true);
+  const [updateApp, setUpdatingApp] = useState(false);
 
   const [projectTypeValue, setProjectTypeValue] = useState<
     string | undefined
@@ -102,24 +102,26 @@ const aoprojectsinfo = () => {
     string | undefined
   >(undefined);
 
-  const ARS = "Gwx7lNgoDtObgJ0LC-kelDprvyv2zUdjIY6CTZeYYvk";
+  const ARS = "e-lOufTQJ49ZUX1vPxO-QxjtYXiqM8RQgKovrnJKJ18";
   const navigate = useNavigate();
 
   const updateOptions = [
-    { key: "1", text: "AppName", value: "AppName" },
-    { key: "2", text: "description", value: "description" },
-    { key: "3", text: " websiteUrl", value: " websiteUrl" },
-    { key: "4", text: "discordUrl", value: "discordUrl" },
-    { key: "5", text: "twitterUrl", value: "twitterUrl" },
-    { key: "6", text: "coverUrl", value: "coverUrl" },
-    { key: "7", text: "banner1Url", value: "banner1Url" },
-    { key: "8", text: "banner2Url", value: "banner2Url" },
-    { key: "9", text: "banner3Url", value: "banner3Url" },
-    { key: "10", text: "banner4Url", value: "banner4Url" },
-    { key: "11", text: "companyName", value: "companyName" },
-    { key: "12", text: "appIconUrl", value: "appIconUrl" },
-    { key: "13", text: "username", value: "username" },
-    { key: "14", text: "profileUrl", value: "profileUrl" },
+    { key: "1", text: "OwnerUserName", value: "OwnerUserName" },
+    { key: "2", text: "AppName", value: "AppName" },
+    { key: "3", text: "Description", value: "Description" },
+    { key: "4", text: "Protocol", value: "Protocol" },
+    { key: "5", text: "WebsiteUrl", value: "WebsiteUrl" },
+    { key: "6", text: "TwitterUrl", value: "TwitterUrl" },
+    { key: "7", text: "DiscordUrl", value: "DiscordUrl" },
+    { key: "8", text: "CoverUrl", value: "CoverUrl" },
+    { key: "9", text: "profileUrl", value: "profileUrl" },
+    { key: "10", text: "CompanyName", value: "CompanyName" },
+    { key: "11", text: "AppIconUrl", value: "AppIconUrl" },
+    { key: "12", text: "BannerUrl1", value: "BannerUrl1" },
+    { key: "13", text: "BannerUrl2", value: "BannerUrl2" },
+    { key: "14", text: "BannerUrl3", value: "BannerUrl3" },
+    { key: "15", text: "BannerUrl4", value: "BannerUrl4" },
+    { key: "16", text: "WhatsNew", value: "WhatsNew" },
   ];
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -311,7 +313,11 @@ const aoprojectsinfo = () => {
                 placeholder="New Value"
               />
             </FormField>
-            <Button color="purple" onClick={() => updateproject(AppId)}>
+            <Button
+              loading={updateApp}
+              color="purple"
+              onClick={() => updateproject(AppId)}
+            >
               {" "}
               Update App.
             </Button>

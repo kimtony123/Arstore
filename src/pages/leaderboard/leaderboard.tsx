@@ -3,14 +3,9 @@ import {
   Button,
   Container,
   Divider,
-  Grid,
-  GridColumn,
-  GridRow,
   Table,
   Image,
   Loader,
-  Card,
-  CardGroup,
   Header,
 } from "semantic-ui-react";
 import Footer from "../../components/footer/Footer";
@@ -31,7 +26,7 @@ const Home = () => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(true);
 
-  const ARS = "Gwx7lNgoDtObgJ0LC-kelDprvyv2zUdjIY6CTZeYYvk";
+  const ARS = "e-lOufTQJ49ZUX1vPxO-QxjtYXiqM8RQgKovrnJKJ18";
   const navigate = useNavigate();
 
   useEffect(() => {

@@ -3,14 +3,9 @@ import {
   Button,
   Container,
   Divider,
-  Grid,
-  GridColumn,
-  GridRow,
   Table,
   Image,
   Loader,
-  Card,
-  CardGroup,
   Header,
 } from "semantic-ui-react";
 import Footer from "../../components/footer/Footer";
@@ -35,10 +30,21 @@ interface AppData {
 const Home = () => {
   const [apps, setApps] = useState<AppData[]>([]);
   const [loadingApps, setLoadingApps] = useState(true);
-  const [deletingApp, setDeletingApp] = useState(true);
+  const [deletingApp, setDeletingApp] = useState(false);
 
-  const ARS = "Gwx7lNgoDtObgJ0LC-kelDprvyv2zUdjIY6CTZeYYvk";
+  const ARS = "e-lOufTQJ49ZUX1vPxO-QxjtYXiqM8RQgKovrnJKJ18";
   const navigate = useNavigate();
+
+  // Function to reload the page.
+  function reloadPage(forceReload = false): void {
+    if (forceReload) {
+      // Force reload from the server
+      location.href = location.href;
+    } else {
+      // Reload using the cache
+      location.reload();
+    }
+  }
 
   useEffect(() => {
     const fetchApps = async () => {
@@ -115,6 +121,7 @@ const Home = () => {
       console.error(error);
     } finally {
       setDeletingApp(false);
+      reloadPage(true);
     }
   };
 
@@ -189,6 +196,7 @@ const Home = () => {
                   <Table.Cell>
                     {" "}
                     <Button
+                      loading={deletingApp}
                       color="red"
                       onClick={() => deleteproject(app.AppId)}
                     >

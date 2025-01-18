@@ -17,13 +17,14 @@ ratingsTable = ratingsTable or  {}
 helpfulRatingsTable = helpfulRatingsTable or {}
 unHelpfulRatingsTable = unHelpfulRatingsTable or  {}
 flagTable = flagTable or {}
-transactions = transactions or {}
 verifiedUsers = verifiedUsers or {}
+transactions = transactions or {}
 points = points or {}
 Airdrops = Airdrops or {}
 usersTable = usersTable or {}
 arsPoints = arsPoints or {}
 newTable = newTable or {}
+inboxTable = inboxTable or {}
 AppCounter  = AppCounter or 0
 ReviewCounter = ReviewCounter or 0
 ReplyCounter = ReplyCounter or 0
@@ -286,13 +287,11 @@ Handlers.add(
                             timestamp = currentTime,
                             users = {[user] = { username = username, voted = true, time = currentTime }}         
                         }
-                    },
-                    count = 1,
-                    countHistory = { { time = currentTime, count = 1 } },
-                    users = {[user] = { voted = true, time = currentTime }}
-                
-                }
-            }
+                    }
+                } },
+                count = 1,
+                countHistory = { { time = currentTime, count = 1 } },
+                users = {[user] = { voted = true, time = currentTime }} 
         }
 
         upvotesTable[AppId] = {
@@ -315,17 +314,38 @@ Handlers.add(
             count = 0,
             countHistory = { { time = currentTime, count = 0 } },
             users = {
-                [user] = { username = username, voted = false, time = currentTime ,comment =""}
-            }
+                [user] = { username = username, voted = false, time = currentTime ,comment =""}},
+            replies = {
+                        {
+                            replyId = replyId,
+                            user = user,
+                            profileUrl = profileUrl,
+                            username = username,
+                            comment = "We will Add that feature soon",
+                            timestamp = currentTime,
+                            users = {[user] = { username = username, voted = true, time = currentTime }}         
+                        }
+                    },
+
+            
         }
 
         bugsReportsTable[AppId] = {
             count = 0,
             countHistory = { { time = currentTime, count = 0 } },
-            users = {
-                [user] = { username = username, voted = false, time = currentTime, comment ="" }
+            users = {[user] = { username = username, voted = false, time = currentTime, comment ="" }},
+            replies = {
+                        {
+                            replyId = replyId,
+                            user = user,
+                            profileUrl = profileUrl,
+                            username = username,
+                            comment = "We will Start working on that Bug Asap.",
+                            timestamp = currentTime,
+                            users = {[user] = { username = username, voted = true, time = currentTime }}         
+                        }
+                    },
             }
-        }
 
         favoritesTable[AppId] = {
          count = 1,
@@ -333,6 +353,7 @@ Handlers.add(
             users = {
                 [user] = { username = username, voted = true, time = currentTime }
             }
+           
         }
 
         ratingsTable[AppId] = {
@@ -686,7 +707,6 @@ Handlers.add(
     end
 )
 
-
 Handlers.add(
     "getFavoriteApps",
     Handlers.utils.hasMatchingTag("Action", "getFavoriteApps"),
@@ -695,13 +715,15 @@ Handlers.add(
 
         -- Loop through the favoritesTable to find the user's favorites
         for AppId, favorite in pairs(favoritesTable) do
-            if favorite.user == m.From then
+            -- Check if the user exists in the `users` table for the current AppId
+            if favorite.users[m.From] then
                 -- Retrieve the app details from the Apps table
                 local appDetails = Apps[AppId]
                 if appDetails then
                     -- Format the app details to include only the required fields
                     filteredFavorites[AppId] = {
                         AppIconUrl = appDetails.AppIconUrl,
+                        AppId = AppId,
                         AppName = appDetails.AppName,
                         CompanyName = appDetails.CompanyName,
                         ProjectType = appDetails.ProjectType,
@@ -715,6 +737,7 @@ Handlers.add(
         ao.send({ Target = m.From, Data = tableToJson(filteredFavorites) })
     end
 )
+
 
 
 Handlers.add(
@@ -814,11 +837,13 @@ Handlers.add(
             ao.send({ Target = m.From, Data = "Invalid rating. Please provide a rating between 1 and 5." })
             return
         end
-        -- Prevent duplicate reviews by the same user
-        for _, review in ipairs(reviewsTable[appId].reviews) do
-                if review.user == user then
-                
-                local points = -30
+
+        local reviewsTable = reviewsTable[appId]
+
+          -- Prevent duplicate ratings
+        if reviewsTable.users[user] and reviewsTable.users[user].voted then
+            
+            local points = -30
                 -- Ensure arsPoints[user] is initialized
                 arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
                 -- Update points
@@ -834,10 +859,16 @@ Handlers.add(
                 points = currentPoints,
                 timestamp = currentTime
                 })
-                ao.send({ Target = m.From, Data = "You have already reviewed this app." })
-                return
-            end
+            ao.send({ Target = m.From, Data = "You have already reviewed this Project." })
+            return
         end
+
+        -- Add review and update ratings
+        reviewsTable.users[user] = { voted = true, time = currentTime }
+        reviewsTable.count = reviewsTable.count + 1
+        reviewsTable.Totalratings = reviewsTable.Totalratings + rating
+        table.insert(reviewsTable.countHistory, { time = currentTime, count = reviewsTable.count, rating = rating })
+
 
         -- Generate unique ID for the review
         local reviewId = generateReviewId()
@@ -871,7 +902,8 @@ Handlers.add(
                                     users = {[user] = { username = username, voted = true, time = currentTime }}}
                                 
             },
-            replies = {}
+            replies = {},
+            
         })
 
         local points = 100
@@ -899,14 +931,14 @@ Handlers.add(
         })
 
         local AppOwner = Apps[appId].Owner
-        local AppPoints = 200
+        local AppPoints = 50
          -- Ensure arsPoints[user] is initialized
         arsPoints[AppOwner] = arsPoints[AppOwner] or { user =AppOwner, points = 0 }
         -- Update points
         arsPoints[AppOwner].points = arsPoints[AppOwner].points + AppPoints
         -- Safely access points
         local OwnerCurrentPoints = arsPoints[AppOwner].points
-        local OwnerAmount  = 30
+        local OwnerAmount  = 20
         ao.send({
             Target = ARS,
             Action = "Transfer",
@@ -935,7 +967,7 @@ Handlers.add(
         ratingTable.users[user] = { voted = true, time = currentTime }
         ratingTable.count = ratingTable.count + 1
         ratingTable.Totalratings = ratingTable.Totalratings + rating
-        table.insert(ratingTable.countHistory, { time = currentTime, count = ratingTable.count })
+        table.insert(ratingTable.countHistory, { time = currentTime, count = ratingTable.count, rating = rating })
 
         ao.send({ Target = m.From, Data = "Review added successfully." })
     end
@@ -1507,98 +1539,6 @@ Handlers.add(
     end
 )
 
-
-Handlers.add(
-    "MarkHelpfulReview",
-    Handlers.utils.hasMatchingTag("Action", "MarkHelpfulReview"),
-    function(m)
-        local appId = m.Tags.AppId
-        local reviewId = m.Tags.ReviewId
-        local user = m.From
-        local currentTime = getCurrentTime(m) -- Ensure you have a function to get the current timestamp
-        local username = m.Tags.username
-
-        if not appId or not reviewId then
-            ao.send({ Target = m.From, Data = "AppId and ReviewId are required." })
-            return
-        end
-
-        if not reviewsTable[appId] then
-            ao.send({ Target = m.From, Data = "App not found." })
-            return
-        end
-
-        local review
-        for _, r in ipairs(reviewsTable[appId].reviews) do
-            if r.reviewId == reviewId then
-                review = r
-                break
-            end
-        end
-
-        if not review then
-            ao.send({ Target = m.From, Data = "Review not found." })
-            return
-        end
-
-
-        local helpfulData = review.voters.foundHelpful
-       
-        local unhelpfulData = review.voters.foundUnhelpful
-        
-        if helpfulData.users[user] then
-            ao.send({ Target = m.From, Data = "You already marked this review as helpful." })
-            return
-        end
-
-        if unhelpfulData.users[user] then
-            unhelpfulData.users[user] = nil
-            unhelpfulData.count = unhelpfulData.count - 1
-            table.insert(unhelpfulData.countHistory, { time = currentTime, count = unhelpfulData.count })
-
-            local points = -100
-            local userPointsData = getOrInitializeUserPoints(user)
-            userPointsData.points = userPointsData.points + points
-            local transactionId = generateTransactionId()
-            table.insert(transactions, {
-                user = user,
-                transactionid = transactionId,
-                type = "Switched rating to helpful.",
-                amount = 0,
-                points = userPointsData.points,
-                timestamp = currentTime
-            })
-        end
-
-        helpfulData.users[user] = {username = username, voted = true, time = currentTime }
-        helpfulData.count = helpfulData.count + 1
-        table.insert(helpfulData.countHistory, { time = currentTime, count = helpfulData.count })
-
-        local points = 50
-        local userPointsData = getOrInitializeUserPoints(user)
-        userPointsData.points = userPointsData.points + points
-        local amount = 5
-        ao.send({
-            Target = ARS,
-            Action = "Transfer",
-            Quantity = tostring(amount),
-            Recipient = tostring(user)
-        })
-        local transactionId = generateTransactionId()
-        table.insert(transactions, {
-            user = user,
-            transactionid = transactionId,
-            type = "Helpful Review  Rating.",
-            amount = amount,
-            points = userPointsData.points,
-            timestamp = currentTime
-        })
-
-        ao.send({ Target = m.From, Data = "Review marked as helpful successfully." })
-    end
-)
-
-
 Handlers.add(
     "MarkUnhelpfulReview",
     Handlers.utils.hasMatchingTag("Action", "MarkUnhelpfulReview"),
@@ -1814,7 +1754,7 @@ Handlers.add(
         local unhelpfulData = review.voters.downvoted
         
         if helpfulData.users[user] then
-            ao.send({ Target = m.From, Data = "You already marked this review as helpful." })
+            ao.send({ Target = m.From, Data = "You already Upvoted this review." })
             return
         end
 
@@ -1866,6 +1806,88 @@ Handlers.add(
 )
 
 
+
+Handlers.add(
+    "MarkDownvoteReview",
+    Handlers.utils.hasMatchingTag("Action", "MarkDownvoteReview"),
+    function(m)
+        local appId = m.Tags.AppId
+        local reviewId = m.Tags.ReviewId
+        local user = m.From
+        local currentTime = getCurrentTime(m) -- Ensure you have a function to get the current timestamp
+        local username = m.Tags.username
+
+        if not appId or not reviewId then
+            ao.send({ Target = m.From, Data = "AppId and ReviewId are required." })
+            return
+        end
+
+        if not reviewsTable[appId] then
+            ao.send({ Target = m.From, Data = "App not found." })
+            return
+        end
+
+        local review
+        for _, r in ipairs(reviewsTable[appId].reviews) do
+            if r.reviewId == reviewId then
+                review = r
+                break
+            end
+        end
+
+        if not review then
+            ao.send({ Target = m.From, Data = "Review not found." })
+            return
+        end
+
+        local unhelpfulData = review.voters.downvoted
+        local helpfulData = review.voters.upvoted
+
+        if unhelpfulData.users[user] then
+            ao.send({ Target = m.From, Data = "You have already Downvoted this project." })
+            return
+        end
+
+        if helpfulData.users[user] then
+            helpfulData.users[user] = nil
+            helpfulData.count = helpfulData.count - 1
+            table.insert(helpfulData.countHistory, { time = currentTime, count = helpfulData.count })
+
+            local points = -50
+            local userPointsData = getOrInitializeUserPoints(user)
+            userPointsData.points = userPointsData.points + points
+            local transactionId = generateTransactionId()
+            table.insert(transactions, {
+                user = user,
+                transactionid = transactionId,
+                type = "Switched rating to unhelpful.",
+                amount = 0,
+                points = userPointsData.points,
+                timestamp = currentTime
+            })
+        end
+
+        unhelpfulData.users[user] = {username = username, voted = true, time = currentTime }
+        unhelpfulData.count = unhelpfulData.count + 1
+        table.insert(unhelpfulData.countHistory, { time = currentTime, count = unhelpfulData.count })
+
+        local points = -20
+        local userPointsData = getOrInitializeUserPoints(user)
+        userPointsData.points = userPointsData.points + points
+        local amount = 0
+        local transactionId = generateTransactionId()
+        table.insert(transactions, {
+            user = user,
+            transactionid = transactionId,
+            type = "Marked Review as Unhelpful.",
+            amount = amount,
+            points = userPointsData.points,
+            timestamp = currentTime
+        })
+
+        ao.send({ Target = m.From, Data = "Review marked as unhelpful successfully." })
+    end
+)
 
 
 
@@ -2064,6 +2086,86 @@ Handlers.add(
 
 
 Handlers.add(
+    "SendNotificationToInbox",
+    Handlers.utils.hasMatchingTag("Action", "SendNotificationToInbox"),
+    function(m)
+        local appId = m.Tags.AppId
+        local message = m.Tags.Message
+        local Header = m.Tags.Header
+        local LinkInfo = m.Tags.LinkInfo
+        local sender = m.From
+        local currentTime = getCurrentTime(m) -- Ensure you have a function to get the current timestamp
+        
+
+        -- Check for required parameters
+        if not appId or not message then
+            ao.send({ Target = m.From, Data = "AppId and Message are required." })
+            return
+        end
+
+        -- Verify that the app exists
+        local appDetails = Apps[appId]
+        if not appDetails then
+            ao.send({ Target = m.From, Data = "App not found." })
+            return
+        end
+
+        -- Verify that the sender is the owner of the app
+        if appDetails.Owner ~= sender then
+            ao.send({ Target = m.From, Data = "You are not authorized to send messages for this app." })
+            return
+        end
+
+        -- Check if the app has any favorites
+        local favorites = favoritesTable[appId]
+        if not favorites or not favorites.users then
+            ao.send({ Target = m.From, Data = "No users have favorited this app." })
+            return
+        end
+
+        -- Send the message to each user's inbox
+        for userId, _ in pairs(favorites.users) do
+            -- Function to initialize a user's inbox if it doesn't exist
+            local function initializeUserInbox(userId)
+                inboxTable[userId] = inboxTable[userId] or {}
+            end
+
+            initializeUserInbox(userId)
+
+            table.insert(inboxTable[userId], {
+                AppId = appId,
+                AppName = appDetails.AppName,
+                AppIconUrl = appDetails.AppIconUrl,
+                Message = message,
+                Header = Header,
+                LinkInfo = LinkInfo,
+                currentTime = currentTime
+            })
+        end
+
+        -- Confirm the notifications were sent
+        ao.send({ Target = m.From, Data = "Message successfully added to the inbox of all users who favorited your app." })
+    end
+)
+
+
+Handlers.add(
+    "GetUserInbox",
+    Handlers.utils.hasMatchingTag("Action", "GetUserInbox"),
+    function(m)
+        local userId = m.From
+
+        -- Check if the user has any messages in their inbox
+        local userInbox = inboxTable[userId] or {}
+
+        -- Return the user's inbox as a JSON object
+        ao.send({ Target = userId, Data = tableToJson(userInbox) })
+    end
+)
+
+
+
+Handlers.add(
     "DepositConfirmed",
     Handlers.utils.hasMatchingTag("Action", "DepositConfirmed"),
     function(m)
@@ -2252,6 +2354,63 @@ Handlers.add(
         print("Updated Airdrop: " .. tableToJson(airdropFound))
     end
 )
+
+
+Handlers.add(
+    "GetAppStatistics",
+    Handlers.utils.hasMatchingTag("Action", "GetAppStatistics"),
+    function(m)
+        local appId = m.Tags.AppId
+        if not appId then
+            ao.send({ Target = m.From, Data = "AppId is required." })
+            return
+        end
+
+        -- Helper function to extract statistics from a table
+        local function extractStatistics(table, appId, tableName)
+            local appDetails = Apps[appId] or { AppName = "Unknown", CreatedTime = "Unknown" }
+            if table[appId] then
+                return {
+                    Title = tableName,
+                    AppName = appDetails.AppName,
+                    CreatedTime = appDetails.CreatedTime,
+                    count = table[appId].count,
+                    countHistory = table[appId].countHistory
+                }
+            else
+                return {
+                    Title = tableName,
+                    AppName = appDetails.AppName,
+                    CreatedTime = appDetails.CreatedTime,
+                    count = 0,
+                    countHistory = {}
+                }
+            end
+        end
+
+        -- Fetch statistics from all relevant tables
+        local statistics = {
+            reviews = extractStatistics(reviewsTable, appId, "Reviews Table"),
+            upvotes = extractStatistics(upvotesTable, appId, "Upvotes Table"),
+            downvotes = extractStatistics(downvotesTable, appId, "Downvotes Table"),
+            featureRequests = extractStatistics(featureRequestsTable, appId, "Feature Requests Table"),
+            favorites = extractStatistics(favoritesTable, appId, "Favorites Table"),
+            ratings = extractStatistics(ratingsTable, appId, "Ratings Table"),
+            helpfulRatings = extractStatistics(helpfulRatingsTable, appId, "Helpful Ratings Table"),
+            unHelpfulRatings = extractStatistics(unHelpfulRatingsTable, appId, "Unhelpful Ratings Table"),
+            flags = extractStatistics(flagTable, appId, "Flags Table")
+        }
+
+        -- Send the statistics back to the admin
+        ao.send({
+            Target = m.From,
+            Data = tableToJson(statistics)
+        })
+    end
+)
+
+
+
 
 
 

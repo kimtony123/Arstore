@@ -97,6 +97,11 @@ const aoprojectsinfo = () => {
     navigate(`/airdropinfo/${appId}`);
   };
 
+  const handleNotification = (appId: string | undefined) => {
+    if (!appId) return;
+    navigate(`/sendupdates/${appId}`);
+  };
+
   useEffect(() => {
     const fetchAirdrops = async () => {
       setLoadingAirdrops(true);
@@ -241,6 +246,10 @@ const aoprojectsinfo = () => {
               <MenuItem
                 onClick={() => handleOwnerChange(AppId)}
                 name="changeowner"
+              />
+              <MenuItem
+                onClick={() => handleNotification(AppId)}
+                name="Send Messages."
               />
             </MenuMenu>
           </Menu>

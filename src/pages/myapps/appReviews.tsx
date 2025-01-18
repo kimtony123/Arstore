@@ -2,14 +2,11 @@ import classNames from "classnames";
 import React, { useState, useEffect } from "react";
 import {
   Button,
-  CommentAction,
   CommentGroup,
   Container,
   Divider,
   Form,
-  FormTextArea,
   Grid,
-  GridColumn,
   Header,
   Icon,
   Loader,
@@ -17,11 +14,6 @@ import {
   MenuItem,
   MenuMenu,
   Rating,
-  Segment,
-  Statistic,
-  StatisticLabel,
-  StatisticValue,
-  Image,
   FormField,
   Input,
 } from "semantic-ui-react";
@@ -120,6 +112,11 @@ const aoprojectsinfo = () => {
   const handleOwnerChange = (appId: string | undefined) => {
     if (!appId) return;
     navigate(`/ownerchange/${appId}`);
+  };
+
+  const handleNotification = (appId: string | undefined) => {
+    if (!appId) return;
+    navigate(`/sendupdates/${appId}`);
   };
 
   const username = localStorage.getItem("username");
@@ -304,7 +301,7 @@ const aoprojectsinfo = () => {
       const getTradeMessage = await message({
         process: ARS,
         tags: [
-          { name: "Action", value: "UpvoteReview" },
+          { name: "Action", value: "MarkUpvoteReview" },
           { name: "AppId", value: String(AppId) },
           { name: "ReviewId", value: String(ReviewID) },
           { name: "username", value: String(username) },
@@ -407,6 +404,10 @@ const aoprojectsinfo = () => {
             <MenuItem
               onClick={() => handleOwnerChange(AppId)}
               name="change owner"
+            />
+            <MenuItem
+              onClick={() => handleNotification(AppId)}
+              name="Send Messages."
             />
           </MenuMenu>
         </Menu>

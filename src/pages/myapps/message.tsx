@@ -88,12 +88,10 @@ const aoprojectsinfo = () => {
   const AppId = paramAppId || "defaultAppId"; // Ensure AppId is always a valid string
 
   const [apps, setAppInfo] = useState<AppData[]>([]);
-  const [updateValue, setUpdateValue] = useState("");
-  const [getProjectInfo, setGetProjectInfo] = useState("");
-  const [loadingApps, setLoadingApps] = useState(true);
+  const [messageInfo, setMessageInfo] = useState("");
   const [loadingAppInfo, setLoadingAppInfo] = useState(true);
-  const [rating, setRating] = useState(0); // ✅ State to hold the rating value
-  const [updateApp, setUpdatingApp] = useState(false);
+  const [moreInfoLink, setMoreInfoLink] = useState(""); // ✅ State to hold the rating value
+  const [sendMessage, setSendMessage] = useState(false);
 
   const [projectTypeValue, setProjectTypeValue] = useState<
     string | undefined
@@ -106,29 +104,30 @@ const aoprojectsinfo = () => {
   const navigate = useNavigate();
 
   const updateOptions = [
-    { key: "1", text: "OwnerUserName", value: "OwnerUserName" },
-    { key: "2", text: "AppName", value: "AppName" },
-    { key: "3", text: "Description", value: "Description" },
-    { key: "4", text: "Protocol", value: "Protocol" },
-    { key: "5", text: "WebsiteUrl", value: "WebsiteUrl" },
-    { key: "6", text: "TwitterUrl", value: "TwitterUrl" },
-    { key: "7", text: "DiscordUrl", value: "DiscordUrl" },
-    { key: "8", text: "CoverUrl", value: "CoverUrl" },
-    { key: "9", text: "profileUrl", value: "profileUrl" },
-    { key: "10", text: "CompanyName", value: "CompanyName" },
-    { key: "11", text: "AppIconUrl", value: "AppIconUrl" },
-    { key: "12", text: "BannerUrl1", value: "BannerUrl1" },
-    { key: "13", text: "BannerUrl2", value: "BannerUrl2" },
-    { key: "14", text: "BannerUrl3", value: "BannerUrl3" },
-    { key: "15", text: "BannerUrl4", value: "BannerUrl4" },
-    { key: "16", text: "WhatsNew", value: "WhatsNew" },
+    { key: "1", text: "Announcement", value: "Announcement" },
+    { key: "2", text: "Security Alerts", value: "Security Alerts" },
+    { key: "3", text: "Activity", value: "Activity" },
+    { key: "4", text: "Educational", value: "Educational" },
+    { key: "5", text: "Promotional", value: "Promotional" },
+    { key: "6", text: "Community Engagement", value: "Community Engagement" },
+    { key: "7", text: "Market Updates", value: "Market Updates" },
+    {
+      key: "8",
+      text: " Milestone Achievements",
+      value: " Milestone Achievements",
+    },
+    { key: "9", text: "Event Reminders", value: "Event Reminders" },
+    { key: "10", text: "Feedback and Surveys", value: "Feedback and Surveys" },
   ];
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     switch (name) {
-      case "updatevalue":
-        setUpdateValue(value);
+      case "messageinfo":
+        setMessageInfo(value);
+        break;
+      case "moreinfolink":
+        setMoreInfoLink(value);
         break;
       default:
         break;
@@ -219,21 +218,21 @@ const aoprojectsinfo = () => {
     })();
   }, [AppId]);
 
-  const updateproject = async (AppId: string) => {
+  const sendMessages = async (AppId: string) => {
     if (!AppId) return;
     console.log(AppId);
 
-    setUpdatingApp(true);
+    setSendMessage(true);
     try {
       const getTradeMessage = await message({
         process: ARS,
         tags: [
-          { name: "Action", value: "UpdateAppDetails" },
+          { name: "Action", value: "SendNotificationToInbox" },
           { name: "AppId", value: String(AppId) },
-          { name: "NewValue", value: String(updateValue) },
-          { name: "UpdateOption", value: String(projectTypeValue) },
+          { name: "Header", value: String(projectTypeValue) },
+          { name: "Message", value: String(messageInfo) },
+          { name: "LinkInfo", value: String(moreInfoLink) },
         ],
-
         signer: createDataItemSigner(othent),
       });
       const { Messages, Error } = await result({
@@ -251,12 +250,14 @@ const aoprojectsinfo = () => {
       }
       const data = Messages[0].Data;
       alert(data);
-      setUpdateValue("");
+      setMessageInfo("");
+      setProjectTypeValue("");
+      setMoreInfoLink("");
     } catch (error) {
-      alert("There was an error in the trade process: " + error);
+      alert("There was an error in the send announcement process: " + error);
       console.error(error);
     } finally {
-      setUpdatingApp(false);
+      setSendMessage(false);
     }
   };
 
@@ -300,14 +301,14 @@ const aoprojectsinfo = () => {
             </MenuMenu>
           </Menu>
           <Header textAlign="center" as="h1">
-            Update App.
+            Send Messages.
           </Header>
           <Form>
             <FormField required>
-              <label>What are you planning to update?</label>
+              <label>Type of Message?</label>
               <FormSelect
                 options={updateOptions}
-                placeholder="Project Type"
+                placeholder="Message Type"
                 value={selectedProjectType}
                 onChange={handleProjectTypeChange}
               />
@@ -316,19 +317,30 @@ const aoprojectsinfo = () => {
               <label>New Updated Value?</label>
               <Input
                 type="text"
-                name="updatevalue"
-                value={updateValue}
+                name="messageinfo"
+                value={messageInfo}
                 onChange={handleInputChange}
-                placeholder="New Value"
+                placeholder="message"
+              />
+            </FormField>
+
+            <FormField required>
+              <label>Link to more info</label>
+              <Input
+                type="text"
+                name="moreinfolink"
+                value={moreInfoLink}
+                onChange={handleInputChange}
+                placeholder="Link to more info."
               />
             </FormField>
             <Button
-              loading={updateApp}
-              color="purple"
-              onClick={() => updateproject(AppId)}
+              loading={sendMessage}
+              color="green"
+              onClick={() => sendMessages(AppId)}
             >
               {" "}
-              Update App.
+              Send Message.
             </Button>
           </Form>
         </Container>

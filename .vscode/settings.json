@@ -38,6 +38,9 @@
     "users",
     "whatsNewTable",
     "getOrInitializeUserPoints",
-    "newTable"
+    "newTable",
+    "inboxTable",
+    "userId",
+    "initializeUserInbox"
   ]
 }

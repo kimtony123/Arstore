@@ -5,11 +5,7 @@ import {
   Divider,
   Grid,
   GridColumn,
-  Header,
   Loader,
-  Menu,
-  MenuItem,
-  MenuMenu,
 } from "semantic-ui-react";
 import { useParams } from "react-router-dom";
 import { Line } from "react-chartjs-2";
@@ -40,7 +36,7 @@ import * as othent from "@othent/kms";
 import { FaSpinner } from "react-icons/fa"; // Spinner Icon
 
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
-import Footer from "../../components/footer/Footer";
+import Footer from "../../../components/footer/Footer";
 import { useNavigate } from "react-router-dom";
 
 interface CountHistory {
@@ -71,37 +67,6 @@ const aoprojectsinfo = () => {
 
   const ARS = "e-lOufTQJ49ZUX1vPxO-QxjtYXiqM8RQgKovrnJKJ18";
   const navigate = useNavigate();
-
-  // Ensure AppId is never undefined
-  const handleProjectReviewsInfo = (appId: string | undefined) => {
-    if (!appId) return;
-    navigate(`/projectreviews/${appId}`);
-  };
-
-  const handleOwnerStatisticsInfo = (appId: string | undefined) => {
-    if (!appId) return;
-    navigate(`/projectstats/${appId}`);
-  };
-
-  const handleOwnerAirdropInfo = (appId: string | undefined) => {
-    if (!appId) return;
-    navigate(`/projectairdrops/${appId}`);
-  };
-
-  const handleOwnerUpdatesInfo = (appId: string | undefined) => {
-    if (!appId) return;
-    navigate(`/projectupdates/${appId}`);
-  };
-
-  const handleOwnerChange = (appId: string | undefined) => {
-    if (!appId) return;
-    navigate(`/ownerchange/${appId}`);
-  };
-
-  const handleNotification = (appId: string | undefined) => {
-    if (!appId) return;
-    navigate(`/sendupdates/${appId}`);
-  };
 
   useEffect(() => {
     const fetchAppStats = async () => {
@@ -168,35 +133,6 @@ const aoprojectsinfo = () => {
       <div className="text-white flex flex-col items-center lg:items-start">
         <Container>
           <Divider />
-          <Menu pointing>
-            <MenuItem
-              onClick={() => handleProjectReviewsInfo(AppId)}
-              name="Reviews"
-            />
-            <MenuItem
-              onClick={() => handleOwnerStatisticsInfo(AppId)}
-              name="Statistics"
-            />
-            <MenuItem
-              onClick={() => handleOwnerAirdropInfo(AppId)}
-              name="Airdrops"
-            />
-            <MenuMenu position="right">
-              <MenuItem
-                onClick={() => handleOwnerUpdatesInfo(AppId)}
-                name="Update"
-              />
-              <MenuItem
-                onClick={() => handleOwnerChange(AppId)}
-                name="change owner"
-              />
-              <MenuItem
-                onClick={() => handleNotification(AppId)}
-                name="Send Messages."
-              />
-            </MenuMenu>
-          </Menu>
-
           {loadingAppStats ? (
             <Loader active inline="centered" />
           ) : (

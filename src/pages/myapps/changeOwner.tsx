@@ -68,6 +68,11 @@ const aoprojectsinfo = () => {
     navigate(`/ownerchange/${appId}`);
   };
 
+  const handleNotification = (appId: string | undefined) => {
+    if (!appId) return;
+    navigate(`/sendupdates/${appId}`);
+  };
+
   const changeowner = async (AppId: string) => {
     if (!AppId) return;
     console.log(AppId);
@@ -139,6 +144,10 @@ const aoprojectsinfo = () => {
               <MenuItem
                 onClick={() => handleOwnerChange(AppId)}
                 name="changeowner"
+              />
+              <MenuItem
+                onClick={() => handleNotification(AppId)}
+                name="Send Messages."
               />
             </MenuMenu>
           </Menu>

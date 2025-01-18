@@ -32,9 +32,8 @@ import {
   Input,
 } from "semantic-ui-react";
 import { useParams } from "react-router-dom";
-
 import { Comment as SUIComment } from "semantic-ui-react";
-
+import { useNavigate } from "react-router-dom";
 import * as othent from "@othent/kms";
 import { FaSpinner } from "react-icons/fa"; // Spinner Icon
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
@@ -126,7 +125,7 @@ const aoprojectsinfo = () => {
   const [addDownvote, setAddDownvote] = useState(false);
 
   const ARS = "e-lOufTQJ49ZUX1vPxO-QxjtYXiqM8RQgKovrnJKJ18";
-
+  const navigate = useNavigate();
   const [projectTypeValue, setProjectTypeValue] = useState<
     string | undefined
   >();
@@ -486,6 +485,10 @@ const aoprojectsinfo = () => {
     }
   };
 
+  const handleProjectStats = (appId: string) => {
+    navigate(`/projectstatsuser/${appId}`);
+  };
+
   return (
     <div
       className={classNames(
@@ -663,6 +666,13 @@ const aoprojectsinfo = () => {
                       onClick={() => window.open(appInfo.DiscordUrl, "_blank")}
                     >
                       <Icon name="discord" /> Discord
+                    </Button>
+                    <Button
+                      primary
+                      onClick={() => handleProjectStats(appInfo.AppId)}
+                    >
+                      <Icon name="line graph" />
+                      View Detailed Statistics
                     </Button>
                     <Header as="h1">Data Safety. </Header>
                     <List bordered>

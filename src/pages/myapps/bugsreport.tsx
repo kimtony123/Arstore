@@ -146,7 +146,7 @@ const aoprojectsinfo = () => {
         const messageResponse = await message({
           process: ARS,
           tags: [
-            { name: "Action", value: "FetchFeatureRequestsData" },
+            { name: "Action", value: "FetchBugReportsData" },
             { name: "AppId", value: String(AppId) },
           ],
           signer: createDataItemSigner(othent),
@@ -263,7 +263,7 @@ const aoprojectsinfo = () => {
             />
             <MenuItem
               onClick={() => handleFeaturesandBugs(AppId)}
-              name="F Requests.."
+              name="F Requests."
             />
             <MenuItem
               onClick={() => handleBugReports(AppId)}

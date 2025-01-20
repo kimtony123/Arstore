@@ -41,6 +41,14 @@
     "newTable",
     "inboxTable",
     "userId",
-    "initializeUserInbox"
+    "initializeUserInbox",
+    "devForumTable",
+    "taskTable",
+    "fetchOpenTrades",
+    "fetchAppData",
+    "option",
+    "currentTradeData",
+    "currentData",
+    "ao"
   ]
 }

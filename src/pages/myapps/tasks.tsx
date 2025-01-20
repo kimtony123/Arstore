@@ -88,10 +88,12 @@ const aoprojectsinfo = () => {
   const AppId = paramAppId || "defaultAppId"; // Ensure AppId is always a valid string
 
   const [apps, setAppInfo] = useState<AppData[]>([]);
-  const [messageInfo, setMessageInfo] = useState("");
+  const [updateValue, setUpdateValue] = useState("");
+  const [getProjectInfo, setGetProjectInfo] = useState("");
+  const [loadingApps, setLoadingApps] = useState(true);
   const [loadingAppInfo, setLoadingAppInfo] = useState(true);
-  const [moreInfoLink, setMoreInfoLink] = useState(""); // ✅ State to hold the rating value
-  const [sendMessage, setSendMessage] = useState(false);
+  const [rating, setRating] = useState(0); // ✅ State to hold the rating value
+  const [updateApp, setUpdatingApp] = useState(false);
 
   const [projectTypeValue, setProjectTypeValue] = useState<
     string | undefined
@@ -104,30 +106,29 @@ const aoprojectsinfo = () => {
   const navigate = useNavigate();
 
   const updateOptions = [
-    { key: "1", text: "Announcement", value: "Announcement" },
-    { key: "2", text: "Security Alerts", value: "Security Alerts" },
-    { key: "3", text: "Activity", value: "Activity" },
-    { key: "4", text: "Educational", value: "Educational" },
-    { key: "5", text: "Promotional", value: "Promotional" },
-    { key: "6", text: "Community Engagement", value: "Community Engagement" },
-    { key: "7", text: "Market Updates", value: "Market Updates" },
-    {
-      key: "8",
-      text: " Milestone Achievements",
-      value: " Milestone Achievements",
-    },
-    { key: "9", text: "Event Reminders", value: "Event Reminders" },
-    { key: "10", text: "Feedback and Surveys", value: "Feedback and Surveys" },
+    { key: "1", text: "OwnerUserName", value: "OwnerUserName" },
+    { key: "2", text: "AppName", value: "AppName" },
+    { key: "3", text: "Description", value: "Description" },
+    { key: "4", text: "Protocol", value: "Protocol" },
+    { key: "5", text: "WebsiteUrl", value: "WebsiteUrl" },
+    { key: "6", text: "TwitterUrl", value: "TwitterUrl" },
+    { key: "7", text: "DiscordUrl", value: "DiscordUrl" },
+    { key: "8", text: "CoverUrl", value: "CoverUrl" },
+    { key: "9", text: "profileUrl", value: "profileUrl" },
+    { key: "10", text: "CompanyName", value: "CompanyName" },
+    { key: "11", text: "AppIconUrl", value: "AppIconUrl" },
+    { key: "12", text: "BannerUrl1", value: "BannerUrl1" },
+    { key: "13", text: "BannerUrl2", value: "BannerUrl2" },
+    { key: "14", text: "BannerUrl3", value: "BannerUrl3" },
+    { key: "15", text: "BannerUrl4", value: "BannerUrl4" },
+    { key: "16", text: "WhatsNew", value: "WhatsNew" },
   ];
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     switch (name) {
-      case "messageinfo":
-        setMessageInfo(value);
-        break;
-      case "moreinfolink":
-        setMoreInfoLink(value);
+      case "updatevalue":
+        setUpdateValue(value);
         break;
       default:
         break;
@@ -169,6 +170,7 @@ const aoprojectsinfo = () => {
     if (!appId) return;
     navigate(`/projectfeaturesbugs/${appId}`);
   };
+
   const handleBugReports = (appId: string | undefined) => {
     if (!appId) return;
     navigate(`/projectbugreports/${appId}`);
@@ -183,6 +185,7 @@ const aoprojectsinfo = () => {
     if (!appId) return;
     navigate(`/projecttasks/${appId}`);
   };
+
   const handleProjectTypeChange = (
     _: React.SyntheticEvent<HTMLElement, Event>,
     data: DropdownProps
@@ -236,21 +239,20 @@ const aoprojectsinfo = () => {
     })();
   }, [AppId]);
 
-  const sendMessages = async (AppId: string) => {
+  const updateproject = async (AppId: string) => {
     if (!AppId) return;
     console.log(AppId);
 
-    setSendMessage(true);
+    setUpdatingApp(true);
     try {
       const getTradeMessage = await message({
         process: ARS,
         tags: [
-          { name: "Action", value: "SendNotificationToInbox" },
+          { name: "Action", value: "fetchAppData" },
           { name: "AppId", value: String(AppId) },
-          { name: "Header", value: String(projectTypeValue) },
-          { name: "Message", value: String(messageInfo) },
-          { name: "LinkInfo", value: String(moreInfoLink) },
+          { name: "TableType", value: String(projectTypeValue) },
         ],
+
         signer: createDataItemSigner(othent),
       });
       const { Messages, Error } = await result({
@@ -268,14 +270,12 @@ const aoprojectsinfo = () => {
       }
       const data = Messages[0].Data;
       alert(data);
-      setMessageInfo("");
-      setProjectTypeValue("");
-      setMoreInfoLink("");
+      setUpdateValue("");
     } catch (error) {
-      alert("There was an error in the send announcement process: " + error);
+      alert("There was an error in the trade process: " + error);
       console.error(error);
     } finally {
-      setSendMessage(false);
+      setUpdatingApp(false);
     }
   };
 
@@ -333,14 +333,14 @@ const aoprojectsinfo = () => {
             </MenuMenu>
           </Menu>
           <Header textAlign="center" as="h1">
-            Send Messages.
+            Update App.
           </Header>
           <Form>
             <FormField required>
-              <label>Type of Message?</label>
+              <label>What are you planning to update?</label>
               <FormSelect
                 options={updateOptions}
-                placeholder="Message Type"
+                placeholder="Project Type"
                 value={selectedProjectType}
                 onChange={handleProjectTypeChange}
               />
@@ -349,30 +349,19 @@ const aoprojectsinfo = () => {
               <label>New Updated Value?</label>
               <Input
                 type="text"
-                name="messageinfo"
-                value={messageInfo}
+                name="updatevalue"
+                value={updateValue}
                 onChange={handleInputChange}
-                placeholder="message"
-              />
-            </FormField>
-
-            <FormField required>
-              <label>Link to more info</label>
-              <Input
-                type="text"
-                name="moreinfolink"
-                value={moreInfoLink}
-                onChange={handleInputChange}
-                placeholder="Link to more info."
+                placeholder="New Value"
               />
             </FormField>
             <Button
-              loading={sendMessage}
-              color="green"
-              onClick={() => sendMessages(AppId)}
+              loading={updateApp}
+              color="purple"
+              onClick={() => updateproject(AppId)}
             >
               {" "}
-              Send Message.
+              Update App.
             </Button>
           </Form>
         </Container>

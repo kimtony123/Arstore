@@ -4,82 +4,56 @@ import {
   Divider,
   Header,
   Grid,
-  Segment,
   GridColumn,
-  Icon,
-  Image,
-  Message,
-  GridRow,
-  Button,
   Menu,
   MenuItem,
   MenuMenu,
+  Loader,
 } from "semantic-ui-react";
+import { Bar } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  TimeScale,
+} from "chart.js";
+import "chart.js/auto";
+import { FaDollarSign } from "react-icons/fa"; // Importing the money icon
 import Footer from "../../components/footer/Footer";
 import classNames from "classnames";
 import * as othent from "@othent/kms";
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
 import { useNavigate } from "react-router-dom";
 
-// Home Component
-interface MessagesData {
-  AppName: string;
-  AppIconUrl: string;
-  Company: string;
-  Header: string;
-  Message: string;
-  LinkInfo: string;
-  currentTime: number;
+interface Transaction {
+  amount: number;
+  time: number;
 }
 
-const Home = () => {
-  const [isloadingmessages, setisLoadingMessages] = useState(true);
-  const [MessageList, setMessageList] = useState<MessagesData[]>([]);
+interface StatsData {
+  totalEarnings: number;
+  transactions: { [key: string]: Transaction }; // Correct type for a dictionary of transactions
+}
 
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  TimeScale
+);
+
+const Home = () => {
+  const [userStats, setUserStats] = useState<StatsData | null>(null);
+  const [loadingUserStats, setLoadingUserStats] = useState(true);
   const ARS = "e-lOufTQJ49ZUX1vPxO-QxjtYXiqM8RQgKovrnJKJ18";
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchMessages = async () => {
-      setisLoadingMessages(true);
-      try {
-        const messageResponse = await message({
-          process: ARS,
-          tags: [{ name: "Action", value: "GetUserInbox" }],
-          signer: createDataItemSigner(othent),
-        });
-
-        const resultResponse = await result({
-          message: messageResponse,
-          process: ARS,
-        });
-
-        const { Messages, Error } = resultResponse;
-
-        if (Error) {
-          alert("Error fetching messages: " + Error);
-          return;
-        }
-
-        if (!Messages || Messages.length === 0) {
-          alert("No messages returned from AO. Please try later.");
-          return;
-        }
-
-        const data = JSON.parse(Messages[0].Data);
-        console.log(data);
-        setMessageList(Object.values(data));
-      } catch (error) {
-        console.error("Error fetching messages:", error);
-      } finally {
-        setisLoadingMessages(false);
-      }
-    };
-
-    (async () => {
-      await fetchMessages();
-    })();
-  }, []);
 
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
@@ -97,9 +71,59 @@ const Home = () => {
   const handleBugReports = () => {
     navigate("/bugreports");
   };
+
   const handleUserStats = () => {
     navigate("/userstats");
   };
+
+  useEffect(() => {
+    const fetchUserStats = async () => {
+      setLoadingUserStats(true);
+      try {
+        const messageResponse = await message({
+          process: ARS,
+          tags: [{ name: "Action", value: "GetUserStatistics" }],
+          signer: createDataItemSigner(othent),
+        });
+
+        const resultResponse = await result({
+          message: messageResponse,
+          process: ARS,
+        });
+
+        const { Messages, Error } = resultResponse;
+
+        if (Error) {
+          alert("Error fetching Statistics: " + Error);
+          return;
+        }
+
+        if (Messages && Messages.length > 0) {
+          const rawData = Messages[0].Data;
+          console.log("Raw data:", rawData);
+
+          const data = JSON.parse(rawData);
+          console.log("Parsed data:", data);
+
+          const transformedData = {
+            ...data,
+            transactions: Object.values(data.transactions || {}), // Ensure data.transactions is treated as an object
+          };
+
+          console.log("Transformed data:", transformedData);
+          setUserStats(transformedData);
+        }
+      } catch (error) {
+        console.error("Error fetching user statistics:", error);
+      } finally {
+        setLoadingUserStats(false);
+      }
+    };
+
+    (async () => {
+      await fetchUserStats();
+    })();
+  }, []);
 
   return (
     <div
@@ -122,47 +146,71 @@ const Home = () => {
         </Menu>
 
         <Header as="h1" textAlign="center">
-          Messages
+          User Statistics.
         </Header>
         <Divider />
-        {MessageList.map((app, index) => (
-          <Segment key={index} inverted tertiary>
-            <Grid columns="equal">
-              <GridColumn>
-                <Image size="small" src={app.AppIconUrl} />
-                <Header textAlign="center">{app.AppName}</Header>
-              </GridColumn>
-              <GridColumn width={13}>
-                <Grid columns="equal">
-                  <GridColumn width={11}>
-                    <Header as="h1" textAlign="center">
-                      {app.Header}
-                    </Header>
-                  </GridColumn>
-                  <GridColumn>
-                    <Header as="h5" textAlign="right">
-                      {formatDate(app.currentTime)}
-                    </Header>
-                  </GridColumn>
-                </Grid>
-                <Grid>
-                  <GridRow>
-                    <Message compact>{app.Message}</Message>
-                  </GridRow>
-                  <GridRow>
-                    <a
-                      href={app.LinkInfo}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      More info
-                    </a>
-                  </GridRow>
-                </Grid>
+
+        {loadingUserStats ? (
+          <Loader active inline="centered" />
+        ) : userStats ? (
+          <>
+            {/* Total Earnings Header with Money Icon */}
+            <Header as="h3" textAlign="center">
+              <FaDollarSign style={{ marginRight: "8px" }} />
+              Total Earnings: ${userStats.totalEarnings.toFixed(2)} AOS.
+            </Header>
+            <Divider />
+
+            {/* Bar Chart */}
+            <Grid>
+              <GridColumn width={15}>
+                <Bar
+                  data={{
+                    labels: userStats.transactions.map((entry) =>
+                      formatDate(entry.time)
+                    ),
+                    datasets: [
+                      {
+                        label: "Earnings Over Time",
+                        data: userStats.transactions.map(
+                          (entry) => entry.amount
+                        ),
+                        backgroundColor: "rgba(75, 192, 192, 0.6)",
+                        borderColor: "rgba(75, 192, 192, 1)",
+                        borderWidth: 1,
+                      },
+                    ],
+                  }}
+                  options={{
+                    responsive: true,
+                    plugins: {
+                      title: {
+                        display: true,
+                        text: "Earnings",
+                      },
+                    },
+                    scales: {
+                      x: {
+                        title: {
+                          display: true,
+                          text: "Time",
+                        },
+                      },
+                      y: {
+                        title: {
+                          display: true,
+                          text: "Amount",
+                        },
+                      },
+                    },
+                  }}
+                />
               </GridColumn>
             </Grid>
-          </Segment>
-        ))}
+          </>
+        ) : (
+          <p>No user statistics available.</p>
+        )}
       </Container>
       <Footer />
     </div>

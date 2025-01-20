@@ -30,6 +30,9 @@ import {
   Rating,
   Form,
   Input,
+  Menu,
+  MenuItem,
+  MenuMenu,
 } from "semantic-ui-react";
 import { useParams } from "react-router-dom";
 import { Comment as SUIComment } from "semantic-ui-react";
@@ -489,6 +492,14 @@ const aoprojectsinfo = () => {
     navigate(`/projectstatsuser/${appId}`);
   };
 
+  const handleProjectInfo = (appId: string) => {
+    navigate(`/project/${appId}`);
+  };
+
+  const handleDeveloperInfo = (appId: string) => {
+    navigate(`/projectdevinfo/${appId}`);
+  };
+
   return (
     <div
       className={classNames(
@@ -502,6 +513,29 @@ const aoprojectsinfo = () => {
           ) : appInfo ? (
             <>
               <Container>
+                <Menu pointing>
+                  <MenuItem onClick={() => handleProjectInfo(appInfo.AppId)}>
+                    <Icon name="pin" />
+                    Project Info.
+                  </MenuItem>
+                  <MenuMenu position="right">
+                    <MenuItem onClick={() => handleProjectStats(appInfo.AppId)}>
+                      <Icon name="line graph" />
+                      View Detailed Statistics
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => handleDeveloperInfo(appInfo.AppId)}
+                    >
+                      <Icon name="github square" />
+                      Developer Forum.
+                    </MenuItem>
+                  </MenuMenu>
+                </Menu>
+                <Divider />
+                <Header as="h1" textAlign="center">
+                  Project Information.
+                </Header>
+                <Divider />
                 <Grid columns="equal">
                   <GridColumn width={11}>
                     <Header as="h1"> {appInfo.AppName}</Header>
@@ -666,13 +700,6 @@ const aoprojectsinfo = () => {
                       onClick={() => window.open(appInfo.DiscordUrl, "_blank")}
                     >
                       <Icon name="discord" /> Discord
-                    </Button>
-                    <Button
-                      primary
-                      onClick={() => handleProjectStats(appInfo.AppId)}
-                    >
-                      <Icon name="line graph" />
-                      View Detailed Statistics
                     </Button>
                     <Header as="h1">Data Safety. </Header>
                     <List bordered>

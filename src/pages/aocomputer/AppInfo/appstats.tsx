@@ -5,7 +5,12 @@ import {
   Divider,
   Grid,
   GridColumn,
+  Header,
+  Icon,
   Loader,
+  Menu,
+  MenuItem,
+  MenuMenu,
 } from "semantic-ui-react";
 import { useParams } from "react-router-dom";
 import { Line } from "react-chartjs-2";
@@ -53,14 +58,6 @@ interface StatsData {
 }
 
 const aoprojectsinfo = () => {
-  const ratingsData = {
-    1: 20,
-    2: 10,
-    3: 15,
-    4: 25,
-    5: 30,
-  };
-
   const { AppId } = useParams();
   const [appStats, setAppstats] = useState<StatsData[]>([]);
   const [loadingAppStats, setLoadingAppStats] = useState(true);
@@ -122,6 +119,18 @@ const aoprojectsinfo = () => {
     })();
   }, [AppId]);
 
+  const handleProjectStats = (appId: string) => {
+    navigate(`/projectstatsuser/${appId}`);
+  };
+
+  const handleProjectInfo = (appId: string) => {
+    navigate(`/project/${appId}`);
+  };
+
+  const handleDeveloperInfo = (appId: string) => {
+    navigate(`/projectdevinfo/${appId}`);
+  };
+
   const src = "AO.svg";
 
   return (
@@ -132,67 +141,89 @@ const aoprojectsinfo = () => {
     >
       <div className="text-white flex flex-col items-center lg:items-start">
         <Container>
+          <Menu pointing>
+            <MenuItem onClick={() => handleProjectInfo(AppId)}>
+              <Icon name="pin" />
+              Project Info.
+            </MenuItem>
+            <MenuMenu position="right">
+              <MenuItem onClick={() => handleProjectStats(AppId)}>
+                <Icon name="line graph" />
+                View Detailed Statistics
+              </MenuItem>
+              <MenuItem onClick={() => handleDeveloperInfo(AppId)}>
+                <Icon name="github square" />
+                Developer Forum.
+              </MenuItem>
+            </MenuMenu>
+          </Menu>
+          <Divider />
+          <Header as="h1" textAlign="center">
+            Project Statistics.
+          </Header>
           <Divider />
           {loadingAppStats ? (
             <Loader active inline="centered" />
           ) : (
             appStats.map((app, index) => (
-              <Grid key={index}>
-                <GridColumn width={14}>
-                  <Line
-                    data={{
-                      datasets: [
-                        {
-                          label: "Count Over Time",
-                          data: app.countHistory.map((entry) => ({
-                            x: entry.time, // Use Unix timestamp
-                            y: entry.count,
-                          })),
-                          borderColor: "rgba(75, 192, 192, 1)",
-                          backgroundColor: "rgba(75, 192, 192, 0.2)",
-                          borderWidth: 2,
-                          pointRadius: 5, // Set the size of the dots
-                          pointBackgroundColor: "rgba(75, 192, 192, 1)", // Color of the dots
-                          pointBorderColor: "rgba(0, 0, 0, 0.8)", // Border color of the dots
-                          pointBorderWidth: 1, // Border width of the dots
-                          tension: 0.7, // Smooth the line (0 = no smoothing, 1 = maximum smoothing)
+              <>
+                <Grid key={index}>
+                  <GridColumn width={14}>
+                    <Line
+                      data={{
+                        datasets: [
+                          {
+                            label: "Count Over Time",
+                            data: app.countHistory.map((entry) => ({
+                              x: entry.time, // Use Unix timestamp
+                              y: entry.count,
+                            })),
+                            borderColor: "rgba(75, 192, 192, 1)",
+                            backgroundColor: "rgba(75, 192, 192, 0.2)",
+                            borderWidth: 2,
+                            pointRadius: 5, // Set the size of the dots
+                            pointBackgroundColor: "rgba(75, 192, 192, 1)", // Color of the dots
+                            pointBorderColor: "rgba(0, 0, 0, 0.8)", // Border color of the dots
+                            pointBorderWidth: 1, // Border width of the dots
+                            tension: 0.7, // Smooth the line (0 = no smoothing, 1 = maximum smoothing)
+                          },
+                        ],
+                      }}
+                      options={{
+                        responsive: true,
+                        plugins: {
+                          title: {
+                            display: true,
+                            text: app.Title,
+                          },
                         },
-                      ],
-                    }}
-                    options={{
-                      responsive: true,
-                      plugins: {
-                        title: {
-                          display: true,
-                          text: app.Title,
-                        },
-                      },
-                      scales: {
-                        x: {
-                          type: "time",
-                          time: {
-                            unit: "day",
-                            tooltipFormat: "Pp",
-                            displayFormats: {
-                              day: "MMM dd, yyyy",
+                        scales: {
+                          x: {
+                            type: "time",
+                            time: {
+                              unit: "day",
+                              tooltipFormat: "Pp",
+                              displayFormats: {
+                                day: "MMM dd, yyyy",
+                              },
+                            },
+                            title: {
+                              display: true,
+                              text: "Time",
                             },
                           },
-                          title: {
-                            display: true,
-                            text: "Time",
+                          y: {
+                            title: {
+                              display: true,
+                              text: "Count",
+                            },
                           },
                         },
-                        y: {
-                          title: {
-                            display: true,
-                            text: "Count",
-                          },
-                        },
-                      },
-                    }}
-                  />
-                </GridColumn>
-              </Grid>
+                      }}
+                    />
+                  </GridColumn>
+                </Grid>
+              </>
             ))
           )}
         </Container>

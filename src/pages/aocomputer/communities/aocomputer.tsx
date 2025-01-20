@@ -71,7 +71,6 @@ const aocommunities = () => {
 
   useEffect(() => {
     getProject(activeProjectType);
-    console.log(activeProjectType);
   }, [activeProjectType]);
 
   const getProject = async (projectType: string) => {
@@ -96,20 +95,19 @@ const aocommunities = () => {
       const { Messages, Error } = resultResponse;
 
       if (Error) {
-        alert("Error fetching apps: " + Error);
+        setErrorMessage("Error fetching apps: " + Error);
         return;
       }
 
       if (!Messages || Messages.length === 0) {
-        alert("No messages returned from AO. Please try later.");
+        setErrorMessage("No messages returned from AO. Please try later.");
         return;
       }
       const data = JSON.parse(Messages[0].Data);
-      console.log(data);
       setProjects(Object.values(data));
       setErrorMessage("");
     } catch (error) {
-      console.error("Error fetching apps:", error);
+      setErrorMessage("Error fetching apps. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -120,7 +118,7 @@ const aocommunities = () => {
     render: () => (
       <TabPane attached={false}>
         <Container>
-          <Header>{type} Project. </Header>
+          <Header>{type} Projects</Header>
           <Divider />
           <Button
             onClick={handleAddAoprojects}
@@ -132,13 +130,15 @@ const aocommunities = () => {
           </Button>
           <Divider />
           {loading ? (
-            <FaSpinner className="spinner" />
+            <div style={{ textAlign: "center", marginTop: "20px" }}>
+              <FaSpinner className="spinner" size={30} />
+            </div>
           ) : errorMessage ? (
-            <>
-              <Header> {errorMessage} </Header>
-            </>
+            <Header as="h4" color="red" textAlign="center">
+              {errorMessage}
+            </Header>
           ) : (
-            <Card>
+            <CardGroup>
               {projects.map((app, index) => (
                 <Card
                   size="mini"
@@ -167,7 +167,7 @@ const aocommunities = () => {
                   }
                 />
               ))}
-            </Card>
+            </CardGroup>
           )}
         </Container>
       </TabPane>
@@ -184,14 +184,17 @@ const aocommunities = () => {
         "content text-black dark:text-white flex flex-col h-full justify-between"
       )}
     >
-      <div className="text-white flex flex-col items-center lg:items-start">
-        <Tab
-          menu={{ secondary: true, pointing: true }}
-          panes={panes}
-          onTabChange={handleTabChange}
-        />
-        <Divider />
-      </div>
+      <Tab
+        menu={{
+          secondary: true,
+          pointing: true,
+          style: { display: "flex", flexWrap: "nowrap" },
+        }}
+        panes={panes}
+        onTabChange={handleTabChange}
+      />
+      <Divider />
+
       <Footer />
     </div>
   );

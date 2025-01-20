@@ -4,30 +4,20 @@ import {
   Divider,
   Header,
   Grid,
-  Icon,
-  Button,
   Menu,
   MenuItem,
   MenuMenu,
   CommentGroup,
   Loader,
+  Icon,
 } from "semantic-ui-react";
-import Footer from "../../components/footer/Footer";
+import Footer from "../../../components/footer/Footer";
 import classNames from "classnames";
 import * as othent from "@othent/kms";
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
 import { useNavigate } from "react-router-dom";
 import { Comment as SUIComment } from "semantic-ui-react";
-// Home Component
-interface MessagesData {
-  AppName: string;
-  AppIconUrl: string;
-  Company: string;
-  Header: string;
-  Message: string;
-  LinkInfo: string;
-  currentTime: number;
-}
+import { useParams } from "react-router-dom";
 
 interface Review {
   reviewId: string;
@@ -56,10 +46,12 @@ interface Reply {
 }
 
 const Home = () => {
+  const { AppId } = useParams();
   const [loadingAppReviews, setLoadingAppReviews] = useState(true);
   const [appReviews, setAppReviews] = useState<Record<string, any> | null>(
     null
   );
+
   const ARS = "e-lOufTQJ49ZUX1vPxO-QxjtYXiqM8RQgKovrnJKJ18";
   const navigate = useNavigate();
 
@@ -68,28 +60,30 @@ const Home = () => {
     return date.toLocaleDateString() + " " + date.toLocaleTimeString();
   };
 
-  const handleMessages = () => {
-    navigate("/messages");
+  const handleProjectStats = (appId: string) => {
+    navigate(`/projectstatsuser/${appId}`);
   };
 
-  const handleFeatureRequests = () => {
-    navigate("/featurerequests");
+  const handleProjectInfo = (appId: string) => {
+    navigate(`/project/${appId}`);
   };
 
-  const handleBugReports = () => {
-    navigate("/bugreports");
-  };
-  const handleUserStats = () => {
-    navigate("/userstats");
+  const handleDeveloperInfo = (appId: string) => {
+    navigate(`/projectdevinfo/${appId}`);
   };
 
   useEffect(() => {
+    if (!AppId) return;
+    console.log(AppId);
     const fetchAppReviews = async () => {
       setLoadingAppReviews(true);
       try {
         const messageResponse = await message({
           process: ARS,
-          tags: [{ name: "Action", value: "FetchBugReportUserData" }],
+          tags: [
+            { name: "Action", value: "FetchDevForumData" },
+            { name: "AppId", value: String(AppId) },
+          ],
           signer: createDataItemSigner(othent),
         });
 
@@ -120,7 +114,7 @@ const Home = () => {
     (async () => {
       await fetchAppReviews();
     })();
-  }, []);
+  }, [AppId]);
 
   return (
     <div
@@ -129,34 +123,39 @@ const Home = () => {
       )}
     >
       <Container>
-        <Divider />
         <Menu pointing>
-          <MenuItem onClick={() => handleMessages()} name="Messages" />
-          <MenuItem
-            onClick={() => handleFeatureRequests()}
-            name="Feature Requests."
-          />
+          <MenuItem onClick={() => handleProjectInfo(AppId)}>
+            <Icon name="pin" />
+            Project Info.
+          </MenuItem>
           <MenuMenu position="right">
-            <MenuItem onClick={() => handleBugReports()} name="Bug Reports." />
-            <MenuItem onClick={() => handleUserStats()} name="My statistics." />
+            <MenuItem onClick={() => handleProjectStats(AppId)}>
+              <Icon name="line graph" />
+              View Detailed Statistics
+            </MenuItem>
+            <MenuItem onClick={() => handleDeveloperInfo(AppId)}>
+              <Icon name="github square" />
+              Developer Forum.
+            </MenuItem>
           </MenuMenu>
         </Menu>
-
-        <Header as="h1" textAlign="center">
-          Feature Requests.
-        </Header>
         <Divider />
         <Container>
-          <Divider />
           {loadingAppReviews ? (
             <Loader active inline="centered" />
           ) : appReviews ? (
             <>
               <Container>
+                <Divider />
+                <Header as="h1" textAlign="center">
+                  Project Dev Forum
+                </Header>
+
+                <Divider />
                 <Grid>
                   <CommentGroup threaded>
                     {Object.entries(appReviews).map(([key, review]) => (
-                      <SUIComment key={review.reviewId}>
+                      <SUIComment key={review.forumId}>
                         <SUIComment.Avatar src={review.profileUrl} />
                         <SUIComment.Content>
                           <SUIComment.Author as="a">

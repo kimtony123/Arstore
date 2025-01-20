@@ -23,10 +23,15 @@ import AirdropInfo from "./pages/myapps/airdrop/airdropInfo";
 import Favorites from "./pages/favorites/favorites";
 import UserMessages from "./pages/messages/messages";
 import AppOwnerMessage from "./pages/myapps/message";
-import BugReports from "./pages/messages/breports";
-import FeatureRequests from "./pages/messages/frequests";
+import BugReportsUser from "./pages/messages/breports";
+import FeatureRequestUser from "./pages/messages/frequests";
 import UserStats from "./pages/messages/userstats";
 import AppStatsUser from "./pages/aocomputer/AppInfo/appstats";
+import FeaturesBugsAdmin from "./pages/myapps/featurebugs";
+import DevForum from "./pages/aocomputer/AppInfo/devforum";
+import BugReportsAdmin from "./pages/myapps/bugsreport";
+import AostoreAi from "./pages/myapps/aostoreai";
+import TasksAdmin from "./pages/myapps/tasks";
 
 function App() {
   const [theme, setTheme] = useState("");
@@ -95,12 +100,14 @@ function App() {
             <Route
               path="featurerequests"
               element={
-                walletAddress ? <FeatureRequests /> : <WalletConnectError />
+                walletAddress ? <FeatureRequestUser /> : <WalletConnectError />
               }
             />
             <Route
               path="bugreports"
-              element={walletAddress ? <BugReports /> : <WalletConnectError />}
+              element={
+                walletAddress ? <BugReportsUser /> : <WalletConnectError />
+              }
             />
 
             <Route
@@ -128,6 +135,11 @@ function App() {
             />
 
             <Route
+              path="/projectdevinfo/:AppId"
+              element={walletAddress ? <DevForum /> : <WalletConnectError />}
+            />
+
+            <Route
               path="/projectreviews/:AppId"
               element={walletAddress ? <AppReviews /> : <WalletConnectError />}
             />
@@ -142,6 +154,27 @@ function App() {
               element={
                 walletAddress ? <AppStatsUser /> : <WalletConnectError />
               }
+            />
+            <Route
+              path="/projectfeaturesbugs/:AppId"
+              element={
+                walletAddress ? <FeaturesBugsAdmin /> : <WalletConnectError />
+              }
+            />
+
+            <Route
+              path="/projectbugreports/:AppId"
+              element={
+                walletAddress ? <BugReportsAdmin /> : <WalletConnectError />
+              }
+            />
+            <Route
+              path="/projectaostoreai/:AppId"
+              element={walletAddress ? <AostoreAi /> : <WalletConnectError />}
+            />
+            <Route
+              path="/projecttasks/:AppId"
+              element={walletAddress ? <TasksAdmin /> : <WalletConnectError />}
             />
             <Route
               path="/projectairdrops/:AppId"

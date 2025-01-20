@@ -14,7 +14,7 @@ import {
   MenuMenu,
   Loader,
 } from "semantic-ui-react";
-import Footer from "../../components/footer/Footer";
+import Footer from "../../../components/footer/Footer";
 import classNames from "classnames";
 import * as othent from "@othent/kms";
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";

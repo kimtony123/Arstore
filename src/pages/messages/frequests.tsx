@@ -4,23 +4,20 @@ import {
   Divider,
   Header,
   Grid,
-  Segment,
-  GridColumn,
   Icon,
-  Image,
-  Message,
-  GridRow,
   Button,
   Menu,
   MenuItem,
   MenuMenu,
+  CommentGroup,
+  Loader,
 } from "semantic-ui-react";
 import Footer from "../../components/footer/Footer";
 import classNames from "classnames";
 import * as othent from "@othent/kms";
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
 import { useNavigate } from "react-router-dom";
-
+import { Comment as SUIComment } from "semantic-ui-react";
 // Home Component
 interface MessagesData {
   AppName: string;
@@ -32,54 +29,39 @@ interface MessagesData {
   currentTime: number;
 }
 
-const Home = () => {
-  const [isloadingmessages, setisLoadingMessages] = useState(true);
-  const [MessageList, setMessageList] = useState<MessagesData[]>([]);
+interface Review {
+  reviewId: string;
+  username: string;
+  comment: string;
+  rating: number;
+  timestamp: number;
+  upvotes: number;
+  downvotes: number;
+  helpfulVotes: number;
+  unhelpfulVotes: number;
+  profileUrl: string;
+  voters: Record<string, any>;
+  replies: Reply[];
+}
 
+interface Reply {
+  replyId: string;
+  comment: string;
+  timestamp: number;
+  upvotes: number;
+  downvotes: number;
+  user: string;
+  username: string;
+  profileUrl: string;
+}
+
+const Home = () => {
+  const [loadingAppReviews, setLoadingAppReviews] = useState(true);
+  const [appReviews, setAppReviews] = useState<Record<string, any> | null>(
+    null
+  );
   const ARS = "e-lOufTQJ49ZUX1vPxO-QxjtYXiqM8RQgKovrnJKJ18";
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchMessages = async () => {
-      setisLoadingMessages(true);
-      try {
-        const messageResponse = await message({
-          process: ARS,
-          tags: [{ name: "Action", value: "GetUserInbox" }],
-          signer: createDataItemSigner(othent),
-        });
-
-        const resultResponse = await result({
-          message: messageResponse,
-          process: ARS,
-        });
-
-        const { Messages, Error } = resultResponse;
-
-        if (Error) {
-          alert("Error fetching messages: " + Error);
-          return;
-        }
-
-        if (!Messages || Messages.length === 0) {
-          alert("No messages returned from AO. Please try later.");
-          return;
-        }
-
-        const data = JSON.parse(Messages[0].Data);
-        console.log(data);
-        setMessageList(Object.values(data));
-      } catch (error) {
-        console.error("Error fetching messages:", error);
-      } finally {
-        setisLoadingMessages(false);
-      }
-    };
-
-    (async () => {
-      await fetchMessages();
-    })();
-  }, []);
 
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
@@ -100,6 +82,45 @@ const Home = () => {
   const handleUserStats = () => {
     navigate("/userstats");
   };
+
+  useEffect(() => {
+    const fetchAppReviews = async () => {
+      setLoadingAppReviews(true);
+      try {
+        const messageResponse = await message({
+          process: ARS,
+          tags: [{ name: "Action", value: "FetchFeatureRequestUserData" }],
+          signer: createDataItemSigner(othent),
+        });
+
+        const resultResponse = await result({
+          message: messageResponse,
+          process: ARS,
+        });
+
+        const { Messages, Error } = resultResponse;
+
+        if (Error) {
+          alert("Error fetching feature Requests.: " + Error);
+          return;
+        }
+
+        if (Messages && Messages.length > 0) {
+          const data = JSON.parse(Messages[0].Data);
+          console.log(data);
+          setAppReviews(data);
+        }
+      } catch (error) {
+        console.error("Error fetching feature requests:", error);
+      } finally {
+        setLoadingAppReviews(false);
+      }
+    };
+
+    (async () => {
+      await fetchAppReviews();
+    })();
+  }, []);
 
   return (
     <div
@@ -122,47 +143,75 @@ const Home = () => {
         </Menu>
 
         <Header as="h1" textAlign="center">
-          Messages
+          Feature Requests.
         </Header>
         <Divider />
-        {MessageList.map((app, index) => (
-          <Segment key={index} inverted tertiary>
-            <Grid columns="equal">
-              <GridColumn>
-                <Image size="small" src={app.AppIconUrl} />
-                <Header textAlign="center">{app.AppName}</Header>
-              </GridColumn>
-              <GridColumn width={13}>
-                <Grid columns="equal">
-                  <GridColumn width={11}>
-                    <Header as="h1" textAlign="center">
-                      {app.Header}
-                    </Header>
-                  </GridColumn>
-                  <GridColumn>
-                    <Header as="h5" textAlign="right">
-                      {formatDate(app.currentTime)}
-                    </Header>
-                  </GridColumn>
-                </Grid>
+        <Container>
+          <Divider />
+          {loadingAppReviews ? (
+            <Loader active inline="centered" />
+          ) : appReviews ? (
+            <>
+              <Container>
                 <Grid>
-                  <GridRow>
-                    <Message compact>{app.Message}</Message>
-                  </GridRow>
-                  <GridRow>
-                    <a
-                      href={app.LinkInfo}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      More info
-                    </a>
-                  </GridRow>
+                  <CommentGroup threaded>
+                    {Object.entries(appReviews).map(([key, review]) => (
+                      <SUIComment key={review.reviewId}>
+                        <SUIComment.Avatar src={review.profileUrl} />
+                        <SUIComment.Content>
+                          <SUIComment.Author as="a">
+                            {review.username || "Anonymous"}
+                          </SUIComment.Author>
+                          <SUIComment.Metadata>
+                            <span>{formatDate(review.time)}</span>
+                          </SUIComment.Metadata>
+                          <SUIComment.Text>
+                            {review.comment || "No comment provided."}
+                          </SUIComment.Text>
+                        </SUIComment.Content>
+                        <SUIComment.Group>
+                          {Object.entries(review.replies || {}).map(
+                            ([replyKey, reply]) => {
+                              const typedReply = reply as Reply; // 👈 Type assertion
+
+                              return (
+                                <SUIComment key={typedReply.replyId}>
+                                  <SUIComment.Avatar
+                                    src={typedReply.username}
+                                  />
+                                  <SUIComment.Content>
+                                    <SUIComment.Author as="a">
+                                      {typedReply.user || "Anonymous"}
+                                    </SUIComment.Author>
+                                    <SUIComment.Metadata>
+                                      <span>
+                                        {formatDate(typedReply.timestamp)}
+                                      </span>
+                                    </SUIComment.Metadata>
+                                    <SUIComment.Text>
+                                      {typedReply.comment ||
+                                        "No comment provided."}
+                                    </SUIComment.Text>
+                                  </SUIComment.Content>
+                                </SUIComment>
+                              );
+                            }
+                          )}
+                        </SUIComment.Group>
+                      </SUIComment>
+                    ))}
+                  </CommentGroup>
                 </Grid>
-              </GridColumn>
-            </Grid>
-          </Segment>
-        ))}
+              </Container>
+            </>
+          ) : (
+            <Header as="h4" color="grey">
+              No reviews found for this app.
+            </Header>
+          )}
+
+          <Divider />
+        </Container>
       </Container>
       <Footer />
     </div>

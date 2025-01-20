@@ -65,11 +65,8 @@ const aoprojectsinfo = () => {
     null
   );
   const [loadingAppReviews, setLoadingAppReviews] = useState(true);
-
   const [addReviewReply, setAddReviewReply] = useState(false);
   const [comment, setComment] = useState("");
-
-  const [addFavorite, setAddFavorite] = useState(false);
   const [addHelpful, setAddHelpful] = useState(false);
   const [addUnhelpful, setAddUnhelpful] = useState(false);
   const [addUpvote, setAddUpvote] = useState(false);
@@ -117,6 +114,26 @@ const aoprojectsinfo = () => {
   const handleNotification = (appId: string | undefined) => {
     if (!appId) return;
     navigate(`/sendupdates/${appId}`);
+  };
+
+  const handleFeaturesandBugs = (appId: string | undefined) => {
+    if (!appId) return;
+    navigate(`/projectfeaturesbugs/${appId}`);
+  };
+
+  const handleBugReports = (appId: string | undefined) => {
+    if (!appId) return;
+    navigate(`/projectbugreports/${appId}`);
+  };
+
+  const handleAostoreAi = (appId: string | undefined) => {
+    if (!appId) return;
+    navigate(`/projectaostoreai/${appId}`);
+  };
+
+  const handleTasks = (appId: string | undefined) => {
+    if (!appId) return;
+    navigate(`/projecttasks/${appId}`);
   };
 
   const username = localStorage.getItem("username");
@@ -409,6 +426,20 @@ const aoprojectsinfo = () => {
               onClick={() => handleNotification(AppId)}
               name="Send Messages."
             />
+            <MenuItem
+              onClick={() => handleFeaturesandBugs(AppId)}
+              name="F Requests."
+            />
+            <MenuItem
+              onClick={() => handleBugReports(AppId)}
+              name="Bug Reports."
+            />
+
+            <MenuItem
+              onClick={() => handleAostoreAi(AppId)}
+              name="aostore AI"
+            />
+            <MenuItem onClick={() => handleTasks(AppId)} name="tasks" />
           </MenuMenu>
         </Menu>
 

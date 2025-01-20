@@ -103,6 +103,26 @@ const aoprojectsinfo = () => {
     navigate(`/sendupdates/${appId}`);
   };
 
+  const handleFeaturesandBugs = (appId: string | undefined) => {
+    if (!appId) return;
+    navigate(`/projectfeaturesbugs/${appId}`);
+  };
+
+  const handleBugReports = (appId: string | undefined) => {
+    if (!appId) return;
+    navigate(`/projectbugreports/${appId}`);
+  };
+
+  const handleAostoreAi = (appId: string | undefined) => {
+    if (!appId) return;
+    navigate(`/projectaostoreai/${appId}`);
+  };
+
+  const handleTasks = (appId: string | undefined) => {
+    if (!appId) return;
+    navigate(`/projecttasks/${appId}`);
+  };
+
   useEffect(() => {
     const fetchAppStats = async () => {
       if (!AppId) return;
@@ -194,6 +214,20 @@ const aoprojectsinfo = () => {
                 onClick={() => handleNotification(AppId)}
                 name="Send Messages."
               />
+              <MenuItem
+                onClick={() => handleFeaturesandBugs(AppId)}
+                name="F Requests."
+              />
+              <MenuItem
+                onClick={() => handleBugReports(AppId)}
+                name="Bug Reports."
+              />
+
+              <MenuItem
+                onClick={() => handleAostoreAi(AppId)}
+                name="aostore AI"
+              />
+              <MenuItem onClick={() => handleTasks(AppId)} name="tasks" />
             </MenuMenu>
           </Menu>
 

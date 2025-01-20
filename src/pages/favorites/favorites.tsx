@@ -10,6 +10,7 @@ import {
   CardMeta,
   Image,
   Button,
+  Loader,
 } from "semantic-ui-react";
 import Footer from "../../components/footer/Footer";
 import classNames from "classnames";
@@ -91,35 +92,49 @@ const Home = () => {
     >
       <Container>
         <Header as="h1" textAlign="center">
-          {" "}
           Favorite Apps.
         </Header>
 
-        <CardGroup itemsPerRow={3}>
-          {FavoriteApps.map((app, index) => (
-            <Card key={index}>
-              <Image src={app.AppIconUrl} wrapped ui={false} />
-              <CardContent>
-                <CardHeader>{app.AppName} </CardHeader>
-                <Divider />
-                <CardMeta>{app.CompanyName}</CardMeta>
-              </CardContent>
-              <CardContent extra>
-                <a
-                  href={app.WebsiteUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Visit Site
-                </a>
-                <Divider />
-                <Button primary onClick={() => handleProjectInfo(app.AppId)}>
-                  App Info
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </CardGroup>
+        {isloadingFavoriteApps ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "60vh",
+            }}
+          >
+            <Loader active inline="centered" size="large">
+              Loading your favorite apps...
+            </Loader>
+          </div>
+        ) : (
+          <CardGroup itemsPerRow={3}>
+            {FavoriteApps.map((app, index) => (
+              <Card key={index}>
+                <Image src={app.AppIconUrl} wrapped ui={false} />
+                <CardContent>
+                  <CardHeader>{app.AppName} </CardHeader>
+                  <Divider />
+                  <CardMeta>{app.CompanyName}</CardMeta>
+                </CardContent>
+                <CardContent extra>
+                  <a
+                    href={app.WebsiteUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Visit Site
+                  </a>
+                  <Divider />
+                  <Button primary onClick={() => handleProjectInfo(app.AppId)}>
+                    App Info
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </CardGroup>
+        )}
       </Container>
       <Footer />
     </div>

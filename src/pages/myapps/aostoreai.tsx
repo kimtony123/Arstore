@@ -1,41 +1,124 @@
 import classNames from "classnames";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
+  Card,
+  CardGroup,
+  CommentGroup,
+  CommentMetadata,
+  CommentText,
   Container,
   Divider,
+  DropdownProps,
   Form,
   FormField,
+  FormSelect,
+  FormTextArea,
+  Grid,
+  GridColumn,
+  GridRow,
   Header,
+  Icon,
   Input,
+  Label,
+  List,
+  ListContent,
+  ListDescription,
+  ListHeader,
+  ListIcon,
+  ListItem,
+  Loader,
   Menu,
   MenuItem,
   MenuMenu,
+  Statistic,
+  StatisticLabel,
+  StatisticValue,
+  TextArea,
 } from "semantic-ui-react";
 import { useParams } from "react-router-dom";
 
+import { Comment as SUIComment } from "semantic-ui-react";
+
 import * as othent from "@othent/kms";
+import { FaSpinner } from "react-icons/fa"; // Spinner Icon
 
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
 import Footer from "../../components/footer/Footer";
 import { useNavigate } from "react-router-dom";
 
+interface AppData {
+  AppName: string;
+  CompanyName: string;
+  WebsiteUrl: string;
+  ProjectType: string;
+  AppIconUrl: string;
+  CoverUrl: string;
+  Company: string;
+  Description: string;
+  Ratings: Array<number>; // Assuming ratings are numbers
+  AppId: string;
+  BannerUrls: Array<string>; // Assuming banner URLs are strings
+  CreatedTime: number;
+  DiscordUrl: string;
+  Downvotes: Array<string>; // Assuming downvotes are strings (user IDs)
+  Protocol: string;
+  Reviews: Array<string>; // Assuming reviews are strings
+  TwitterUrl: string;
+  Upvotes: Array<string>; // Assuming upvotes are strings (user IDs)
+}
+
+interface LeaderboardEntry {
+  name: any;
+  ratings: any;
+  rank: any;
+  AppIconUrl: any;
+}
+
 const aoprojectsinfo = () => {
+  const ratingsData = {
+    1: 20,
+    2: 10,
+    3: 15,
+    4: 25,
+    5: 30,
+  };
+
   const { AppId: paramAppId } = useParams();
   const AppId = paramAppId || "defaultAppId"; // Ensure AppId is always a valid string
 
-  const [newOwner, setNewOwner] = useState("");
+  const [apps, setAppInfo] = useState<AppData[]>([]);
+  const [updateValue, setUpdateValue] = useState("");
+  const [getProjectInfo, setGetProjectInfo] = useState("");
+  const [loadingApps, setLoadingApps] = useState(true);
+  const [loadingAppInfo, setLoadingAppInfo] = useState(true);
+  const [rating, setRating] = useState(0); // ✅ State to hold the rating value
+  const [updateApp, setUpdatingApp] = useState(false);
 
-  const [, setUpdatingNewOwner] = useState(true);
+  const [projectTypeValue, setProjectTypeValue] = useState<
+    string | undefined
+  >();
+  const [selectedProjectType, setSelectedProjectType] = useState<
+    string | undefined
+  >(undefined);
 
   const ARS = "e-lOufTQJ49ZUX1vPxO-QxjtYXiqM8RQgKovrnJKJ18";
+  const AOS = "7wea_1MSDmZMm1Om9N8vdrkay9V9O8vscmSVO-2XdEY";
+
   const navigate = useNavigate();
+
+  const updateOptions = [
+    { key: "1", text: "reviewsTable", value: "reviewsTable" },
+    { key: "2", text: "featureRequestsTable", value: "featureRequestsTable" },
+    { key: "3", text: "bugsReportsTable", value: "bugsReportsTable" },
+    { key: "4", text: "devForumTable", value: "devForumTable" },
+  ];
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     switch (name) {
-      case "newowner":
-        setNewOwner(value);
+      case "updatevalue":
+        setUpdateValue(value);
         break;
       default:
         break;
@@ -77,6 +160,7 @@ const aoprojectsinfo = () => {
     if (!appId) return;
     navigate(`/projectfeaturesbugs/${appId}`);
   };
+
   const handleBugReports = (appId: string | undefined) => {
     if (!appId) return;
     navigate(`/projectbugreports/${appId}`);
@@ -92,19 +176,73 @@ const aoprojectsinfo = () => {
     navigate(`/projecttasks/${appId}`);
   };
 
-  const changeowner = async (AppId: string) => {
+  const handleProjectTypeChange = (
+    _: React.SyntheticEvent<HTMLElement, Event>,
+    data: DropdownProps
+  ) => {
+    const value = data.value as string | undefined;
+    setProjectTypeValue(value);
+  };
+
+  useEffect(() => {
+    const fetchAppInfo = async () => {
+      if (!AppId) return;
+      console.log(AppId);
+      setLoadingAppInfo(true);
+
+      try {
+        const messageResponse = await message({
+          process: ARS,
+          tags: [
+            { name: "Action", value: "AppInfo" },
+            { name: "AppId", value: String(AppId) },
+          ],
+          signer: createDataItemSigner(othent),
+        });
+
+        const resultResponse = await result({
+          message: messageResponse,
+          process: ARS,
+        });
+
+        const { Messages, Error } = resultResponse;
+
+        if (Error) {
+          alert("Error fetching app info: " + Error);
+          return;
+        }
+
+        if (Messages && Messages.length > 0) {
+          const data = JSON.parse(Messages[0].Data);
+          console.log(data);
+          setAppInfo(Object.values(data));
+        }
+      } catch (error) {
+        console.error("Error fetching app info:", error);
+      } finally {
+        setLoadingAppInfo(false);
+      }
+    };
+
+    (async () => {
+      await fetchAppInfo();
+    })();
+  }, [AppId]);
+
+  const updateproject = async (AppId: string) => {
     if (!AppId) return;
     console.log(AppId);
 
-    setUpdatingNewOwner(true);
+    setUpdatingApp(true);
     try {
       const getTradeMessage = await message({
-        process: ARS,
+        process: AOS,
         tags: [
-          { name: "Action", value: "UpdateAppDetails" },
+          { name: "Action", value: "getTableData" },
           { name: "AppId", value: String(AppId) },
-          { name: "NewValue", value: String(newOwner) },
+          { name: "TableType", value: String(projectTypeValue) },
         ],
+
         signer: createDataItemSigner(othent),
       });
       const { Messages, Error } = await result({
@@ -122,16 +260,16 @@ const aoprojectsinfo = () => {
       }
       const data = Messages[0].Data;
       alert(data);
-      setNewOwner("");
-      // ✅ Redirect to the homepage after successful change
-      navigate("/");
+      setUpdateValue("");
     } catch (error) {
       alert("There was an error in the trade process: " + error);
       console.error(error);
     } finally {
-      setUpdatingNewOwner(false);
+      setUpdatingApp(false);
     }
   };
+
+  const src = "AO.svg";
 
   return (
     <div
@@ -185,22 +323,25 @@ const aoprojectsinfo = () => {
             </MenuMenu>
           </Menu>
           <Header textAlign="center" as="h1">
-            Change App ownership.
+            Project Sentiment Analysis.
           </Header>
           <Form>
             <FormField required>
-              <label>New Owner Address.</label>
-              <Input
-                type="text"
-                name="newowner"
-                value={newOwner}
-                onChange={handleInputChange}
-                placeholder="New Owner Address."
+              <label>What are you planning To analyse? </label>
+              <FormSelect
+                options={updateOptions}
+                placeholder="Data Type"
+                value={selectedProjectType}
+                onChange={handleProjectTypeChange}
               />
             </FormField>
-            <Button color="purple" onClick={() => changeowner(AppId)}>
+            <Button
+              loading={updateApp}
+              color="purple"
+              onClick={() => updateproject(AppId)}
+            >
               {" "}
-              Change Owner.
+              Analyse.
             </Button>
           </Form>
         </Container>

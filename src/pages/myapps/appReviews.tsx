@@ -264,7 +264,7 @@ const aoprojectsinfo = () => {
     }
   };
 
-  const AddUnhelpful = async (ReviewID: string) => {
+  const AddUnhelpfulReview = async (ReviewID: string) => {
     if (!AppId) return;
     console.log(AppId);
 
@@ -307,7 +307,7 @@ const aoprojectsinfo = () => {
     }
   };
 
-  const AddUpvote = async (ReviewID: string) => {
+  const AddUpvoteReview = async (ReviewID: string) => {
     if (!AppId) return;
     console.log(AppId);
     if (!ReviewID) return;
@@ -347,7 +347,7 @@ const aoprojectsinfo = () => {
       setAddUpvote(false);
     }
   };
-  const AddDownvote = async (ReviewID: string) => {
+  const AddDownvoteReview = async (ReviewID: string) => {
     if (!AppId) return;
     console.log(AppId);
     if (!ReviewID) return;
@@ -482,7 +482,7 @@ const aoprojectsinfo = () => {
                           <SUIComment.Action>
                             <Button
                               loading={addUpvote}
-                              onClick={() => AddUpvote(review.reviewId)}
+                              onClick={() => AddUpvoteReview(review.reviewId)}
                               primary
                               color="blue"
                               size="mini"
@@ -493,7 +493,7 @@ const aoprojectsinfo = () => {
                             </Button>
                             <Button
                               loading={addDownvote}
-                              onClick={() => AddDownvote(review.reviewId)}
+                              onClick={() => AddDownvoteReview(review.reviewId)}
                               color="red"
                               size="mini"
                               icon
@@ -521,7 +521,9 @@ const aoprojectsinfo = () => {
                             </Button>
                             <Button
                               loading={addUnhelpful}
-                              onClick={() => AddUnhelpful(review.reviewId)}
+                              onClick={() =>
+                                AddUnhelpfulReview(review.reviewId)
+                              }
                               color="red"
                               size="mini"
                               icon

@@ -81,6 +81,7 @@ interface Reply {
   downvotes: number;
   user: string;
   username: string;
+  profileUrl: string;
 }
 
 interface Review {
@@ -462,6 +463,172 @@ const aoprojectsinfo = () => {
         tags: [
           { name: "Action", value: "Downvote" },
           { name: "AppId", value: String(AppId) },
+        ],
+        signer: createDataItemSigner(othent),
+      });
+      const { Messages, Error } = await result({
+        message: getTradeMessage,
+        process: ARS,
+      });
+
+      if (Error) {
+        alert("Error Adding project to Favorite:" + Error);
+        return;
+      }
+      if (!Messages || Messages.length === 0) {
+        alert("No messages were returned from ao. Please try later.");
+        return;
+      }
+      const data = Messages[0].Data;
+      alert(data);
+    } catch (error) {
+      alert("There was an error in the trade process: " + error);
+      console.error(error);
+    } finally {
+      setAddDownvote(false);
+    }
+  };
+
+  const AddHelpfulReview = async (ReviewID: string) => {
+    if (!AppId) return;
+    console.log(AppId);
+    if (!ReviewID) return;
+    console.log(ReviewID);
+
+    setAddHelpful(true);
+    try {
+      const getTradeMessage = await message({
+        process: ARS,
+
+        tags: [
+          { name: "Action", value: "MarkHelpfulReview" },
+          { name: "AppId", value: String(AppId) },
+          { name: "ReviewId", value: String(ReviewID) },
+          { name: "username", value: String(username) },
+        ],
+        signer: createDataItemSigner(othent),
+      });
+      const { Messages, Error } = await result({
+        message: getTradeMessage,
+        process: ARS,
+      });
+
+      if (Error) {
+        alert("Error Adding :" + Error);
+        return;
+      }
+      if (!Messages || Messages.length === 0) {
+        alert("No messages were returned from ao. Please try later.");
+        return;
+      }
+      const data = Messages[0].Data;
+      alert(data);
+    } catch (error) {
+      alert("There was an error in the review process: " + error);
+      console.error(error);
+    } finally {
+      setAddHelpful(false);
+    }
+  };
+
+  const AddUnhelpfulReview = async (ReviewID: string) => {
+    if (!AppId) return;
+    console.log(AppId);
+
+    if (!ReviewID) return;
+    console.log(ReviewID);
+
+    setAddUnhelpful(true);
+    try {
+      const getTradeMessage = await message({
+        process: ARS,
+
+        tags: [
+          { name: "Action", value: "MarkUnhelpfulReview" },
+          { name: "AppId", value: String(AppId) },
+          { name: "ReviewId", value: String(ReviewID) },
+          { name: "username", value: String(username) },
+        ],
+        signer: createDataItemSigner(othent),
+      });
+      const { Messages, Error } = await result({
+        message: getTradeMessage,
+        process: ARS,
+      });
+
+      if (Error) {
+        alert("Error Adding project to Favorite:" + Error);
+        return;
+      }
+      if (!Messages || Messages.length === 0) {
+        alert("No messages were returned from ao. Please try later.");
+        return;
+      }
+      const data = Messages[0].Data;
+      alert(data);
+    } catch (error) {
+      alert("There was an error in the trade process: " + error);
+      console.error(error);
+    } finally {
+      setAddUnhelpful(false);
+    }
+  };
+
+  const AddUpvoteReview = async (ReviewID: string) => {
+    if (!AppId) return;
+    console.log(AppId);
+    if (!ReviewID) return;
+    console.log(ReviewID);
+
+    setAddUpvote(true);
+    try {
+      const getTradeMessage = await message({
+        process: ARS,
+        tags: [
+          { name: "Action", value: "MarkUpvoteReview" },
+          { name: "AppId", value: String(AppId) },
+          { name: "ReviewId", value: String(ReviewID) },
+          { name: "username", value: String(username) },
+        ],
+        signer: createDataItemSigner(othent),
+      });
+      const { Messages, Error } = await result({
+        message: getTradeMessage,
+        process: ARS,
+      });
+
+      if (Error) {
+        alert("Error Adding Upvoting App:" + Error);
+        return;
+      }
+      if (!Messages || Messages.length === 0) {
+        alert("No messages were returned from ao. Please try later.");
+        return;
+      }
+      const data = Messages[0].Data;
+      alert(data);
+    } catch (error) {
+      alert("There was an error in the Upvoting process: " + error);
+      console.error(error);
+    } finally {
+      setAddUpvote(false);
+    }
+  };
+  const AddDownvoteReview = async (ReviewID: string) => {
+    if (!AppId) return;
+    console.log(AppId);
+    if (!ReviewID) return;
+    console.log(ReviewID);
+    setAddDownvote(true);
+    try {
+      const getTradeMessage = await message({
+        process: ARS,
+
+        tags: [
+          { name: "Action", value: "DownvoteReview" },
+          { name: "AppId", value: String(AppId) },
+          { name: "ReviewId", value: String(ReviewID) },
+          { name: "username", value: String(username) },
         ],
         signer: createDataItemSigner(othent),
       });
@@ -928,11 +1095,17 @@ const aoprojectsinfo = () => {
             ) : appReviews ? (
               <>
                 <Container>
+                  <Divider />
                   <Grid>
                     <CommentGroup threaded>
                       {Object.entries(appReviews).map(([key, review]) => (
                         <SUIComment key={review.reviewId}>
-                          <SUIComment.Avatar src={review.profileUrl} />
+                          <SUIComment.Avatar
+                            src={
+                              review.profileUrl ||
+                              "https://react.semantic-ui.com/images/avatar/small/matt.jpg"
+                            }
+                          />
                           <SUIComment.Content>
                             <SUIComment.Author as="a">
                               {review.username || "Anonymous"}
@@ -951,11 +1124,28 @@ const aoprojectsinfo = () => {
                             </SUIComment.Text>
                             <SUIComment.Actions>
                               <SUIComment.Action>
-                                <Button color="blue" size="mini" icon>
+                                <Button
+                                  loading={addUpvote}
+                                  onClick={() =>
+                                    AddUpvoteReview(review.reviewId)
+                                  }
+                                  primary
+                                  color="blue"
+                                  size="mini"
+                                  icon
+                                >
                                   <Icon name="thumbs up" />{" "}
                                   {review.upvotes || 0} Upvotes
                                 </Button>
-                                <Button color="red" size="mini" icon>
+                                <Button
+                                  loading={addDownvote}
+                                  onClick={() =>
+                                    AddDownvoteReview(review.reviewId)
+                                  }
+                                  color="red"
+                                  size="mini"
+                                  icon
+                                >
                                   <Icon name="thumbs down" />{" "}
                                   {review.downvotes || 0} Downvotes
                                 </Button>
@@ -967,11 +1157,27 @@ const aoprojectsinfo = () => {
                             </SUIComment.Text>
                             <SUIComment.Actions>
                               <SUIComment.Action>
-                                <Button color="blue" size="mini" icon>
+                                <Button
+                                  loading={addHelpful}
+                                  onClick={() =>
+                                    AddHelpfulReview(review.reviewId)
+                                  }
+                                  color="blue"
+                                  size="mini"
+                                  icon
+                                >
                                   <Icon name="thumbs up" />
                                   Yes.
                                 </Button>
-                                <Button color="red" size="mini" icon>
+                                <Button
+                                  loading={addUnhelpful}
+                                  onClick={() =>
+                                    AddUnhelpfulReview(review.reviewId)
+                                  }
+                                  color="red"
+                                  size="mini"
+                                  icon
+                                >
                                   <Icon name="thumbs down" />
                                   No.
                                 </Button>
@@ -986,11 +1192,11 @@ const aoprojectsinfo = () => {
                                 return (
                                   <SUIComment key={typedReply.replyId}>
                                     <SUIComment.Avatar
-                                      src={typedReply.username}
+                                      src={typedReply.profileUrl}
                                     />
                                     <SUIComment.Content>
                                       <SUIComment.Author as="a">
-                                        {typedReply.user || "Anonymous"}
+                                        {typedReply.username || "Anonymous"}
                                       </SUIComment.Author>
                                       <SUIComment.Metadata>
                                         <span>
@@ -1001,36 +1207,6 @@ const aoprojectsinfo = () => {
                                         {typedReply.comment ||
                                           "No comment provided."}
                                       </SUIComment.Text>
-                                      <SUIComment.Actions>
-                                        <SUIComment.Action>
-                                          <Button color="blue" size="mini" icon>
-                                            <Icon name="thumbs up" />{" "}
-                                            {typedReply.upvotes || 0} Upvotes
-                                          </Button>
-                                          <Button color="red" size="mini" icon>
-                                            <Icon name="thumbs down" />{" "}
-                                            {typedReply.downvotes || 0}{" "}
-                                            Downvotes
-                                          </Button>
-                                        </SUIComment.Action>
-                                      </SUIComment.Actions>
-                                      <SUIComment.Text>
-                                        {typedReply.downvotes} Found This Review
-                                        Helpful. Did You find this Response
-                                        Helpful?
-                                      </SUIComment.Text>
-                                      <SUIComment.Actions>
-                                        <SUIComment.Action>
-                                          <Button color="blue" size="mini" icon>
-                                            <Icon name="thumbs up" />
-                                            Yes.
-                                          </Button>
-                                          <Button color="red" size="mini" icon>
-                                            <Icon name="thumbs down" />
-                                            No.
-                                          </Button>
-                                        </SUIComment.Action>
-                                      </SUIComment.Actions>
                                     </SUIComment.Content>
                                   </SUIComment>
                                 );

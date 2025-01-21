@@ -166,13 +166,13 @@ const Home = () => {
               <GridColumn width={15}>
                 <Bar
                   data={{
-                    labels: userStats.transactions.map((entry) =>
+                    labels: Object.values(userStats.transactions).map((entry) =>
                       formatDate(entry.time)
                     ),
                     datasets: [
                       {
                         label: "Earnings Over Time",
-                        data: userStats.transactions.map(
+                        data: Object.values(userStats.transactions).map(
                           (entry) => entry.amount
                         ),
                         backgroundColor: "rgba(75, 192, 192, 0.6)",

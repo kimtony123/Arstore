@@ -31,9 +31,7 @@ Llama.run(
   function(generated_text) -- Optional: A function to handle the response
     -- Match up until the first newline character
     local joke = generated_text:match("^(.-)\n")
-    if joke == nil then
-      return print("Could not find joke in: " .. generated_text)
-    end
+  
     print("Joke: " .. joke)
     table.insert(JOKE_HISTORY, joke)
   end

@@ -28,7 +28,6 @@ const Home = () => {
       <Experience />
       <Divider />
       <Ao />
-      <SocialLinks />
       <Divider />
       <Ao />
       <Ao />

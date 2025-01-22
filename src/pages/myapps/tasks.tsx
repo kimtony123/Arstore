@@ -2,39 +2,17 @@ import classNames from "classnames";
 import React, { useState, useEffect } from "react";
 import {
   Button,
-  Card,
-  CardGroup,
-  CommentGroup,
-  CommentMetadata,
-  CommentText,
   Container,
   Divider,
   DropdownProps,
   Form,
   FormField,
   FormSelect,
-  FormTextArea,
-  Grid,
-  GridColumn,
-  GridRow,
   Header,
-  Icon,
   Input,
-  Label,
-  List,
-  ListContent,
-  ListDescription,
-  ListHeader,
-  ListIcon,
-  ListItem,
-  Loader,
   Menu,
   MenuItem,
   MenuMenu,
-  Statistic,
-  StatisticLabel,
-  StatisticValue,
-  TextArea,
 } from "semantic-ui-react";
 import { useParams } from "react-router-dom";
 
@@ -333,37 +311,8 @@ const aoprojectsinfo = () => {
             </MenuMenu>
           </Menu>
           <Header textAlign="center" as="h1">
-            Update App.
+            Development in progress.
           </Header>
-          <Form>
-            <FormField required>
-              <label>What are you planning to update?</label>
-              <FormSelect
-                options={updateOptions}
-                placeholder="Project Type"
-                value={selectedProjectType}
-                onChange={handleProjectTypeChange}
-              />
-            </FormField>
-            <FormField required>
-              <label>New Updated Value?</label>
-              <Input
-                type="text"
-                name="updatevalue"
-                value={updateValue}
-                onChange={handleInputChange}
-                placeholder="New Value"
-              />
-            </FormField>
-            <Button
-              loading={updateApp}
-              color="purple"
-              onClick={() => updateproject(AppId)}
-            >
-              {" "}
-              Update App.
-            </Button>
-          </Form>
         </Container>
         <Divider />
       </div>

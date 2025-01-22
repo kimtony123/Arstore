@@ -90,9 +90,9 @@ const Home = () => {
         "content text-black dark:text-white flex flex-col h-full justify-between"
       )}
     >
-      <Container>
+      <Container textAlign="center">
         <Header as="h1" textAlign="center">
-          Favorite Apps.
+          Favorite Projects.
         </Header>
 
         {isloadingFavoriteApps ? (

@@ -121,7 +121,8 @@ const aoprojectsinfo = () => {
   const [loadingAppReviews, setLoadingAppReviews] = useState(true);
   const [addReview, setAddReview] = useState(false);
   const [comment, setComment] = useState("");
-
+  const [updateValue, setUpdateValue] = useState("");
+  const [updateApp, setUpdatingApp] = useState(false);
   const [addFavorite, setAddFavorite] = useState(false);
   const [addHelpful, setAddHelpful] = useState(false);
   const [addUnhelpful, setAddUnhelpful] = useState(false);
@@ -148,14 +149,17 @@ const aoprojectsinfo = () => {
       case "comment":
         setComment(value);
         break;
+      case "updatevalue":
+        setUpdateValue(value);
+        break;
       default:
         break;
     }
   };
 
   const updateOptions = [
-    { key: "1", text: "FeatureRequests", value: "featureRequests" },
-    { key: "2", text: "BugReports", value: "BugReports" },
+    { key: "1", text: "FeatureRequests", value: "featureRequestsTable" },
+    { key: "2", text: "BugReports", value: "bugsReportsTable" },
   ];
 
   useEffect(() => {
@@ -655,6 +659,49 @@ const aoprojectsinfo = () => {
     }
   };
 
+  const MakeRequest = async (AppId: string) => {
+    if (!AppId) return;
+    console.log(AppId);
+
+    setUpdatingApp(true);
+    try {
+      const getTradeMessage = await message({
+        process: ARS,
+        tags: [
+          { name: "Action", value: "AddFeatureorBugReport" },
+          { name: "AppId", value: String(AppId) },
+          { name: "comment", value: String(updateValue) },
+          { name: "TableType", value: String(projectTypeValue) },
+          { name: "username", value: String(username) },
+          { name: "profileUrl", value: String(profileUrl) },
+        ],
+
+        signer: createDataItemSigner(othent),
+      });
+      const { Messages, Error } = await result({
+        message: getTradeMessage,
+        process: ARS,
+      });
+
+      if (Error) {
+        alert("Error Updating Project:" + Error);
+        return;
+      }
+      if (!Messages || Messages.length === 0) {
+        alert("No messages were returned from ao. Please try later.");
+        return;
+      }
+      const data = Messages[0].Data;
+      alert(data);
+      setUpdateValue("");
+    } catch (error) {
+      alert("There was an error in the trade process: " + error);
+      console.error(error);
+    } finally {
+      setUpdatingApp(false);
+    }
+  };
+
   const handleProjectStats = (appId: string) => {
     navigate(`/projectstatsuser/${appId}`);
   };
@@ -924,8 +971,8 @@ const aoprojectsinfo = () => {
                         size="mini"
                         icon
                       >
-                        <Icon name="thumbs up" />
-                        Helpful.
+                        <Icon name="thumbs up" /> {appInfo.HelpfulRatings || 0}{" "}
+                        Yes.
                       </Button>
                       <Button
                         loading={addUnhelpful}
@@ -934,8 +981,8 @@ const aoprojectsinfo = () => {
                         size="mini"
                         icon
                       >
-                        <Icon name="thumbs down" />
-                        Unhelpful.
+                        <Icon name="thumbs down" />{" "}
+                        {appInfo.UnhelpfulRatings || 0} No.
                       </Button>
                     </GridColumn>
                     <Header as="h3">
@@ -950,8 +997,7 @@ const aoprojectsinfo = () => {
                         size="mini"
                         icon
                       >
-                        <Icon name="thumbs up" />
-                        Upvote.
+                        <Icon name="thumbs up" /> {appInfo.Upvotes || 0} Upvote.
                       </Button>
                       <Button
                         loading={addDownvote}
@@ -960,7 +1006,7 @@ const aoprojectsinfo = () => {
                         size="mini"
                         icon
                       >
-                        <Icon name="thumbs down" />
+                        <Icon name="thumbs down" /> {appInfo.Downvotes || 0}{" "}
                         Downvote.
                       </Button>
                     </GridColumn>
@@ -1051,25 +1097,39 @@ const aoprojectsinfo = () => {
                     <Header as="h1">Feature Requests and Bug Reports.</Header>
                     <Form>
                       <FormField required>
-                        <label>Protocol</label>
+                        <label> Issue</label>
                         <FormSelect
                           options={updateOptions}
                           placeholder="Requests"
                           value={selectedProtocol}
                           onChange={handleProjectTypeChange}
                         />
-                        <FormTextArea placeholder="Make Feature Request or Report Bug" />
-                        <Button
-                          content="Request"
-                          labelPosition="left"
-                          icon="edit"
-                          primary
-                        />
                       </FormField>{" "}
+                      <FormField>
+                        <label>Describe</label>
+                        <Input
+                          type="text"
+                          name="updatevalue"
+                          value={updateValue}
+                          onChange={handleInputChange}
+                          placeholder="Add more Info"
+                        />
+                      </FormField>
+                      <Button
+                        loading={updateApp}
+                        color="purple"
+                        onClick={() => MakeRequest(AppId)}
+                        content="Send"
+                        labelPosition="left"
+                        icon="edit"
+                        primary
+                      />
                     </Form>
                     <Header as="h1">Whats new.</Header>
-                    <Header as="h4">{appInfo.Description}</Header>
+                    <Header as="h4">{appInfo.WhatsNew}</Header>
                     <Divider />
+                    <Header as="h1">Last Updated.</Header>
+                    <Header as="h4">{formatDate(appInfo.LastUpdated)}</Header>
                     <Header as="h5">Flag Project..</Header>
                     <Icon name="flag" />
                     {appInfo.Flags} People have Flagged this project as
@@ -1135,7 +1195,7 @@ const aoprojectsinfo = () => {
                                   icon
                                 >
                                   <Icon name="thumbs up" />{" "}
-                                  {review.upvotes || 0} Upvotes
+                                  {review.voters.upvoted.count || 0} Upvotes
                                 </Button>
                                 <Button
                                   loading={addDownvote}
@@ -1147,7 +1207,7 @@ const aoprojectsinfo = () => {
                                   icon
                                 >
                                   <Icon name="thumbs down" />{" "}
-                                  {review.downvotes || 0} Downvotes
+                                  {review.voters.downvoted.count || 0} Downvotes
                                 </Button>
                               </SUIComment.Action>
                             </SUIComment.Actions>
@@ -1166,8 +1226,8 @@ const aoprojectsinfo = () => {
                                   size="mini"
                                   icon
                                 >
-                                  <Icon name="thumbs up" />
-                                  Yes.
+                                  <Icon name="thumbs up" />{" "}
+                                  {review.voters.foundHelpful.count || 0} Yes
                                 </Button>
                                 <Button
                                   loading={addUnhelpful}
@@ -1178,8 +1238,8 @@ const aoprojectsinfo = () => {
                                   size="mini"
                                   icon
                                 >
-                                  <Icon name="thumbs down" />
-                                  No.
+                                  <Icon name="thumbs up" />{" "}
+                                  {review.voters.foundUnhelpful.count || 0} Yes
                                 </Button>
                               </SUIComment.Action>
                             </SUIComment.Actions>

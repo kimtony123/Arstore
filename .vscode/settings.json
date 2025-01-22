@@ -49,6 +49,12 @@
     "option",
     "currentTradeData",
     "currentData",
-    "ao"
+    "ao",
+    "generateDevForumId",
+    "generatebugReportId",
+    "generateFeatureRequestId",
+    "generateNewUpdateId",
+    "generateTaskId",
+    "generateTableId"
   ]
 }

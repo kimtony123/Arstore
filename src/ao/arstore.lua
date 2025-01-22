@@ -4,6 +4,8 @@ local math = require("math")
 
 -- Credentials token
 ARS = "e-lOufTQJ49ZUX1vPxO-QxjtYXiqM8RQgKovrnJKJ18"
+
+AOSAI = "7wea_1MSDmZMm1Om9N8vdrkay9V9O8vscmSVO-2XdEY"
 Apps =  Apps or {}
 reviewsTable = reviewsTable or {}
 upvotesTable = upvotesTable or {}
@@ -29,6 +31,10 @@ ReviewCounter = ReviewCounter or 0
 ReplyCounter = ReplyCounter or 0
 AidropCounter = AidropCounter or 0
 transactionCounter  = transactionCounter or 0
+DevForumCounter = DevForumCounter or 0
+TableIdCounter = TableIdCounter or 0
+NewTableCounter = NewTableCounter or 0
+TasksCounter = TasksCounter or 0
 
 -- Function to get the current time in milliseconds
 function getCurrentTime(msg)
@@ -41,6 +47,7 @@ function generateAppId()
     AppCounter = AppCounter + 1
     return "TX" .. tostring(AppCounter)
 end
+
 
 -- Function to generate a unique review ID
 function generateReviewId()
@@ -70,6 +77,30 @@ end
 function generateAirdropId()
     AidropCounter = AidropCounter + 1
     return "TX" .. tostring(AidropCounter)
+end
+
+-- Function to generate a unique Dev forum ID
+function generateDevForumId()
+    DevForumCounter = DevForumCounter + 1
+    return "TX" .. tostring(DevForumCounter)
+end
+
+-- Function to generate a unique bug ID
+function generateTableId()
+    TableIdCounter = TableIdCounter + 1
+    return "TX" .. tostring(TableIdCounter)
+end
+
+-- Function to generate a unique NEW UPDATE ID
+function generateNewUpdateId()
+    NewTableCounter = NewTableCounter + 1
+    return "TX" .. tostring(NewTableCounter)
+end
+
+-- Function to generate a unique NEW Task ID
+function generateTaskId()
+    TasksCounter = TasksCounter + 1
+    return "TX" .. tostring(TasksCounter)
 end
 
 
@@ -240,6 +271,10 @@ Handlers.add(
         local AppId = generateAppId()
         local ReviewId = generateReviewId()
         local replyId = generateReplyId()
+        local tableId = generateTableId()
+        local devForumId = generateDevForumId()
+        local newTableId = generateNewUpdateId()
+        local taskId = generateTaskId()
         local user = m.From
         local username = m.Tags.username
         local profileUrl = m.Tags.profileUrl
@@ -310,15 +345,13 @@ Handlers.add(
         }
 
         featureRequestsTable[AppId] = {
+            requests = {{
+            TableId = tableId,
             user = user,
             time = currentTime,
             profileUrl = profileUrl,
             username = username,
-            count = 1,
             comment =" Add AI",
-            countHistory = { { time = currentTime, count = 1 } },
-            users = {
-                [user] = { username = username, voted = false, time = currentTime }},
             replies = {
                         {
                             replyId = replyId,
@@ -330,19 +363,22 @@ Handlers.add(
                             users = {[user] = { username = username, voted = true, time = currentTime }}         
                         }
                     },
-
-            
+            }},
+            count = 1,
+            countHistory = { { time = currentTime, count = 1 } },
+            users = {
+                [user] = { username = username, voted = false, time = currentTime }},
         }
 
         bugsReportsTable[AppId] = {
+            requests = {{
+            TableId = tableId,
             user = user,
             profileUrl = profileUrl,
             time = currentTime,
             username = username,
-            count = 1,
             comment ="Change the UI",
-            countHistory = { { time = currentTime, count = 1 } },
-            users = {[user] = { username = username, voted = false, time = currentTime}},
+            count = 1,
             replies = {
                         {
                             replyId = replyId,
@@ -354,17 +390,22 @@ Handlers.add(
                             users = {[user] = { username = username, voted = true, time = currentTime }}         
                         }
                     },
+
+            }},
+            countHistory = { { time = currentTime, count = 1 } },
+            users = {[user] = { username = username, voted = false, time = currentTime}},
+           
         }
             
         devForumTable[AppId] = {
+            requests = {{
+            devForumId = devForumId,
             user = user,
             time = currentTime,
             profileUrl = profileUrl,
             username = username,
-            count = 1,
             comment ="Hey How Do I get started on aocomputer?",
-            countHistory = { { time = currentTime, count = 1 } },
-            users = {[user] = { username = username, voted = false, time = currentTime}},
+            header = "Integration and Dependencies",
             replies = {
                         {
                             replyId = replyId,
@@ -376,7 +417,12 @@ Handlers.add(
                             users = {[user] = { username = username, voted = true, time = currentTime }}         
                         }
                     },
+            }},
+            count = 1,
+            countHistory = { { time = currentTime, count = 1 } },
+            users = {[user] = { username = username, voted = false, time = currentTime}},
             }
+            
         favoritesTable[AppId] = {
          count = 1,
             countHistory = { { time = currentTime, count = 1 } },
@@ -420,16 +466,22 @@ Handlers.add(
         }
 
         newTable[AppId] = {
+            requests = {{
+            newTableId = newTableId,
             comment = "Launched on aostore",
+            }},
             count = 1,
             countHistory = { { time = currentTime, count = 1} },
             users = {[user] = { username = username, voted = true, time = currentTime }},
             currentTime = currentTime
         }
          taskTable[AppId] = {
+            requests = {{
+            taskId = taskId,
             link = "https://x.com/aoTheComputer",
             task = "Follow , Retweet and Like our twitter page",
             comment = "Launched on aostore",
+            }},
             count = 1,
             status = true,
             countHistory = { { time = currentTime, count = 1} },
@@ -508,33 +560,47 @@ Handlers.add(
 )
 
 
-
 Handlers.add(
     "AddAddress",
     Handlers.utils.hasMatchingTag("Action", "AddAddress"),
     function(m)
         local userId = m.From
-        local address = m.Tags.address
+        local currentTime = getCurrentTime(m)
 
         -- Validate input
-        if not userId or not address then
-            ao.send({ Target = m.From, Data = "userId or address is missing." })
+        if not userId  then
+            ao.send({ Target = m.From, Data = "userId is missing." })
             return
         end
 
         -- Initialize the verifiedUsers table if it doesn't exist
-        verifiedUsers = verifiedUsers or {}
+        verifiedUsers = verifiedUsers or {
+            count = 0,
+            countHistory = {},
+            users = {}
+        }
 
-        -- Check if the user already exists in the table
-        if not verifiedUsers[userId] then
-            verifiedUsers[userId] = {
-                addresses = {}
-            }
+        -- Check if the user already exists in the verifiedUsers list
+        if verifiedUsers.users[userId] then
+            ao.send({ Target = m.From, Data = "Welcome back, user: " .. userId })
+            return
         end
-        -- Add the address to the user's record
-        table.insert(verifiedUsers[userId].addresses, address)
 
-        ao.send({ Target = m.From, Data = "Address added successfully for user: " .. userId })
+        -- Add the new user to the verifiedUsers table
+        verifiedUsers.users[userId] = {
+            user = userId,
+            verified = true,
+            time = currentTime
+        }
+
+        -- Increment the count of verified users
+        verifiedUsers.count = verifiedUsers.count + 1
+
+        -- Update the countHistory
+        table.insert(verifiedUsers.countHistory, { time = currentTime, count = verifiedUsers.count })
+
+        -- Confirm the address has been added
+        ao.send({ Target = m.From, Data = "Address added successfully for new user: " .. userId })
     end
 )
 
@@ -758,6 +824,97 @@ Handlers.add(
         })
     end
 )
+
+Handlers.add(
+    "FetchAppFeatureRequests",
+    Handlers.utils.hasMatchingTag("Action", "FetchAppFeatureRequests"),
+    function(m)
+        local appId = m.Tags.AppId
+
+        -- Validate input
+        if not appId then
+            ao.send({ Target = m.From, Data = "AppId is missing." })
+            return
+        end
+
+        -- Check if the app exists in the feature requests table
+        if not featureRequestsTable[appId] then
+            ao.send({ Target = m.From, Data = "No feature requests found for this app." })
+            return
+        end
+
+        -- Fetch the feature requests
+        local featureRequests = featureRequestsTable[appId].requests
+
+        -- Check if there are feature requests
+        if not featureRequests or #featureRequests == 0 then
+            ao.send({ Target = m.From, Data = "No feature requests available for this app." })
+            return
+        end
+
+        -- Convert feature requests to JSON for sending
+        local featureRequestsJson = tableToJson(featureRequests)
+
+        -- Send the feature requests back to the user
+        ao.send({
+            Target = m.From,
+            Data = featureRequestsJson
+        })
+    end
+)
+
+
+Handlers.add(
+    "FetchAppBugReports",
+    Handlers.utils.hasMatchingTag("Action", "FetchAppBugReports"),
+    function(m)
+        local appId = m.Tags.AppId
+
+        -- Validate input
+        if not appId then
+            ao.send({ Target = m.From, Data = "AppId is missing." })
+            return
+        end
+
+        -- Check if the app exists in the bug reports table
+        if not bugsReportsTable[appId] then
+            ao.send({ Target = m.From, Data = "No bug reports found for this app." })
+            return
+        end
+
+        -- Extract the bug report entry for the given appId
+        local bugReport = bugsReportsTable[appId].requests
+
+        -- Ensure that the bug report contains the expected fields
+        if not bugReport.comment or not bugReport.time then
+            ao.send({ Target = m.From, Data = "Incomplete bug report data for this app." })
+            return
+        end
+
+        -- Collect the relevant fields into a structured table
+        local reportData = {
+            appId = appId,
+            bugReportId = bugReport.bugReportId,
+            user = bugReport.user,
+            comment = bugReport.comment,
+            time = bugReport.time,
+            count = bugReport.count,
+            username = bugReport.username,
+            profileUrl = bugReport.profileUrl,
+            replies = bugReport.replies,
+        }
+
+        -- Convert the data to JSON
+        local reportJson = tableToJson(reportData)
+
+        -- Send the bug report back to the user
+        ao.send({
+            Target = m.From,
+            Data = reportJson
+        })
+    end
+)
+
 
 Handlers.add(
     "getFavoriteApps",
@@ -2215,6 +2372,9 @@ Handlers.add(
     end
 )
 
+
+
+
 Handlers.add(
     "FetchFeatureRequestUserData",
     Handlers.utils.hasMatchingTag("Action", "FetchFeatureRequestUserData"),
@@ -2296,65 +2456,6 @@ Handlers.add(
 
 
 Handlers.add(
-    "FetchDevForumData",
-    Handlers.utils.hasMatchingTag("Action", "FetchDevForumData"),
-    function(m)
-        local forumId = m.Tags.AppId -- Use AppId as forumId
-
-        -- Validate the forumId
-        if not forumId or forumId == "" then
-            print("Error: ForumId is missing or invalid.")
-            ao.send({ Target = m.From, Data = "ForumId is missing or invalid." })
-            return
-        end
-
-        -- Check if the forumId exists in the devForumTable
-        local forumEntry = devForumTable[forumId]
-        if not forumEntry then
-            print("No forum data found for ForumId " .. forumId)
-            ao.send({ Target = m.From, Data = "No forum data found for the specified ForumId." })
-            return
-        end
-
-        -- Prepare the response by collecting data into a structured table
-        local forumData = {
-            forumId = forumId,
-            username = forumEntry.username,
-            profileUrl = forumEntry.profileUrl,
-            comment = forumEntry.comment, -- Main description
-            replies = {},
-            users = {}
-        }
-
-        -- Add user data
-        for userId, userDetails in pairs(forumEntry.users) do
-            table.insert(forumData.users, {
-                userId = userId,
-                username = userDetails.username,
-                time = userDetails.time,
-                voted = userDetails.voted
-            })
-        end
-
-        -- Add replies data
-        for _, reply in ipairs(forumEntry.replies or {}) do
-            table.insert(forumData.replies, {
-                replyId = reply.replyId,
-                comment = reply.comment,
-                username = reply.username,
-                timestamp = reply.timestamp,
-                profileUrl = reply.profileUrl
-            })
-        end
-
-        -- Debugging: Print and send the structured forum data
-        print("Structured Forum Data for ForumId " .. forumId .. ":", forumData)
-        ao.send({ Target = m.From, Data = forumData })
-    end
-)
-
-
-Handlers.add(
     "FetchFeatureRequestsData",
     Handlers.utils.hasMatchingTag("Action", "FetchFeatureRequestsData"),
     function(m)
@@ -2368,7 +2469,7 @@ Handlers.add(
         end
 
         -- Check if the AppId exists in the featureRequestsTable
-        local featureEntry = featureRequestsTable[appId]
+        local featureEntry = featureRequestsTable[appId].requests
         if not featureEntry then
             print("No feature requests data found for AppId " .. appId)
             ao.send({ Target = m.From, Data = "No feature requests data found for the specified AppId." })
@@ -2378,16 +2479,91 @@ Handlers.add(
         -- Prepare the response by collecting data into a structured table
         local featureData = {
             appId = appId,
+            featureRequestId = featureEntry.TableId,
             comment = featureEntry.comment,
             username = featureEntry.username,
             time = featureEntry.time,
-            replies = featureEntry.replies
+            profileUrl = featureEntry.profileUrl,   
+            replies = featureEntry.replies,
+        
         }
-        -- Debugging: Print and send the structured feature requests data
+
+        -- Debugging: Print the structured feature request data
         print("Feature Requests Data for AppId " .. appId .. ":", featureData)
-        ao.send({ Target = m.From, Data = featureData })
+
+        -- Convert the data to JSON (ensure `tableToJson` handles nested structures)
+        local featureDataJson = tableToJson(featureData)
+
+        -- Send the structured feature request data back to the user
+        ao.send({
+            Target = m.From,
+            Data = featureDataJson
+        })
     end
 )
+
+Handlers.add(
+    "AddFeatureRequestReply",
+    Handlers.utils.hasMatchingTag("Action", "AddFeatureRequestReply"),
+    function(m)
+        -- Validate required tags
+        local requiredTags = { "AppId", "FeatureRequestId", "username", "comment", "profileUrl" }
+        for _, tag in ipairs(requiredTags) do
+            if not m.Tags[tag] or m.Tags[tag] == "" then
+                ao.send({ Target = m.From, Data = tag .. " is missing or empty." })
+                return
+            end
+        end
+
+        local appId = m.Tags.AppId
+        local featureRequestId = m.Tags.FeatureRequestId
+        local username = m.Tags.username
+        local comment = m.Tags.comment
+        local profileUrl = m.Tags.profileUrl
+        local user = m.From
+        local currentTime = getCurrentTime(m)
+
+        -- Check if the user is the app owner
+        if not Apps[appId] or Apps[appId].Owner ~= user then
+            ao.send({ Target = m.From, Data = "Only the app owner can reply to feature requests." })
+            return
+        end
+
+        -- Find the target feature request in the featureRequestsTable
+        local featureRequestEntry = featureRequestsTable[appId].requests
+        if not featureRequestEntry or featureRequestEntry.featureRequestId ~= featureRequestId then
+            ao.send({ Target = m.From, Data = "Feature request not found for the specified AppId and FeatureRequestId." })
+            return
+        end
+
+
+        -- Check if the user has already replied to this feature request
+        for _, reply in ipairs(featureRequestEntry.replies) do
+            if reply.user == user then
+                ao.send({ Target = m.From, Data = "You have already replied to this feature request." })
+                return
+            end
+        end
+
+        -- Generate a unique ID for the reply
+        local replyId = generateReplyId()
+
+        -- Add the reply to the feature request
+        table.insert(featureRequestEntry.replies, {
+            replyId = replyId,
+            user = user,
+            profileUrl = profileUrl,
+            username = username,
+            comment = comment,
+            timestamp = currentTime
+        })
+
+        -- Confirm success
+        ao.send({ Target = m.From, Data = "Reply added successfully." })
+    end
+)
+
+
 
 
 Handlers.add(
@@ -2404,7 +2580,7 @@ Handlers.add(
         end
 
         -- Check if the AppId exists in the bugsReportsTable
-        local bugEntry = bugsReportsTable[appId]
+        local bugEntry = bugsReportsTable[appId].requests
         if not bugEntry then
             print("No bug reports data found for AppId " .. appId)
             ao.send({ Target = m.From, Data = "No bug reports data found for the specified AppId." })
@@ -2414,17 +2590,95 @@ Handlers.add(
         -- Prepare the response by collecting data into a structured table
         local bugData = {
             appId = appId,
-            comment = bugEntry.comment,
+            user = bugEntry.user,
             username = bugEntry.username,
+            comment = bugEntry.comment,
             time = bugEntry.time,
-            severity = bugEntry.severity,
-            replies = bugEntry.replies
+            profileUrl = bugEntry.profileUrl,
+            count = bugEntry.count,
+            bugReportId = bugEntry.TableId,
+            replies = bugEntry.replies,
         }
-        -- Debugging: Print and send the structured bug reports data
+
+        -- Debugging: Print the structured bug report data
         print("Bug Reports Data for AppId " .. appId .. ":", bugData)
-        ao.send({ Target = m.From, Data = bugData })
+
+        -- Convert the data to JSON (ensure `tableToJson` handles nested structures)
+        local bugDataJson = tableToJson(bugData)
+
+        -- Send the structured bug report data back to the user
+        ao.send({
+            Target = m.From,
+            Data = bugDataJson
+        })
     end
 )
+
+Handlers.add(
+    "AddBugReportReply",
+    Handlers.utils.hasMatchingTag("Action", "AddBugReportReply"),
+    function(m)
+        -- Validate required tags
+        local requiredTags = { "AppId", "BugReportId", "username", "comment", "profileUrl" }
+        for _, tag in ipairs(requiredTags) do
+            if not m.Tags[tag] or m.Tags[tag] == "" then
+                ao.send({ Target = m.From, Data = tag .. " is missing or empty." })
+                return
+            end
+        end
+
+        local appId = m.Tags.AppId
+        local bugReportId = m.Tags.BugReportId
+        local username = m.Tags.username
+        local comment = m.Tags.comment
+        local profileUrl = m.Tags.profileUrl
+        local user = m.From
+        local currentTime = getCurrentTime(m)
+
+        -- Check if the user is the app owner
+        if not Apps[appId] or Apps[appId].Owner ~= user then
+            ao.send({ Target = m.From, Data = "Only the app owner can reply to bug reports." })
+            return
+        end
+
+        -- Find the target bug report in the bugsReportTable
+        local bugReportEntry = bugsReportsTable[bugReportId].requests
+        if not bugReportEntry or bugReportEntry.user ~= user then
+            ao.send({ Target = m.From, Data = "Bug report not found or not authorized to reply." })
+            return
+        end
+
+        -- Initialize replies table if not present
+        if not bugReportEntry.replies then
+            bugReportEntry.replies = {}
+        end
+
+        -- Check if the user has already replied to this bug report
+        for _, reply in ipairs(bugReportEntry.replies) do
+            if reply.user == user then
+                ao.send({ Target = m.From, Data = "You have already replied to this bug report." })
+                return
+            end
+        end
+
+        -- Generate a unique ID for the reply
+        local replyId = generateReplyId()
+
+        -- Add the reply to the bug report
+        table.insert(bugReportEntry.replies, {
+            replyId = replyId,
+            user = user,
+            profileUrl = profileUrl,
+            username = username,
+            comment = comment,
+            timestamp = currentTime
+        })
+
+        -- Confirm success
+        ao.send({ Target = m.From, Data = "Reply added successfully." })
+    end
+)
+
 
 
 Handlers.add(
@@ -2729,13 +2983,304 @@ Handlers.add(
 )
 
 
+Handlers.add(
+    "askDevForum",
+    Handlers.utils.hasMatchingTag("Action", "askDevForum"),
+    function(m)
+
+         -- Check if all required m.Tags are present
+        local requiredTags = {
+     "AppId", "header","username","profileUrl","comment",
+        }
+
+        for _, tag in ipairs(requiredTags) do
+            if m.Tags[tag] == nil then
+                print("Error: " .. tag .. " is nil.")
+                ao.send({ Target = m.From, Data = tag .. " is missing or empty." })
+                return
+            end
+        end
+        local comment = m.Tags.comment
+        local user = m.From
+        local username = m.Tags.username
+        local profileUrl = m.Tags.profileUrl
+        local appId = m.Tags.AppId
+        local updateOption = m.Tags.header
+        local currentTime = getCurrentTime(m)
+
+        -- Validate input
+        if not appId or not updateOption or not updateOption then
+            ao.send({ Target = m.From, Data = "AppId, UpdateOption, or NewValue is missing." })
+            return
+        end
+
+        local devForumTable = devForumTable[appId]
+
+        -- Add review and update ratings
+        devForumTable.users[user] = { asked = true, time = currentTime }
+        devForumTable.count = devForumTable.count + 1
+        table.insert(devForumTable.countHistory, { time = currentTime, count = reviewsTable.count, rating = rating })
+
+
+        -- Generate unique ID for the The devForumTable
+        local DevForumId = generateDevForumId()
+        -- Add the Dev Forum Data
+        table.insert(devForumTable[appId].requests, {
+            DevForumId = DevForumId,
+            user = user,
+            username = username,
+            comment = comment,
+            timestamp = currentTime,
+            profileUrl = profileUrl,
+            replies = {},
+            
+        })
+
+        ao.send({ Target = m.From, Data = updateOption .. " updated successfully." })
+    end
+)
+
+Handlers.add(
+    "FetchDevForumData",
+    Handlers.utils.hasMatchingTag("Action", "FetchDevForumData"),
+    function(m)
+        local forumId = m.Tags.AppId -- Use AppId as forumId
+
+        -- Validate the forumId
+        if not forumId or forumId == "" then
+            print("Error: ForumId is missing or invalid.")
+            ao.send({ Target = m.From, Data = "ForumId is missing or invalid." })
+            return
+        end
+
+        -- Check if the forumId exists in the devForumTable
+        local forumEntry = devForumTable[forumId].requests
+        if not forumEntry then
+            print("No forum data found for ForumId " .. forumId)
+            ao.send({ Target = m.From, Data = "No forum data found for the specified ForumId." })
+            return
+        end
+
+        -- Prepare the response by collecting data into a structured table
+        local forumData = {
+            forumId = forumId,
+            username = forumEntry.username,
+            profileUrl = forumEntry.profileUrl,
+            comment = forumEntry.comment, -- Main description
+            replies = {},
+            users = {}
+        }
+
+        -- Add user data
+        for userId, userDetails in pairs(forumEntry.users) do
+            table.insert(forumData.users, {
+                userId = userId,
+                username = userDetails.username,
+                time = userDetails.time,
+                voted = userDetails.voted
+            })
+        end
+
+        -- Add replies data
+        for _, reply in ipairs(forumEntry.replies or {}) do
+            table.insert(forumData.replies, {
+                replyId = reply.replyId,
+                comment = reply.comment,
+                username = reply.username,
+                timestamp = reply.timestamp,
+                profileUrl = reply.profileUrl
+            })
+        end
+
+        -- Debugging: Print and send the structured forum data
+        print("Structured Forum Data for ForumId " .. forumId .. ":", forumData)
+        ao.send({ Target = m.From, Data = forumData })
+    end
+)
+
+
+Handlers.add(
+    "AddFeatureorBugReport",
+    Handlers.utils.hasMatchingTag("Action", "AddFeatureorBugReport"),
+    function(m)
+
+        -- Check if all required m.Tags are present
+        local requiredTags = {
+            "username", "profileUrl", "AppId", "comment", "TableType"
+        }
+
+        for _, tag in ipairs(requiredTags) do
+            if m.Tags[tag] == nil then
+                print("Error: " .. tag .. " is nil.")
+                ao.send({ Target = m.From, Data = tag .. " is missing or empty." })
+                return
+            end
+        end
+
+        local appId = m.Tags.AppId
+        local comment = m.Tags.comment
+        local user = m.From
+        local username = m.Tags.username
+        local profileUrl = m.Tags.profileUrl
+        local TableType = m.Tags.TableType
+        local currentTime = getCurrentTime(m)
+
+        -- Reference the correct table based on TableType
+        local targetTable = nil
+        if TableType == "bugsReportsTable" then
+            targetTable = bugsReportsTable
+        elseif TableType == "featureRequestsTable" then
+            targetTable = featureRequestsTable
+        else
+            ao.send({ Target = m.From, Data = "Invalid TableType: " .. TableType })
+            return
+        end
+
+        -- Get or initialize the app entry in the target table
+        local targetEntry = targetTable[appId]
+
+        -- Add user and update count
+        targetEntry.users[user] = { voted = true, time = currentTime }
+        targetEntry.count = targetEntry.count + 1
+        table.insert(targetEntry.countHistory, { time = currentTime, count = targetEntry.count })
+
+        -- Generate unique ID for the review or report
+        local TableId = generateTaskId()
+
+        -- Add the new entry
+        table.insert(targetEntry.requests, {
+            TableId = TableId,
+            user = user,
+            username = username,
+            comment = comment,
+            timestamp = currentTime,
+            profileUrl = profileUrl,
+            replies = {},
+        })
+
+        -- Update points and send transaction
+        local points = 100
+        arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
+        arsPoints[user].points = arsPoints[user].points + points
+
+        local amount = 5
+        ao.send({
+            Target = ARS,
+            Action = "Transfer",
+            Quantity = tostring(amount),
+            Recipient = tostring(user)
+        })
+
+        local transactionId = generateTransactionId()
+        table.insert(transactions, {
+            user = user,
+            transactionid = transactionId,
+            type = "FeatureRequest/BugReport",
+            amount = amount,
+            points = arsPoints[user].points,
+            timestamp = currentTime
+        })
+
+        ao.send({ Target = m.From, Data = "Your entry has been added successfully." })
+    end
+)
+
+
+
+
+
+Handlers.add(
+    "FetchAppComments",
+    Handlers.utils.hasMatchingTag("Action", "FetchAppComments"),
+    function(m)
+
+        local AppId = m.Tags.AppId
+        local userId = m.Tags.userId
+        local TableType = m.Tags.TableType
+
+        -- Check if the required AppId tag is present
+        if not m.Tags.AppId then
+            ao.send({ Target = m.From, Data = "AppId is missing or empty." })
+            return
+        end
+
+        if not userId then
+            ao.send({ Target = m.From, Data = "UserId is required." })
+            return
+        end
+
+        if not TableType then
+            ao.send({ Target = m.From, Data = "TableType is required." })
+            return
+        end
+
+        local commentsTable = {
+            requests = {
+                ownerId = userId, -- Save the app owner's userId here
+             comments = {}
+            }
+                 -- Initialize the comments array
+        }
+
+        -- Check if the user is the owner of the App
+        if Apps[AppId].Owner ~= userId then
+            ao.send({ Target = m.From, Data = "User is not the owner of the App." })
+            return
+        end
+
+        -- Reference the correct table based on TableType
+        local targetTable = nil
+        if TableType == "bugsReportsTable" then
+            targetTable = bugsReportsTable[AppId].requests
+        elseif TableType == "reviewsTable" then
+            targetTable = reviewsTable[AppId].reviews
+        elseif TableType == "featureRequestsTable" then
+            targetTable = featureRequestsTable[AppId].requests
+        elseif TableType == "devForumTable" then
+            targetTable = devForumTable[AppId].requests
+        else
+            ao.send({ Target = m.From, Data = "Invalid TableType: " .. TableType })
+            return
+        end
+        local Entry = targetTable
+        if not Entry then
+            print("No data found for AppId " .. AppId)
+            ao.send({ Target = m.From, Data = "No data found for the specified AppId." })
+            return
+        end
+
+        -- Fetch all comments for the given AppId
+        for _, review in ipairs(Entry) do
+            if review.comment then
+                table.insert(commentsTable.requests.comments, review.comment)
+            end
+        end
+
+        -- Check if there are any comments
+        if #commentsTable.comments == 0 then
+            ao.send({ Target = m.From, Data = "No comments found for AppId: " .. AppId })
+            return
+        end
+
+        -- Send the collected data back to the user
+        ao.send({
+            Target = AOSAI, -- Reply to the sender
+            Action = "openTradesResponse",
+            Data = json.encode(commentsTable)
+        })
+    end
+)
+
+
+
+
 -- Handler to get data from a specific table
 Handlers.add(
     "getTableData",
     Handlers.utils.hasMatchingTag("Action", "getTableData"),
     function(m)
         local AppId = m.Tags.AppId
-        local userId = m.From
+        local userId = m.Tags.userId
         local TableType = m.Tags.TableType
 
         -- Validate inputs
@@ -2800,7 +3345,6 @@ Handlers.add(
                 
             })
         end
-
         -- Send the collected data back to the user
         ao.send({
             Target = m.From, -- Reply to the sender
@@ -2809,6 +3353,7 @@ Handlers.add(
         })
     end
 )
+
 
 
 

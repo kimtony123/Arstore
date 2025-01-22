@@ -94,6 +94,7 @@ const aoprojectsinfo = () => {
   const [loadingAppInfo, setLoadingAppInfo] = useState(true);
   const [rating, setRating] = useState(0); // ✅ State to hold the rating value
   const [updateApp, setUpdatingApp] = useState(false);
+  const [useAi, setUsingAi] = useState(false);
 
   const [projectTypeValue, setProjectTypeValue] = useState<
     string | undefined
@@ -238,16 +239,15 @@ const aoprojectsinfo = () => {
       const getTradeMessage = await message({
         process: AOS,
         tags: [
-          { name: "Action", value: "getTableData" },
+          { name: "Action", value: "FetchAppComments" },
           { name: "AppId", value: String(AppId) },
           { name: "TableType", value: String(projectTypeValue) },
         ],
-
         signer: createDataItemSigner(othent),
       });
       const { Messages, Error } = await result({
         message: getTradeMessage,
-        process: ARS,
+        process: AOS,
       });
 
       if (Error) {
@@ -269,6 +269,38 @@ const aoprojectsinfo = () => {
     }
   };
 
+  const UseAi = async () => {
+    setUsingAi(true);
+    try {
+      const getTradeMessage = await message({
+        process: AOS,
+        tags: [{ name: "Action", value: "UseAI" }],
+        signer: createDataItemSigner(othent),
+      });
+      const { Messages, Error } = await result({
+        message: getTradeMessage,
+        process: AOS,
+      });
+
+      if (Error) {
+        alert("Error Updating Project:" + Error);
+        return;
+      }
+      if (!Messages || Messages.length === 0) {
+        alert("No messages were returned from ao. Please try later.");
+        return;
+      }
+      const data = Messages[0].Data;
+      alert(data);
+      setUpdateValue("");
+    } catch (error) {
+      alert("There was an error in the trade process: " + error);
+      console.error(error);
+    } finally {
+      setUsingAi(false);
+    }
+  };
+
   const src = "AO.svg";
 
   return (
@@ -278,7 +310,7 @@ const aoprojectsinfo = () => {
       )}
     >
       <div className="text-white flex flex-col items-center lg:items-start">
-        <Container>
+        <Container textAlign="center">
           <Divider />
           <Menu pointing>
             <MenuItem
@@ -341,9 +373,16 @@ const aoprojectsinfo = () => {
               onClick={() => updateproject(AppId)}
             >
               {" "}
-              Analyse.
+              Deploy Data
             </Button>
           </Form>
+        </Container>
+        <Divider />
+        <Container textAlign="center">
+          <Button loading={useAi} color="purple" onClick={() => UseAi()}>
+            {" "}
+            Analyse.
+          </Button>
         </Container>
         <Divider />
       </div>

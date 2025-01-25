@@ -57,6 +57,16 @@
     "generateTaskId",
     "generateTableId",
     "generateRatingsChart",
-    "airdropTable"
-  ]
+    "airdropTable",
+    "getBalance",
+    "calculateWeightedAmount",
+    "send",
+    "distributeTokens",
+    "calculateAirdropWithMultipleTokens",
+    "qualifiedUsers",
+    "tokenProcessIds",
+    "totalAirdropAmount",
+    "mockBalances"
+  ],
+  "Lua.diagnostics.disable": ["undefined-global"]
 }

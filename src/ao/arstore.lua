@@ -165,6 +165,54 @@ end
 
 
 
+-- Function to get the balance of a specific user for a specific token
+function getBalance(userId, tokenProcessId)
+    local balance = 0
+
+    -- Simulating a handler call to fetch balance
+    Handlers.call("balance", {
+        Tags = { Recipient = userId, Target = tokenProcessId },
+        reply = function(response)
+            if response and response.Balance then
+                balance = tonumber(response.Balance) or 0
+            end
+        end
+    })
+
+    return balance
+end
+
+-- Function to calculate the weighted amount based on balances of four assets
+function calculateWeightedAmount(userId, tokenProcessIds, totalAirdropAmount)
+    local totalBalance = 0
+    local weights = {}
+    local individualBalances = {}
+
+    -- Fetch balances for each token
+    for _, tokenProcessId in ipairs(tokenProcessIds) do
+        local balance = getBalance(userId, tokenProcessId)
+        table.insert(individualBalances, balance)
+        totalBalance = totalBalance + balance
+    end
+
+    -- Calculate weights for each asset (balance / totalBalance)
+    for _, balance in ipairs(individualBalances) do
+        local weight = (totalBalance > 0) and (balance / totalBalance) or 0
+        table.insert(weights, weight)
+    end
+
+    -- Calculate the airdrop amount for this user (80% of total based on weights)
+    local weightedAmount = 0
+    for i, weight in ipairs(weights) do
+        weightedAmount = weightedAmount + (weight * totalAirdropAmount * 0.8)
+    end
+
+    return weightedAmount
+end
+
+
+
+
 Handlers.add(
     "AddApp",
     Handlers.utils.hasMatchingTag("Action", "AddApp"),
@@ -3443,7 +3491,6 @@ Handlers.add(
         end
     end
 )
-
 
 
 

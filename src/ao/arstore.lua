@@ -4,8 +4,9 @@ local math = require("math")
 
 -- Credentials token
 ARS = "e-lOufTQJ49ZUX1vPxO-QxjtYXiqM8RQgKovrnJKJ18"
-
 AOSAI = "7wea_1MSDmZMm1Om9N8vdrkay9V9O8vscmSVO-2XdEY"
+
+
 Apps =  Apps or {}
 reviewsTable = reviewsTable or {}
 upvotesTable = upvotesTable or {}
@@ -21,7 +22,7 @@ verifiedUsers = verifiedUsers or {}
 transactions = transactions or {}
 taskTable = taskTable or {}
 points = points or {}
-Airdrops = Airdrops or {}
+airdropTable = airdropTable or {}
 arsPoints = arsPoints or {}
 newTable = newTable or {}
 inboxTable = inboxTable or {}
@@ -140,112 +141,28 @@ end
 end
 
 
-function createAppLeaderboard(Apps)
-  local leaderboard = {}
+function generateRatingsChart(ratingsTableEntry)
+    -- Initialize a table to store the ratings count
+    local ratingsData = { [1] = 0, [2] = 0, [3] = 0, [4] = 0, [5] = 0 }
 
-  -- Define category weights (you can tweak these)
-  local categoryWeights = {
-    ["Infrastructure"] = 2.0,
-    ["Developer Tooling"] = 1.8,
-    ["DEFI"] = 1.6,
-    ["Social"] = 1.4,
-    ["Gaming"] = 1.4,
-    ["Community"] = 1.2,
-    ["News and Knowledge"] = 1.2,
-    ["Publishing"] = 1.2,
-    ["Wallet"] = 1.2,
-    ["Analytics"] = 1.1,
-    ["Email"] = 1.0,
-    ["Exchanges"] = 1.0,
-    ["Incubators"] = 1.0,
-    ["Storage"] = 1.0,
-    ["Entertainment"] = 0.9,
-    ["Nfts and Metaverse"] = 0.9,
-    ["Memecoins"] = 0.5
-  }
+    -- Ensure countHistory exists and process it
+    if ratingsTableEntry and ratingsTableEntry.countHistory then
+        for _, record in ipairs(ratingsTableEntry.countHistory) do
+            -- Validate and update ratings
+            local rating = record.rating
+            if ratingsData[rating] ~= nil then
+                ratingsData[rating] = ratingsData[rating] + 1
+            else
+                print("Invalid rating found:", rating)
+            end
+        end
+    else
+        print("Invalid or missing countHistory in ratingsTableEntry")
+    end
 
-  -- Iterate through appData to calculate scores for each app
-  for appID, app in pairs(Apps) do
-    local categoryWeight = categoryWeights[app.ProjectType] or 1.0
-
-    -- Access the correct values inside the tables
-    local upvotes = app.Upvotes and app.Upvotes.count or 0
-    local downvotes = app.Downvotes and app.Downvotes.count or 0
-    local comments = app.Comments and app.Comments.count or 0
-    local reviews = app.Reviews and app.Reviews.count or 0
-    local ratings = app.Ratings and app.Ratings.count or 0
-    local featureRequests = app.FeatureRequests and app.FeatureRequests.count or 0
-    local bugsReports = app.BugsReports and app.BugsReports.count or 0
-    local favorites = app.Favorites and #app.Favorites or 0
-    local helpfulRatings = app.HelpfulRatings and app.HelpfulRatings.count or 0
-    local unHelpfulRatings = app.UnHelpfulRatings and app.UnHelpfulRatings.count or 0
-
-    -- Scoring weights (you can tweak these)
-    local upvoteWeight = 1.0
-    local downvotePenalty = 0.5
-    local commentWeight = 0.8
-    local reviewWeight = 1.2
-    local ratingWeight = 1.5
-    local featureRequestWeight = 1.1
-    local bugReportPenalty = 0.8
-    local favoriteWeight = 0.9
-    local helpfulRatingWeight = 1.3
-    local unhelpfulRatingPenalty = 0.7
-
-    -- Calculate raw score
-    local rawScore =
-      (upvotes * upvoteWeight) -
-      (downvotes * downvotePenalty) +
-      (comments * commentWeight) +
-      (reviews * reviewWeight) +
-      (ratings * ratingWeight) +
-      (featureRequests * featureRequestWeight) -
-      (bugsReports * bugReportPenalty) +
-      (favorites * favoriteWeight) +
-      (helpfulRatings * helpfulRatingWeight) -
-      (unHelpfulRatings * unhelpfulRatingPenalty)
-
-    -- Apply category multiplier
-    local finalScore = rawScore * categoryWeight
-    
-    -- Add app data to leaderboard
-    leaderboard[appID] = {
-      name = app.AppName,
-      score = finalScore,
-      category = app.ProjectType,
-      upvotes = upvotes,
-      downvotes = downvotes,
-      comments = comments,
-      reviews = reviews,
-      ratings = ratings,
-      featureRequests = featureRequests,
-      bugsReports = bugsReports,
-      favorites = favorites,
-      helpfulRatings = helpfulRatings,
-        unHelpfulRatings = unHelpfulRatings,
-        AppIconUrl = app.AppIconUrl
-      
-    }
-  end
-
-  -- Convert leaderboard table into a sortable array
-  local sortableLeaderboard = {}
-  for appID, stats in pairs(leaderboard) do
-    table.insert(sortableLeaderboard, { AppID = appID, stats = stats })
-  end
-
-  -- Sort the leaderboard by score (descending)
-  table.sort(sortableLeaderboard, function(a, b)
-    return a.stats.score > b.stats.score
-  end)
-
-  -- Assign ranks after sorting
-  for rank, app in ipairs(sortableLeaderboard) do
-    app.rank = rank
-  end
-
-  return sortableLeaderboard
+    return ratingsData
 end
+
 
 
 Handlers.add(
@@ -275,6 +192,7 @@ Handlers.add(
         local devForumId = generateDevForumId()
         local newTableId = generateNewUpdateId()
         local taskId = generateTaskId()
+        local airdropId = generateAirdropId()
         local user = m.From
         local username = m.Tags.username
         local profileUrl = m.Tags.profileUrl
@@ -294,21 +212,21 @@ Handlers.add(
                                 upvoted = {
                                     count = 1,
                                     countHistory = { {  time = currentTime, count = 1 } },
-                                    users = {[user] = { username = username, voted = true, time = currentTime }}
+                                    users = {[user] = { time = currentTime }}
                                     },
                                 downvoted = { 
                                     count = 0,
                                     countHistory = { { time = currentTime, count = 0 } },
-                                    users = {[user] = {  username = username,voted = true, time = currentTime }}},
+                                    users = {[user] = { time = currentTime }}},
                                 foundHelpful = { 
                                     count = 1,
                                     countHistory = { { time = currentTime, count = 1 } },
-                                    users = {[user] = { username = username, voted = true, time = currentTime }} },
+                                    users = {[user] = { time = currentTime }} },
                             
                                 foundUnhelpful = { 
                                     count = 0,
                                     countHistory = { { time = currentTime, count = 0 } },
-                                    users = {[user] = { username = username, voted = true, time = currentTime }}}
+                                    users = {[user] = { time = currentTime }}}
                                 
                                 },
                     replies = {
@@ -319,20 +237,19 @@ Handlers.add(
                             username = username,
                             comment = "Thank you for your feedback!",
                             timestamp = currentTime,
-                            users = {[user] = { username = username, voted = true, time = currentTime }}         
                         }
                     }
                 } },
                 count = 1,
                 countHistory = { { time = currentTime, count = 1 } },
-                users = {[user] = { voted = true, time = currentTime }} 
+                users = {[user] = { time = currentTime }} 
         }
 
         upvotesTable[AppId] = {
         count = 1,
             countHistory = { { time = currentTime, count = 1 } },
             users = {
-                [user] = { username = username, voted = true, time = currentTime }
+                [user] = { time = currentTime }
             }
         }
 
@@ -340,7 +257,7 @@ Handlers.add(
             count = 0,
             countHistory = { { time = currentTime, count = 0 } },
             users = {
-                [user] = { username = username, voted = false, time = currentTime }
+                [user] = { time = currentTime }
             }
         }
 
@@ -360,14 +277,13 @@ Handlers.add(
                             username = username,
                             comment = "We will Add that feature soon",
                             timestamp = currentTime,
-                            users = {[user] = { username = username, voted = true, time = currentTime }}         
                         }
                     },
             }},
             count = 1,
             countHistory = { { time = currentTime, count = 1 } },
             users = {
-                [user] = { username = username, voted = false, time = currentTime }},
+                [user] = { time = currentTime }},
         }
 
         bugsReportsTable[AppId] = {
@@ -378,7 +294,6 @@ Handlers.add(
             time = currentTime,
             username = username,
             comment ="Change the UI",
-            count = 1,
             replies = {
                         {
                             replyId = replyId,
@@ -387,13 +302,34 @@ Handlers.add(
                             username = username,
                             comment = "We will Start working on that Bug Asap.",
                             timestamp = currentTime,
-                            users = {[user] = { username = username, voted = true, time = currentTime }}         
                         }
                     },
 
-            }},
+            } },
+            count = 1,
             countHistory = { { time = currentTime, count = 1 } },
-            users = {[user] = { username = username, voted = false, time = currentTime}},
+            users = {[user] = { time = currentTime}},
+           
+        }
+
+        airdropTable[AppId] = {
+            airdrops = {{
+            airdropId = airdropId,
+            Owner = user,
+            appId = AppId,
+            tokenId = ARS,
+            amount = 5,
+            timestamp = currentTime,
+            appname = m.Tags.AppName,
+            status = "Pending",
+            airdropsReceivers = "reviewsTable",
+            startTime = currentTime,
+            endTime = 1737608400,
+            Description = "Review and rate Our project between today and 8th Febraury and Earn tokens"
+            } },
+            count = 1,
+            countHistory = { { time = currentTime, count = 1 } },
+            users = {[user] = { time = currentTime}},
            
         }
             
@@ -413,21 +349,19 @@ Handlers.add(
                             profileUrl = profileUrl,
                             username = username,
                             comment = "Hey, Here is a link to get you started.",
-                            timestamp = currentTime,
-                            users = {[user] = { username = username, voted = true, time = currentTime }}         
-                        }
+                            timestamp = currentTime,                        }
                     },
             }},
             count = 1,
             countHistory = { { time = currentTime, count = 1 } },
-            users = {[user] = { username = username, voted = false, time = currentTime}},
+            users = {[user] = { time = currentTime}},
             }
             
         favoritesTable[AppId] = {
          count = 1,
             countHistory = { { time = currentTime, count = 1 } },
             users = {
-                [user] = { username = username, voted = true, time = currentTime }
+                [user] = { time = currentTime }
             }
            
         }
@@ -437,7 +371,7 @@ Handlers.add(
             count = 1,
             countHistory = { { time = currentTime, count = 1 , rating = 5} },
             users = {
-                [user] = { username = username, voted = true, time = currentTime }
+                [user] = { time = currentTime }
             }
         }
 
@@ -445,7 +379,7 @@ Handlers.add(
             count = 1,
             countHistory = { { time = currentTime, count = 1 } },
             users = {
-                [user] = { username = username, voted = true, time = currentTime }
+                [user] = { time = currentTime }
             }
         }
 
@@ -453,7 +387,7 @@ Handlers.add(
             count = 0,
             countHistory = { { time = currentTime, count = 0 } },
             users = {
-                [user] = { username = username, voted = false, time = currentTime }
+                [user] = { time = currentTime }
             }
         }
 
@@ -461,7 +395,7 @@ Handlers.add(
            count = 0,
             countHistory = { { time = currentTime, count = 0 } },
             users = {
-                [user] = { username = username, voted = false, time = currentTime }
+                [user] = { time = currentTime }
             }
         }
 
@@ -472,7 +406,7 @@ Handlers.add(
             }},
             count = 1,
             countHistory = { { time = currentTime, count = 1} },
-            users = {[user] = { username = username, voted = true, time = currentTime }},
+            users = {[user] = { time = currentTime }},
             currentTime = currentTime
         }
          taskTable[AppId] = {
@@ -485,9 +419,12 @@ Handlers.add(
             count = 1,
             status = true,
             countHistory = { { time = currentTime, count = 1} },
-            users = {[user] = { username = username, voted = true, time = currentTime }},
+            users = {[user] = { time = currentTime }},
             currentTime = currentTime
         }
+
+        local ratingsChart = generateRatingsChart(ratingsTable[AppId])
+
         -- Create the App record
         Apps[AppId] = {
             AppId = AppId,
@@ -522,7 +459,8 @@ Handlers.add(
             FlagTable = flagTable[AppId].count,
             WhatsNew = newTable[AppId].comment,
             LastUpdated = newTable[AppId].currentTime,
-            DeveloperActivity = devForumTable[AppId].count
+            DeveloperActivity = devForumTable[AppId].count,
+            RatingsChart = ratingsChart
         }
 
         local points = 100
@@ -555,7 +493,7 @@ Handlers.add(
         print("Apps table after update: " .. tableToJson(Apps))
 
         -- Send success message
-        ao.send({ Target = m.From, Data = "Successfully Created The App" })
+        ao.send({ Target = m.From, Data = "Successfully Created The Project." })
     end
 )
 
@@ -568,28 +506,20 @@ Handlers.add(
         local currentTime = getCurrentTime(m)
 
         -- Validate input
-        if not userId  then
+        if not userId then
             ao.send({ Target = m.From, Data = "userId is missing." })
             return
         end
 
-        -- Initialize the verifiedUsers table if it doesn't exist
-        verifiedUsers = verifiedUsers or {
-            count = 0,
-            countHistory = {},
-            users = {}
-        }
 
-        -- Check if the user already exists in the verifiedUsers list
+           -- Check if the user already exists in the verifiedUsers list
         if verifiedUsers.users[userId] then
             ao.send({ Target = m.From, Data = "Welcome back, user: " .. userId })
             return
         end
-
+        
         -- Add the new user to the verifiedUsers table
         verifiedUsers.users[userId] = {
-            user = userId,
-            verified = true,
             time = currentTime
         }
 
@@ -694,20 +624,9 @@ Handlers.add(
             unHelpfulRatingsTable[appId] = nil
             flagTable[appId] = nil
             devForumTable[appId] = nil
-
-            -- Check and delete the app's airdrops if the table exists
-            if Airdrops and Airdrops[appId] then
-                Airdrops[appId] = nil
-                print("Airdrops for AppId " .. appId .. " deleted successfully.")
-            elseif not Airdrops then
-                print("Airdrops table is nil. Skipping deletion of airdrops.")
-            else
-                print("No airdrops found for AppId " .. appId .. ".")
-            end
-
-            -- Debugging: Print confirmation
-            print("App with AppId " .. appId .. " and all associated data deleted successfully.")
-
+            newTable[appId] = nil
+            airdropTable[appId] = nil
+            taskTable[appId] = nil
             -- Send success message
             ao.send({ Target = m.From, Data = "Successfully deleted the app, all associated data, and airdrops." })
         else
@@ -773,8 +692,8 @@ Handlers.add(
             BannerUrl2 = appDetails.BannerUrl2,
             BannerUrl3 = appDetails.BannerUrl3,
             BannerUrl4 = appDetails.BannerUrl4,
-            LastUpdated = appDetails.LastUpdated
-            
+            LastUpdated = appDetails.LastUpdated,
+            RatingsChart = appDetails.RatingsChart
         }
 
         -- Send the app info as a JSON response
@@ -984,35 +903,7 @@ Handlers.add(
     end
 )
 
-Handlers.add(
-    "fetch_app_leaderboard",
-    Handlers.utils.hasMatchingTag("Action", "fetch_app_leaderboard"),
-    function(m)
-      
-        -- Create the leaderboard
-        local leaderboard = createAppLeaderboard(Apps)
-        
-        -- Debugging: Print leaderboard before converting it to JSON
-        print("App Leaderboard Table: ")
-        for _, app in ipairs(leaderboard) do
-            local name = app.stats.name or "Unknown"
-            local score = app.stats.score or 0.0
-            local category = app.stats.category or "Uncategorized"
-            local upvotes = app.stats.upvotes or 0
-            local comments = app.stats.comments or 0
-            local activeUsers = app.stats.activeUsers or 0
-            local developerActivity = app.stats.developerActivity or 0
 
-            print(string.format("AppID: %s, Name: %s, Score: %.2f, Category: %s, Upvotes: %d, Comments: %d, Active Users: %d, Developer Activity: %d", 
-                app.AppID, name, score, category, upvotes, comments, activeUsers, developerActivity))
-        end
-
-        -- Convert the leaderboard table to JSON and send it to the user
-        local jsonData = tableToJson(leaderboard)
-        print("App Leaderboard JSON: " .. jsonData) -- Debugging: Print the JSON data
-        ao.send({ Target = m.From, Data = jsonData })
-    end
-)
 
 
 Handlers.add(
@@ -2101,10 +1992,6 @@ Handlers.add(
 
 
 
-
-
-
-
 Handlers.add(
     "UpvoteReview",
     Handlers.utils.hasMatchingTag("Action", "UpvoteReview"),
@@ -2374,29 +2261,34 @@ Handlers.add(
 
 
 
-
 Handlers.add(
-    "FetchFeatureRequestUserData",
-    Handlers.utils.hasMatchingTag("Action", "FetchFeatureRequestUserData"),
+    "FetchFeatureRequestUserDataN",
+    Handlers.utils.hasMatchingTag("Action", "FetchFeatureRequestUserDataN"),
     function(m)
         local userId = m.From -- Get the ID of the user who called the function
 
         -- Initialize a table to store all relevant feature requests for the user
         local userFeatureRequests = {}
 
-        -- Iterate over all feature requests in the table
-        for featureRequestId, featureRequest in pairs(featureRequestsTable) do
-            -- Check if the user is part of the current feature request
-            local userInfo = featureRequest.users[userId]
-                          -- Collect user-specific data for this feature request
-                table.insert(userFeatureRequests, {
-                    featureRequestId = featureRequestId,
-                    username = userInfo.username,
-                    time = userInfo.time,
-                    voted = userInfo.voted,
-                    comment = featureRequest.comment, -- Include the main comment
-                    replies = featureRequest. replies -- Include the user's replies
-                })
+        -- Iterate over all feature requests in the featureRequestsTable
+        for featureId, featureEntry in pairs(featureRequestsTable) do
+            -- Check if the user is part of the current feature's users
+            local userInfo = featureEntry.users[userId]
+            if userInfo then
+                -- Iterate through the requests for this feature
+                for _, request in ipairs(featureEntry.requests or {}) do
+                    -- Collect user-specific data for this request
+                    table.insert(userFeatureRequests, {
+                        featureRequestId = featureId,
+                        username = userInfo.username,
+                        time = userInfo.time,
+                        comment = request.comment, -- Main description of the feature request
+                        replies = request.replies, -- Include all replies for this feature request
+                        profileUrl = request.profileUrl, -- User's profile URL
+                        tableId = request.TableId -- Include TableId if present
+                    })
+                end
+            end
         end
 
         -- Handle the case where no feature requests are found for the user
@@ -2406,38 +2298,42 @@ Handlers.add(
             return
         end
 
+        -- Convert the userFeatureRequests table to JSON for sending
+        local userFeatureRequestsJson = tableToJson(userFeatureRequests)
+
         -- Debugging: Print and send the collected data
-        print("Feature Request User Data with Replies for user " .. userId .. ":", userFeatureRequests)
-        ao.send({ Target = m.From, Data = userFeatureRequests })
+        print("Feature Request User Data for user " .. userId .. ":", userFeatureRequestsJson)
+        ao.send({ Target = m.From, Data = userFeatureRequestsJson })
     end
 )
 
-
-
-
 Handlers.add(
-    "FetchBugReportUserData",
-    Handlers.utils.hasMatchingTag("Action", "FetchBugReportUserData"),
+    "FetchBugReportUserDataN",
+    Handlers.utils.hasMatchingTag("Action", "FetchBugReportUserDataN"),
     function(m)
         local userId = m.From -- Get the ID of the user who called the function
 
         -- Initialize a table to store all relevant bug reports for the user
         local userBugReports = {}
 
-        -- Iterate over all bug reports in the table
-        for bugReportId, bugReport in pairs(bugsReportsTable) do
-            -- Check if the user is part of the current bug report
-            local userInfo = bugReport.users[userId]
+        -- Iterate over all bug reports in the bugsReportsTable
+        for bugId, bugEntry in pairs(bugsReportsTable) do
+            -- Check if the user is part of the current bug's users
+            local userInfo = bugEntry.users[userId]
             if userInfo then
-                -- Collect user-specific data for this bug report
-                table.insert(userBugReports, {
-                    bugReportId = bugReportId,
-                    username = userInfo.username,
-                    time = userInfo.time,
-                    status = bugReport.status, -- Include the current status of the bug report
-                    comment = bugReport.comment, -- Include the main description
-                    replies = bugReport.replies -- Include all replies for this bug report
-                })
+                -- Iterate through the requests for this bug report
+                for _, request in ipairs(bugEntry.requests or {}) do
+                    -- Collect user-specific data for this request
+                    table.insert(userBugReports, {
+                        bugReportId = bugId,
+                        username = userInfo.username,
+                        time = userInfo.time,
+                        comment = request.comment, -- Main description of the bug
+                        replies = request.replies, -- Include all replies for this bug report
+                        profileUrl = request.profileUrl, -- User's profile URL
+                        tableId = request.TableId -- Include TableId if present
+                    })
+                end
             end
         end
 
@@ -2448,56 +2344,49 @@ Handlers.add(
             return
         end
 
+        -- Convert the userBugReports table to JSON for sending
+        local userBugReportsJson = tableToJson(userBugReports)
+
         -- Debugging: Print and send the collected data
-        print("Bug Report User Data with Replies for user " .. userId .. ":", userBugReports)
-        ao.send({ Target = m.From, Data = userBugReports })
+        print("Bug Report User Data for user " .. userId .. ":", userBugReportsJson)
+        ao.send({ Target = m.From, Data = userBugReportsJson })
     end
 )
 
 
 Handlers.add(
-    "FetchFeatureRequestsData",
-    Handlers.utils.hasMatchingTag("Action", "FetchFeatureRequestsData"),
+    "FetchFeaturesDataN",
+    Handlers.utils.hasMatchingTag("Action", "FetchFeaturesDataN"),
     function(m)
-        local appId = m.Tags.AppId -- Use AppId from the message tags
+        local appId = m.Tags.AppId
 
-        -- Validate the AppId
-        if not appId or appId == "" then
-            print("Error: AppId is missing or invalid.")
-            ao.send({ Target = m.From, Data = "AppId is missing or invalid." })
+        -- Validate input
+        if not appId then
+            ao.send({ Target = m.From, Data = "AppId is missing." })
             return
         end
 
-        -- Check if the AppId exists in the featureRequestsTable
-        local featureEntry = featureRequestsTable[appId].requests
-        if not featureEntry then
-            print("No feature requests data found for AppId " .. appId)
-            ao.send({ Target = m.From, Data = "No feature requests data found for the specified AppId." })
+        -- Check if the app exists in the featureRequestsTable table
+        if not featureRequestsTable[appId] then
+            ao.send({ Target = m.From, Data = "No info found for this app." })
             return
         end
 
-        -- Prepare the response by collecting data into a structured table
-        local featureData = {
-            appId = appId,
-            featureRequestId = featureEntry.TableId,
-            comment = featureEntry.comment,
-            username = featureEntry.username,
-            time = featureEntry.time,
-            profileUrl = featureEntry.profileUrl,   
-            replies = featureEntry.replies,
-        
-        }
+        -- Fetch the info
+        local featuresInfo = featureRequestsTable[appId].requests
 
-        -- Debugging: Print the structured feature request data
-        print("Feature Requests Data for AppId " .. appId .. ":", featureData)
+        -- Check if there are reviews
+        if not featuresInfo or #featuresInfo == 0 then
+            ao.send({ Target = m.From, Data = "No info available for this app." })
+            return
+        end
 
-        -- Convert the data to JSON (ensure `tableToJson` handles nested structures)
-        local featureDataJson = tableToJson(featureData)
-
-        -- Send the structured feature request data back to the user
+        -- Convert reviews to JSON for sending
+        local reviewsJson = tableToJson(featuresInfo)
+        -- Send the reviews back to the user
         ao.send({
             Target = m.From,
-            Data = featureDataJson
+            Data = reviewsJson
         })
     end
 )
@@ -2567,52 +2456,44 @@ Handlers.add(
 
 
 Handlers.add(
-    "FetchBugReportsData",
-    Handlers.utils.hasMatchingTag("Action", "FetchBugReportsData"),
+    "FetchBugReportsN",
+    Handlers.utils.hasMatchingTag("Action", "FetchBugReportsN"),
     function(m)
-        local appId = m.Tags.AppId -- Use AppId from the message tags
+        local appId = m.Tags.AppId
 
-        -- Validate the AppId
-        if not appId or appId == "" then
-            print("Error: AppId is missing or invalid.")
-            ao.send({ Target = m.From, Data = "AppId is missing or invalid." })
+        -- Validate input
+        if not appId then
+            ao.send({ Target = m.From, Data = "AppId is missing." })
             return
         end
 
-        -- Check if the AppId exists in the bugsReportsTable
-        local bugEntry = bugsReportsTable[appId].requests
-        if not bugEntry then
-            print("No bug reports data found for AppId " .. appId)
-            ao.send({ Target = m.From, Data = "No bug reports data found for the specified AppId." })
+        -- Check if the app exists in the devForumTable table
+        if not bugsReportsTable[appId] then
+            ao.send({ Target = m.From, Data = "No info found for this app." })
             return
         end
 
-        -- Prepare the response by collecting data into a structured table
-        local bugData = {
-            appId = appId,
-            user = bugEntry.user,
-            username = bugEntry.username,
-            comment = bugEntry.comment,
-            time = bugEntry.time,
-            profileUrl = bugEntry.profileUrl,
-            count = bugEntry.count,
-            bugReportId = bugEntry.TableId,
-            replies = bugEntry.replies,
-        }
+        -- Fetch the info
+        local bugReportsInfo = bugsReportsTable[appId].requests
 
-        -- Debugging: Print the structured bug report data
-        print("Bug Reports Data for AppId " .. appId .. ":", bugData)
+        -- Check if there are reviews
+        if not bugReportsInfo or #bugReportsInfo == 0 then
+            ao.send({ Target = m.From, Data = "No info available for this app." })
+            return
+        end
 
-        -- Convert the data to JSON (ensure `tableToJson` handles nested structures)
-        local bugDataJson = tableToJson(bugData)
+        -- Convert reviews to JSON for sending
+        local reviewsJson = tableToJson(bugReportsInfo)
 
-        -- Send the structured bug report data back to the user
+        -- Send the reviews back to the user
         ao.send({
             Target = m.From,
-            Data = bugDataJson
+            Data = reviewsJson
         })
     end
 )
+
+
 
 Handlers.add(
     "AddBugReportReply",
@@ -2646,11 +2527,6 @@ Handlers.add(
         if not bugReportEntry or bugReportEntry.user ~= user then
             ao.send({ Target = m.From, Data = "Bug report not found or not authorized to reply." })
             return
-        end
-
-        -- Initialize replies table if not present
-        if not bugReportEntry.replies then
-            bugReportEntry.replies = {}
         end
 
         -- Check if the user has already replied to this bug report
@@ -2736,87 +2612,152 @@ Handlers.add(
 )
 
 
-
-
 Handlers.add(
-    "DepositConfirmed",
-    Handlers.utils.hasMatchingTag("Action", "DepositConfirmed"),
+    "DepositConfirmedN",
+    Handlers.utils.hasMatchingTag("Action", "DepositConfirmedN"),
     function(m)
         local userId = m.From
         local appId = m.Tags.AppId
         local tokenId = m.Tags.processId
         local amount = tonumber(m.Tags.Amount)
-        
-        print("Handler triggered with message:", m)
-        print("UserId:", userId, "AppId:", appId, "TokenId:", tokenId, "Amount:", amount)
-        
+
         -- Validate input
         if not appId or not tokenId or not amount then
             ao.send({ Target = m.From, Data = "AppId, processId, or Amount is missing." })
             return
         end
 
-        if not Apps[appId] then
+        -- Check if the App exists
+        local app = Apps[appId]
+        if not app then
             ao.send({ Target = m.From, Data = "Invalid AppId: " .. tostring(appId) })
             return
         end
-        
-        local Appname = Apps[appId].AppName or "Unknown"
+
+        -- Validate ownership: only the App Owner can call this handler
+        if app.Owner ~= userId then
+            ao.send({ Target = m.From, Data = "You are not authorized to perform this action. Only the App Owner can confirm deposits." })
+            return
+        end
+
+        local Appname = app.AppName or "Unknown"
         local currentTime = getCurrentTime(m)
         local airdropId = generateAirdropId()
         local status = "Pending"
 
-        -- Create a new entry for the deposit
-        table.insert(Airdrops[airdropId], {
-            userId = userId,
-            appId = appId,
-            tokenId = tokenId,
-            amount = amount,
+        -- Insert the new airdrop into the appId's airdrops list
+        table.insert(airdropTable[appId].airdrops, {
             timestamp = currentTime,
-            appname = Appname,
+            status = status,
             airdropId = airdropId,
-            status = status
+            appId = appId,
+            appname = Appname,
+            Owner = userId,
+            amount = amount,
+            tokenId = tokenId
         })
-        
-        -- Send confirmation back to the sender
-        ao.send({ Target = m.From, Data = "Deposit confirmed for AppId: " .. appId .. ", ProcessId: " .. tokenId .. ", Amount: " .. amount })
+
+        -- Update count and history
+        airdropTable[appId].count = (airdropTable[appId].count or 0) + 1
+        table.insert(airdropTable[appId].countHistory, {
+            count = airdropTable[appId].count,
+            time = currentTime
+        })
+
+        -- Send confirmation back to the App Owner
+        ao.send({
+            Target = m.From,
+            Data = "Deposit confirmed for AppId: " .. appId .. ", ProcessId: " .. tokenId .. ", Amount: " .. amount
+        })
     end
 )
 
 
 
+
+
 Handlers.add(
-    "getAllAirdrops",
-    Handlers.utils.hasMatchingTag("Action", "getAllAirdrops"),
+    "getAllAirdropsN",
+    Handlers.utils.hasMatchingTag("Action", "getAllAirdropsN"),
     function(m)
-        -- Check if the airdrops table exists
-        if not Airdrops or next(Airdrops) == nil then
-            ao.send({ Target = m.From, Data = "{}" }) -- Send an empty JSON if there are no airdrops
+      
+        -- Check if the table is empty
+        if next(airdropTable) == nil then
+            print("Airdrop table is empty.")
+            ao.send({ Target = m.From, Data = "{}" })
             return
         end
-        -- Convert the entire airdrops table to JSON and send it
-        ao.send({ Target = m.From, Data = tableToJson(Airdrops) })
+
+        -- Optionally flatten the data into a list
+        local flatAirdrops = {}
+        for appId, appData in pairs(airdropTable) do
+            for _, airdrop in ipairs(appData.airdrops) do
+                table.insert(flatAirdrops, airdrop)
+            end
+        end
+
+
+        -- Send the response back
+        ao.send({ Target = m.From, Data = tableToJson(flatAirdrops) })
     end
 )
 
 
+Handlers.add(
+    "getAirdropsByAppId",
+    Handlers.utils.hasMatchingTag("Action", "getAirdropsByAppId"),
+    function(m)
+        -- Extract AppId from the message tags
+        local appId = m.Tags.AppId
+        if not appId then
+            ao.send({ Target = m.From, Data = "Error: AppId is required." })
+            return
+        end
+
+        -- Ensure airdropTable exists
+        if not airdropTable then
+            airdropTable = {}
+        end
+
+        -- Check if the table contains the specified AppId
+        local appAirdrops = airdropTable[appId]
+        if not appAirdrops or not appAirdrops.airdrops or #appAirdrops.airdrops == 0 then
+            print("No airdrops found for AppId: " .. appId)
+            ao.send({ Target = m.From, Data = "{}" }) -- Send an empty JSON if no airdrops are found
+            return
+        end
+
+        -- Create a response object with metadata
+            AirdropData  = appAirdrops.airdrops
+        
+
+        -- Send the filtered data back to the user
+        ao.send({ Target = m.From, Data = tableToJson(AirdropData) })
+    end
+)
+
 
 Handlers.add(
-    "getOwnerAirdrops",
-    Handlers.utils.hasMatchingTag("Action", "getOwnerAirdrops"),
+    "getOwnerAirdropsN",
+    Handlers.utils.hasMatchingTag("Action", "getOwnerAirdropsN"),
     function(m)
         local userId = m.From
 
         -- Check if the airdrops table exists
-        if not Airdrops or next(Airdrops) == nil then
+        if not airdropTable or next(airdropTable) == nil then
             ao.send({ Target = m.From, Data = "{}" }) -- Send an empty JSON if there are no airdrops
             return
         end
+
         -- Filter airdrops by owner
         local ownerAirdrops = {}
-        for id, airdrop in pairs(Airdrops) do
-            if airdrop.userId == userId then
-                ownerAirdrops[id] = airdrop
+        for appId, appData in pairs(airdropTable) do
+            if appData.airdrops then
+                for _, airdrop in ipairs(appData.airdrops) do
+                    if airdrop.Owner == userId then
+                        table.insert(ownerAirdrops, airdrop)
+                    end
+                end
             end
         end
 
@@ -2825,14 +2766,18 @@ Handlers.add(
     end
 )
 
+
+
+
+
 Handlers.add(
-    "FetchAirdropData",
-    Handlers.utils.hasMatchingTag("Action", "FetchAirdropData"),
+    "FetchAirdropDataN",
+    Handlers.utils.hasMatchingTag("Action", "FetchAirdropDataN"),
     function(m)
         local owner = m.From
         local AirdropId = m.Tags.airdropId
 
-        print("airdropId ".. (AirdropId or "nil") .. " is this")
+        print("airdropId: " .. (AirdropId or "nil") .. " is this")
 
         -- Validate input
         if not AirdropId then
@@ -2842,11 +2787,16 @@ Handlers.add(
 
         -- Check if the Airdrop exists
         local airdropFound = nil
-        for _, airdrop in ipairs(Airdrops) do
-            if airdrop.airdropId == AirdropId then
-                airdropFound = airdrop
-                break
+        for appId, appData in pairs(airdropTable) do
+            if appData.airdrops then
+                for _, airdrop in ipairs(appData.airdrops) do
+                    if airdrop.airdropId == AirdropId then
+                        airdropFound = airdrop
+                        break
+                    end
+                end
             end
+            if airdropFound then break end
         end
 
         if not airdropFound then
@@ -2855,7 +2805,7 @@ Handlers.add(
         end
 
         -- Validate ownership
-        if airdropFound.userId ~= owner then
+        if airdropFound.Owner ~= owner then
             ao.send({ Target = m.From, Data = "You are not the owner of this Airdrop." })
             return
         end
@@ -2868,12 +2818,17 @@ Handlers.add(
     end
 )
 
+
+
+
+
 Handlers.add(
-    "FinalizeAirdrop",
-    Handlers.utils.hasMatchingTag("Action", "FinalizeAirdrop"),
+    "FinalizeAirdropN",
+    Handlers.utils.hasMatchingTag("Action", "FinalizeAirdropN"),
     function(m)
         local airdropId = m.Tags.airdropId
         local airdropsReceivers = m.Tags.airdropsreceivers
+        local Description = m.Tags.Description
         local startTime = m.Tags.startTime
         local endTime = m.Tags.endTime
 
@@ -2897,15 +2852,21 @@ Handlers.add(
             return
         end
 
-        -- Look up the airdrop in the table
+        -- Look up the airdrop in the nested table structure
         local airdropFound = nil
-        for _, airdrop in ipairs(Airdrops) do
-            if airdrop.airdropId == airdropId then
-                airdropFound = airdrop
+        for appId, appData in pairs(airdropTable) do
+            for _, airdrop in ipairs(appData.airdrops) do
+                if airdrop.airdropId == airdropId then
+                    airdropFound = airdrop
+                    break
+                end
+            end
+            if airdropFound then
                 break
             end
         end
 
+        -- Handle case where the airdrop was not found
         if not airdropFound then
             ao.send({ Target = m.From, Data = "No such Airdrop found with ID: " .. airdropId })
             return
@@ -2916,6 +2877,7 @@ Handlers.add(
         airdropFound.startTime = startTime
         airdropFound.endTime = endTime
         airdropFound.status = "Ongoing" -- Update status to Ongoing
+        airdropFound.Description = Description
 
         -- Confirm success
         ao.send({
@@ -2927,6 +2889,9 @@ Handlers.add(
         print("Updated Airdrop: " .. tableToJson(airdropFound))
     end
 )
+
+
+
 
 
 Handlers.add(
@@ -3040,61 +3005,42 @@ Handlers.add(
     end
 )
 
+
 Handlers.add(
-    "FetchDevForumData",
-    Handlers.utils.hasMatchingTag("Action", "FetchDevForumData"),
+    "FetchDevForumDataN",
+    Handlers.utils.hasMatchingTag("Action", "FetchDevForumDataN"),
     function(m)
-        local forumId = m.Tags.AppId -- Use AppId as forumId
+        local appId = m.Tags.AppId
 
-        -- Validate the forumId
-        if not forumId or forumId == "" then
-            print("Error: ForumId is missing or invalid.")
-            ao.send({ Target = m.From, Data = "ForumId is missing or invalid." })
+        -- Validate input
+        if not appId then
+            ao.send({ Target = m.From, Data = "AppId is missing." })
             return
         end
 
-        -- Check if the forumId exists in the devForumTable
-        local forumEntry = devForumTable[forumId].requests
-        if not forumEntry then
-            print("No forum data found for ForumId " .. forumId)
-            ao.send({ Target = m.From, Data = "No forum data found for the specified ForumId." })
+        -- Check if the app exists in the devForumTable table
+        if not devForumTable[appId] then
+            ao.send({ Target = m.From, Data = "No info found for this app." })
             return
         end
 
-        -- Prepare the response by collecting data into a structured table
-        local forumData = {
-            forumId = forumId,
-            username = forumEntry.username,
-            profileUrl = forumEntry.profileUrl,
-            comment = forumEntry.comment, -- Main description
-            replies = {},
-            users = {}
-        }
+        -- Fetch the info
+        local devForumInfo = devForumTable[appId].requests
 
-        -- Add user data
-        for userId, userDetails in pairs(forumEntry.users) do
-            table.insert(forumData.users, {
-                userId = userId,
-                username = userDetails.username,
-                time = userDetails.time,
-                voted = userDetails.voted
-            })
+        -- Check if there are reviews
+        if not devForumInfo or #devForumInfo == 0 then
+            ao.send({ Target = m.From, Data = "No info available for this app." })
+            return
         end
 
-        -- Add replies data
-        for _, reply in ipairs(forumEntry.replies or {}) do
-            table.insert(forumData.replies, {
-                replyId = reply.replyId,
-                comment = reply.comment,
-                username = reply.username,
-                timestamp = reply.timestamp,
-                profileUrl = reply.profileUrl
-            })
-        end
+        -- Convert reviews to JSON for sending
+        local reviewsJson = tableToJson(devForumInfo)
 
-        -- Debugging: Print and send the structured forum data
-        print("Structured Forum Data for ForumId " .. forumId .. ":", forumData)
-        ao.send({ Target = m.From, Data = forumData })
+        -- Send the reviews back to the user
+        ao.send({
+            Target = m.From,
+            Data = reviewsJson
+        })
     end
 )
 
@@ -3356,7 +3302,147 @@ Handlers.add(
 
 
 
+Handlers.add(
+    "GetAostoreStatistics",
+    Handlers.utils.hasMatchingTag("Action", "GetAostoreStatistics"),
+    function(m)
+        -- Helper function to sum statistics across all tables
+      local function sumStatistics(table, tableName)
+    local totalCount = 0
+    local totalHistory = {}
+    
+        for _, appData in pairs(table) do
+        -- Check if appData is a table before attempting to index
+        if type(appData) == "table" then
+            -- Add count to total
+            totalCount = totalCount + (appData.count or 0)
+            
+            -- Aggregate countHistory
+            if appData.countHistory and type(appData.countHistory) == "table" then
+                for _, historyItem in ipairs(appData.countHistory) do
+                    if type(historyItem) == "table" then
+                        local timestamp = historyItem.time
+                        local count = historyItem.count or 0
+                        
+                        -- Here we sum counts for each timestamp
+                        totalHistory[timestamp] = (totalHistory[timestamp] or 0) + count
+                    end
+                end
+            end
+        else
+            -- If appData isn't a table, maybe it's just a count number?
+            totalCount = totalCount + (appData or 0)
+        end
+         end
 
+        return {
+        Title = tableName,
+        TotalCount = totalCount,
+        TotalHistory = totalHistory
+            }
+        end
+        -- Process all relevant tables
+        local aostoreStatistics = {
+            totalReviews = sumStatistics(reviewsTable, "Reviews Table"),
+            totalUpvotes = sumStatistics(upvotesTable, "Upvotes Table"),
+            totalDownvotes = sumStatistics(downvotesTable, "Downvotes Table"),
+            totalFeatureRequests = sumStatistics(featureRequestsTable, "Feature Requests Table"),
+            totalFavorites = sumStatistics(favoritesTable, "Favorites Table"),
+            totalRatings = sumStatistics(ratingsTable, "Ratings Table"),
+            totalHelpfulRatings = sumStatistics(helpfulRatingsTable, "Helpful Ratings Table"),
+            totalUnHelpfulRatings = sumStatistics(unHelpfulRatingsTable, "Unhelpful Ratings Table"),
+            totalFlags = sumStatistics(flagTable, "Flags Table"),
+            totalDeveloperActivity = sumStatistics(devForumTable, "Developer Activity"),
+            totalVerifiedUsers = sumStatistics(verifiedUsers, "Verified Users Table")
+        }
+
+        -- Send the aggregated aostore statistics back to the admin
+        ao.send({
+            Target = m.From,
+            Data = tableToJson(aostoreStatistics)
+        })
+    end
+)
+
+
+
+
+Handlers.add(
+    "completeAirdrops",
+    Handlers.utils.hasMatchingTag("Action", "completeAirdrops"),
+    function(m)
+
+        local user = m.From
+        local currentTime = getCurrentTime(m)
+
+        
+
+        print("Upvote added successfully!")
+    end
+)
+
+
+
+
+Handlers.add(
+    "completeAirdrops",
+    Handlers.utils.hasMatchingTag("Action", "completeAirdrops"),
+    function(m)
+        local user = m.From
+        local currentTime = getCurrentTime(m)
+
+        -- Step 1: Look for all expired airdrops
+        local expiredAirdrops = {}
+        for appId, appData in pairs(airdropTable) do
+            for _, airdrop in ipairs(appData.airdrops or {}) do
+                if airdrop.endTime and tonumber(airdrop.endTime) <= currentTime then
+                    table.insert(expiredAirdrops, airdrop)
+                end
+            end
+        end
+
+        -- Step 2: Loop through expired airdrops and check receivers
+        local completedAirdrops = {}
+        for _, airdrop in ipairs(expiredAirdrops) do
+            local airdropReceivers = airdrop.airdropsReceivers or {}
+
+            -- Step 3: Validate receivers and check time constraints
+            local eligibleReceivers = {}
+            for receiverId, receiverData in pairs(airdropReceivers) do
+                if receiverData.time and tonumber(receiverData.time) >= tonumber(airdrop.startTime) 
+                        and tonumber(receiverData.time) <= tonumber(airdrop.endTime) then
+                    table.insert(eligibleReceivers, {
+                        userId = receiverId,
+                        amount = receiverData.amount or 0
+                    })
+                end
+            end
+
+            -- Mark the airdrop as completed and save eligible receivers
+            airdrop.status = "Completed"
+            table.insert(completedAirdrops, {
+                airdropId = airdrop.airdropId,
+                eligibleReceivers = eligibleReceivers
+            })
+
+            -- Optional: Log completed airdrops (for debugging)
+            print("Airdrop completed: " .. airdrop.airdropId)
+        end
+
+        -- Optional: Log and respond with the summary of completed airdrops
+        local responseMessage = "Completed Airdrops: " .. #completedAirdrops
+        print(responseMessage)
+        ao.send({ Target = m.From, Data = responseMessage })
+
+        -- Additional logic: Transfer tokens to eligible receivers
+        for _, completedAirdrop in ipairs(completedAirdrops) do
+            for _, receiver in ipairs(completedAirdrop.eligibleReceivers) do
+                -- Transfer tokens (implement your token transfer logic here)
+                print("Transferring " .. receiver.amount .. " tokens to user: " .. receiver.userId)
+            end
+        end
+    end
+)
 
 
 

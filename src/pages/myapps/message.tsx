@@ -88,11 +88,11 @@ const aoprojectsinfo = () => {
   const AppId = paramAppId || "defaultAppId"; // Ensure AppId is always a valid string
 
   const [apps, setAppInfo] = useState<AppData[]>([]);
-  const [messageInfo, setMessageInfo] = useState("");
+
   const [loadingAppInfo, setLoadingAppInfo] = useState(true);
   const [moreInfoLink, setMoreInfoLink] = useState(""); // ✅ State to hold the rating value
   const [sendMessage, setSendMessage] = useState(false);
-
+  const [messageInfo, setMessageInfo] = useState("");
   const [projectTypeValue, setProjectTypeValue] = useState<
     string | undefined
   >();
@@ -147,7 +147,7 @@ const aoprojectsinfo = () => {
 
   const handleOwnerAirdropInfo = (appId: string | undefined) => {
     if (!appId) return;
-    navigate(`/projectairdrops/${appId}`);
+    navigate(`/projectairdropsadmin/${appId}`);
   };
 
   const handleOwnerUpdatesInfo = (appId: string | undefined) => {
@@ -289,92 +289,113 @@ const aoprojectsinfo = () => {
     >
       <div className="text-white flex flex-col items-center lg:items-start">
         <Container>
-          <Divider />
-          <Menu pointing>
-            <MenuItem
-              onClick={() => handleProjectReviewsInfo(AppId)}
-              name="Reviews"
-            />
-            <MenuItem
-              onClick={() => handleOwnerStatisticsInfo(AppId)}
-              name="Statistics"
-            />
-            <MenuItem
-              onClick={() => handleOwnerAirdropInfo(AppId)}
-              name="Airdrops"
-            />
-            <MenuMenu position="right">
-              <MenuItem
-                onClick={() => handleOwnerUpdatesInfo(AppId)}
-                name="Update"
-              />
-              <MenuItem
-                onClick={() => handleOwnerChange(AppId)}
-                name="changeowner"
-              />
-              <MenuItem
-                onClick={() => handleNotification(AppId)}
-                name="Send Messages."
-              />
-              <MenuItem
-                onClick={() => handleFeaturesandBugs(AppId)}
-                name="F Requests."
-              />
-              <MenuItem
-                onClick={() => handleBugReports(AppId)}
-                name="Bug Reports."
-              />
-
-              <MenuItem
-                onClick={() => handleAostoreAi(AppId)}
-                name="aostore AI"
-              />
-              <MenuItem onClick={() => handleTasks(AppId)} name="tasks" />
-            </MenuMenu>
-          </Menu>
-          <Header textAlign="center" as="h1">
-            Send Messages.
-          </Header>
-          <Form>
-            <FormField required>
-              <label>Type of Message?</label>
-              <FormSelect
-                options={updateOptions}
-                placeholder="Message Type"
-                value={selectedProjectType}
-                onChange={handleProjectTypeChange}
-              />
-            </FormField>
-            <FormField required>
-              <label>New Updated Value?</label>
-              <Input
-                type="text"
-                name="messageinfo"
-                value={messageInfo}
-                onChange={handleInputChange}
-                placeholder="message"
-              />
-            </FormField>
-
-            <FormField required>
-              <label>Link to more info</label>
-              <Input
-                type="text"
-                name="moreinfolink"
-                value={moreInfoLink}
-                onChange={handleInputChange}
-                placeholder="Link to more info."
-              />
-            </FormField>
-            <Button
-              loading={sendMessage}
-              color="green"
-              onClick={() => sendMessages(AppId)}
+          {loadingAppInfo ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "60vh",
+              }}
             >
-              {" "}
-              Send Message.
-            </Button>
-          </Form>
+              <Loader active inline="centered" size="large">
+                Loading Send Messages...
+              </Loader>
+            </div>
+          ) : apps ? (
+            <>
+              <Menu pointing>
+                <MenuItem
+                  onClick={() => handleProjectReviewsInfo(AppId)}
+                  name="Reviews"
+                />
+                <MenuItem
+                  onClick={() => handleOwnerStatisticsInfo(AppId)}
+                  name="Statistics"
+                />
+                <MenuItem
+                  onClick={() => handleOwnerAirdropInfo(AppId)}
+                  name="Airdrops"
+                />
+                <MenuMenu position="right">
+                  <MenuItem
+                    onClick={() => handleOwnerUpdatesInfo(AppId)}
+                    name="Update"
+                  />
+                  <MenuItem
+                    onClick={() => handleOwnerChange(AppId)}
+                    name="changeowner"
+                  />
+                  <MenuItem
+                    onClick={() => handleNotification(AppId)}
+                    name="Send Messages."
+                  />
+                  <MenuItem
+                    onClick={() => handleFeaturesandBugs(AppId)}
+                    name="F Requests."
+                  />
+                  <MenuItem
+                    onClick={() => handleBugReports(AppId)}
+                    name="Bug Reports."
+                  />
+
+                  <MenuItem
+                    onClick={() => handleAostoreAi(AppId)}
+                    name="aostore AI"
+                  />
+                  <MenuItem onClick={() => handleTasks(AppId)} name="tasks" />
+                </MenuMenu>
+              </Menu>
+              <Header textAlign="center" as="h1">
+                Send Messages.
+              </Header>
+              <Form>
+                <FormField required>
+                  <label>Type of Message?</label>
+                  <FormSelect
+                    options={updateOptions}
+                    placeholder="Message Type"
+                    value={selectedProjectType}
+                    onChange={handleProjectTypeChange}
+                  />
+                </FormField>
+                <FormField required>
+                  <label>Message</label>
+                  <Input
+                    type="text"
+                    name="messageinfo"
+                    value={messageInfo}
+                    onChange={handleInputChange}
+                    placeholder="message"
+                  />
+                </FormField>
+
+                <FormField required>
+                  <label>Link to more info.</label>
+                  <Input
+                    type="text"
+                    name="moreinfolink"
+                    value={moreInfoLink}
+                    onChange={handleInputChange}
+                    placeholder="Link to more info."
+                  />
+                </FormField>
+                <Button
+                  loading={sendMessage}
+                  color="green"
+                  onClick={() => sendMessages(AppId)}
+                >
+                  {" "}
+                  Send Message.
+                </Button>
+              </Form>
+            </>
+          ) : (
+            <Header as="h4" color="grey">
+              Failed to load messages.
+            </Header>
+          )}
+          <Divider />
         </Container>
         <Divider />
       </div>

@@ -11,7 +11,7 @@ import WalletPage from "./pages/wallet/WalletPage";
 import ProjectInfo from "./pages/aocomputer/AppInfo/appInfo";
 import "./App.css";
 import RatingsBarChart from "./pages/aocomputer/AppInfo/ratingsBarChart";
-import LeaderBoard from "./pages/leaderboard/leaderboard";
+import Aostorestats from "./pages/aostorestats/aostorestats";
 import MyApps from "./pages/myapps/myapps";
 import AppReviews from "./pages/myapps/appReviews";
 import AppStatsAdmin from "./pages/myapps/appStatistics";
@@ -32,6 +32,8 @@ import DevForum from "./pages/aocomputer/AppInfo/devforum";
 import BugReportsAdmin from "./pages/myapps/bugsreport";
 import AostoreAi from "./pages/myapps/aostoreai";
 import TasksAdmin from "./pages/myapps/tasks";
+import AppsAirdrops from "./pages/aocomputer/AppInfo/appAirdrops";
+import AppAirdropInfo from "./pages/aocomputer/AppInfo/appAirdropInfo";
 
 function App() {
   const [theme, setTheme] = useState("");
@@ -140,6 +142,25 @@ function App() {
             />
 
             <Route
+              path="/projectairdrops/:AppId"
+              element={
+                walletAddress ? <AppsAirdrops /> : <WalletConnectError />
+              }
+            />
+
+            <Route
+              path="/projectairdropsadmin/:AppId"
+              element={walletAddress ? <AppAirdrops /> : <WalletConnectError />}
+            />
+
+            <Route
+              path="/appairdropinfo/:AirdropId"
+              element={
+                walletAddress ? <AppAirdropInfo /> : <WalletConnectError />
+              }
+            />
+
+            <Route
               path="/projectreviews/:AppId"
               element={walletAddress ? <AppReviews /> : <WalletConnectError />}
             />
@@ -214,8 +235,10 @@ function App() {
               element={walletAddress ? <WalletPage /> : <WalletConnectError />}
             />
             <Route
-              path="leaderboard"
-              element={walletAddress ? <LeaderBoard /> : <WalletConnectError />}
+              path="aostorestats"
+              element={
+                walletAddress ? <Aostorestats /> : <WalletConnectError />
+              }
             />
             <Route
               path="myapps"

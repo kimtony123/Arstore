@@ -7,6 +7,8 @@ import {
   Image,
   Loader,
   Header,
+  Grid,
+  GridRow,
 } from "semantic-ui-react";
 import Footer from "../../components/footer/Footer";
 import classNames from "classnames";
@@ -140,73 +142,113 @@ const Home = () => {
       )}
     >
       <Container>
-        <Header as="h1"> My Apps. </Header>
-        <Button
-          onClick={handleAddAoprojects}
-          floated="right"
-          icon="add circle"
-          primary
-          size="large"
-        >
-          Add Project.
-        </Button>
-        <Divider />
-        <Header> My Apps.</Header>
-
         {loadingApps ? (
-          <Loader active inline="centered" content="Loading My Apps..." />
-        ) : (
-          <Table celled>
-            <Table.Header>
-              <Table.Row>
-                <Table.HeaderCell>App Icon.</Table.HeaderCell>
-                <Table.HeaderCell> App Name.</Table.HeaderCell>
-                <Table.HeaderCell>App Info.</Table.HeaderCell>
-                <Table.HeaderCell>Website Link.</Table.HeaderCell>
-                <Table.HeaderCell>Delete App.</Table.HeaderCell>
-              </Table.Row>
-            </Table.Header>
-
-            <Table.Body>
-              {apps.map((app, index) => (
-                <Table.Row key={index}>
-                  <Table.Cell>
-                    <Image src={app.AppIconUrl} size="tiny" rounded />
-                  </Table.Cell>
-                  <Table.Cell>{app.AppName}</Table.Cell>
-
-                  <Table.Cell>
-                    {" "}
-                    <Button
-                      primary
-                      onClick={() => handleProjectReviewsInfo(app.AppId)}
-                    >
-                      App Info
-                    </Button>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <a
-                      href={app.WebsiteUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Visit Site
-                    </a>
-                  </Table.Cell>
-                  <Table.Cell>
-                    {" "}
-                    <Button
-                      loading={deletingApp}
-                      color="red"
-                      onClick={() => deleteproject(app.AppId)}
-                    >
-                      Delete App.
-                    </Button>
-                  </Table.Cell>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "60vh",
+            }}
+          >
+            <Loader active inline="centered" size="large">
+              Loading your apps...
+            </Loader>
+          </div>
+        ) : apps.length > 0 ? (
+          <>
+            <Header as="h1"> My Apps. </Header>
+            <Button
+              onClick={handleAddAoprojects}
+              floated="right"
+              icon="add circle"
+              primary
+              size="large"
+            >
+              Add Project.
+            </Button>
+            <Divider />
+            <Header textAlign="center" as="h1">
+              {" "}
+              My Apps.
+            </Header>
+            <Table celled>
+              <Table.Header>
+                <Table.Row>
+                  <Table.HeaderCell>App Icon.</Table.HeaderCell>
+                  <Table.HeaderCell> App Name.</Table.HeaderCell>
+                  <Table.HeaderCell>App Info.</Table.HeaderCell>
+                  <Table.HeaderCell>Website Link.</Table.HeaderCell>
+                  <Table.HeaderCell>Delete App.</Table.HeaderCell>
                 </Table.Row>
-              ))}
-            </Table.Body>
-          </Table>
+              </Table.Header>
+              <Table.Body>
+                {apps.map((app, index) => (
+                  <Table.Row key={index}>
+                    <Table.Cell>
+                      <Image src={app.AppIconUrl} size="tiny" rounded />
+                    </Table.Cell>
+                    <Table.Cell>{app.AppName}</Table.Cell>
+
+                    <Table.Cell>
+                      {" "}
+                      <Button
+                        primary
+                        onClick={() => handleProjectReviewsInfo(app.AppId)}
+                      >
+                        App Info
+                      </Button>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <a
+                        href={app.WebsiteUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Visit Site
+                      </a>
+                    </Table.Cell>
+                    <Table.Cell>
+                      {" "}
+                      <Button
+                        loading={deletingApp}
+                        color="red"
+                        onClick={() => deleteproject(app.AppId)}
+                      >
+                        Delete App.
+                      </Button>
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table>
+          </>
+        ) : (
+          <>
+            <Grid textAlign="center">
+              <GridRow>
+                <Header as="h1" color="red" textAlign="center">
+                  You have not created any projects
+                </Header>
+              </GridRow>
+              <GridRow>
+                <Header as="h2" color="green" textAlign="center">
+                  Create one Here
+                </Header>
+              </GridRow>
+              <GridRow>
+                <Button
+                  onClick={handleAddAoprojects}
+                  floated="right"
+                  icon="add circle"
+                  primary
+                  size="large"
+                >
+                  Add Project.
+                </Button>
+              </GridRow>
+            </Grid>
+          </>
         )}
       </Container>
       <Footer />

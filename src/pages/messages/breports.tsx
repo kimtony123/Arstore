@@ -89,7 +89,7 @@ const Home = () => {
       try {
         const messageResponse = await message({
           process: ARS,
-          tags: [{ name: "Action", value: "FetchBugReportUserData" }],
+          tags: [{ name: "Action", value: "FetchBugReportUserDataN" }],
           signer: createDataItemSigner(othent),
         });
 
@@ -129,23 +129,6 @@ const Home = () => {
       )}
     >
       <Container>
-        <Divider />
-        <Menu pointing>
-          <MenuItem onClick={() => handleMessages()} name="Messages" />
-          <MenuItem
-            onClick={() => handleFeatureRequests()}
-            name="Feature Requests."
-          />
-          <MenuMenu position="right">
-            <MenuItem onClick={() => handleBugReports()} name="Bug Reports." />
-            <MenuItem onClick={() => handleUserStats()} name="My statistics." />
-          </MenuMenu>
-        </Menu>
-
-        <Header as="h1" textAlign="center">
-          Feature Requests.
-        </Header>
-        <Divider />
         <Container>
           <Divider />
           {loadingAppReviews ? (
@@ -153,6 +136,29 @@ const Home = () => {
           ) : appReviews ? (
             <>
               <Container>
+                <Divider />
+                <Menu pointing>
+                  <MenuItem onClick={() => handleMessages()} name="Messages" />
+                  <MenuItem
+                    onClick={() => handleFeatureRequests()}
+                    name="Feature Requests."
+                  />
+                  <MenuMenu position="right">
+                    <MenuItem
+                      onClick={() => handleBugReports()}
+                      name="Bug Reports."
+                    />
+                    <MenuItem
+                      onClick={() => handleUserStats()}
+                      name="My statistics."
+                    />
+                  </MenuMenu>
+                </Menu>
+
+                <Header as="h1" textAlign="center">
+                  Bug Reports.
+                </Header>
+                <Divider />
                 <Grid>
                   <CommentGroup threaded>
                     {Object.entries(appReviews).map(([key, review]) => (
@@ -177,7 +183,7 @@ const Home = () => {
                               return (
                                 <SUIComment key={typedReply.replyId}>
                                   <SUIComment.Avatar
-                                    src={typedReply.username}
+                                    src={typedReply.profileUrl}
                                   />
                                   <SUIComment.Content>
                                     <SUIComment.Author as="a">
@@ -206,7 +212,7 @@ const Home = () => {
             </>
           ) : (
             <Header as="h4" color="grey">
-              No reviews found for this app.
+              You have not reported any bugs.
             </Header>
           )}
 

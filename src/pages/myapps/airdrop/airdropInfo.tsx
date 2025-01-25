@@ -13,6 +13,7 @@ import {
   Grid,
   GridColumn,
   Header,
+  Input,
   Loader,
   Table,
 } from "semantic-ui-react";
@@ -65,8 +66,8 @@ const aoprojectsinfo = () => {
   const [appInfo, setAppInfo] = useState<Record<string, any> | null>(null);
   const [loadingAirdropInfo, setLoadingAirdropInfo] = useState(true);
   const [value, onChange] = useState<Value>(new Date());
-  const [finalizeAirdrop, setFinalizeAirdrop] = useState(true);
-
+  const [finalizeAirdrop, setFinalizeAirdrop] = useState(false);
+  const [description, setDescription] = useState("");
   // Separate state for start and end dates
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
@@ -95,10 +96,11 @@ const aoprojectsinfo = () => {
   const updateOptions = [
     { key: "1", text: "Favorites", value: "favoritesTable" },
     { key: "2", text: "Reviewers", value: "reviewsTable" },
-    { key: "3", text: "Helpful", value: "helpfulTable" },
+    { key: "3", text: "Helpful", value: "helpfulRatingsTable" },
     { key: "4", text: "Upvoters", value: "upvotesTable" },
     { key: "5", text: "Feature Requesters", value: "featureRequestsTable" },
-    { key: "6", text: "Bug Reporters", value: "bugReportTables" },
+    { key: "6", text: "Bug Reporters", value: "bugsReportsTable" },
+    { key: "7", text: "devForum Users", value: "devForumTable" },
   ];
   const ARS = "e-lOufTQJ49ZUX1vPxO-QxjtYXiqM8RQgKovrnJKJ18";
   const navigate = useNavigate();
@@ -111,7 +113,7 @@ const aoprojectsinfo = () => {
         const messageResponse = await message({
           process: ARS,
           tags: [
-            { name: "Action", value: "FetchAirdropData" },
+            { name: "Action", value: "FetchAirdropDataN" },
             { name: "airdropId", value: String(AppId) },
           ],
           signer: createDataItemSigner(othent),
@@ -157,20 +159,31 @@ const aoprojectsinfo = () => {
     setProjectTypeValue(value);
   };
 
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    switch (name) {
+      case "description":
+        setDescription(value);
+        break;
+      default:
+        break;
+    }
+  };
+
   const FinalizeAirdrop = async (AppId: string) => {
     if (!AppId) return;
     console.log(AppId);
-
     setFinalizeAirdrop(true);
     try {
       const getTradeMessage = await message({
         process: ARS,
         tags: [
-          { name: "Action", value: "FinalizeAirdrop" },
+          { name: "Action", value: "FinalizeAirdropN" },
           { name: "airdropId", value: String(AppId) },
           { name: "airdropsreceivers", value: String(projectTypeValue) },
           { name: "startTime", value: String(startUnixTime) },
           { name: "endTime", value: String(endUnixTime) },
+          { name: "Description", value: String(description) },
         ],
         signer: createDataItemSigner(othent),
       });
@@ -189,6 +202,7 @@ const aoprojectsinfo = () => {
       }
       const data = Messages[0].Data;
       alert(data);
+      setDescription("");
     } catch (error) {
       alert("There was an error in the App Info: " + error);
       console.error(error);
@@ -205,13 +219,15 @@ const aoprojectsinfo = () => {
       )}
     >
       <Container>
-        <Header as="h1">Finalize Airdrop.</Header>
+        <Header as="h1" textAlign="center">
+          Finalize Airdrop.
+        </Header>
 
         <Divider />
         {loadingAirdropInfo ? (
           <Loader active inline="centered" />
         ) : appInfo ? (
-          <Container>
+          <Container textAlign="center">
             <Table celled>
               <Table.Header>
                 <Table.Row>
@@ -250,7 +266,7 @@ const aoprojectsinfo = () => {
                 </Table.Row>
                 <Table.Row>
                   <Table.Cell>User ID</Table.Cell>
-                  <Table.Cell>{appInfo.userId}</Table.Cell>
+                  <Table.Cell>{appInfo.Owner}</Table.Cell>
                 </Table.Row>
               </Table.Body>
             </Table>
@@ -266,18 +282,28 @@ const aoprojectsinfo = () => {
         {loadingAirdropInfo ? (
           <Loader active inline="centered" />
         ) : appInfo ? (
-          <Container>
+          <Container textAlign="center">
             <Grid>
               <Grid.Row>
                 <GridColumn>
                   <Form>
                     <FormField required>
-                      <label>Select Airdrop Type</label>
+                      <label>Select users Airdrop Type</label>
                       <FormSelect
                         options={updateOptions}
                         placeholder="Select airdrop type"
                         value={selectedProjectType}
                         onChange={handleProjectTypeChange}
+                      />
+                    </FormField>
+                    <FormField required>
+                      <label>Brief Description of the Airdrop</label>
+                      <Input
+                        type="text"
+                        name="description"
+                        value={description}
+                        onChange={handleInputChange}
+                        placeholder="Add a brief description of the Airdrop"
                       />
                     </FormField>
                     <Divider />
@@ -303,6 +329,7 @@ const aoprojectsinfo = () => {
                     </Grid>
                     <Divider />
                     <Button
+                      loading={finalizeAirdrop}
                       onClick={() => FinalizeAirdrop(appInfo.airdropId)}
                       color="green"
                     >

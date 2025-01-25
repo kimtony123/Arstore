@@ -85,7 +85,7 @@ const aoprojectsinfo = () => {
 
   const handleOwnerAirdropInfo = (appId: string | undefined) => {
     if (!appId) return;
-    navigate(`/projectairdrops/${appId}`);
+    navigate(`/projectairdropsadmin/${appId}`);
   };
 
   const handleOwnerUpdatesInfo = (appId: string | undefined) => {
@@ -230,9 +230,19 @@ const aoprojectsinfo = () => {
               <MenuItem onClick={() => handleTasks(AppId)} name="tasks" />
             </MenuMenu>
           </Menu>
-
           {loadingAppStats ? (
-            <Loader active inline="centered" />
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "60vh",
+              }}
+            >
+              <Loader active inline="centered" size="large">
+                Loading App statistics...
+              </Loader>
+            </div>
           ) : (
             appStats.map((app, index) => (
               <Grid key={index}>

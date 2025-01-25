@@ -126,7 +126,7 @@ const aoprojectsinfo = () => {
 
   const handleOwnerAirdropInfo = (appId: string | undefined) => {
     if (!appId) return;
-    navigate(`/projectairdrops/${appId}`);
+    navigate(`/projectairdropsadmin/${appId}`);
   };
 
   const handleOwnerUpdatesInfo = (appId: string | undefined) => {
@@ -310,8 +310,8 @@ const aoprojectsinfo = () => {
               <MenuItem onClick={() => handleTasks(AppId)} name="tasks" />
             </MenuMenu>
           </Menu>
-          <Header textAlign="center" as="h1">
-            Development in progress.
+          <Header color="red" textAlign="center" as="h1">
+            Feature Development in Progress.
           </Header>
         </Container>
         <Divider />

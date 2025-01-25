@@ -94,7 +94,7 @@ const aoprojectsinfo = () => {
 
   const handleOwnerAirdropInfo = (appId: string | undefined) => {
     if (!appId) return;
-    navigate(`/projectairdrops/${appId}`);
+    navigate(`/projectairdropsadmin/${appId}`);
   };
 
   const handleOwnerUpdatesInfo = (appId: string | undefined) => {
@@ -142,7 +142,7 @@ const aoprojectsinfo = () => {
         const messageResponse = await message({
           process: ARS,
           tags: [
-            { name: "Action", value: "FetchAppBugReports" },
+            { name: "Action", value: "FetchBugReportsN" },
             { name: "AppId", value: AppId },
           ],
           signer: createDataItemSigner(othent),
@@ -156,7 +156,7 @@ const aoprojectsinfo = () => {
         const { Messages, Error } = resultResponse;
 
         if (Error) {
-          alert("Error fetching app reviews: " + Error);
+          alert("Error fetching bug reports: " + Error);
           return;
         }
 
@@ -166,7 +166,7 @@ const aoprojectsinfo = () => {
           setAppReviews(data);
         }
       } catch (error) {
-        console.error("Error fetching app reviews:", error);
+        console.error("Error fetching bug reports:", error);
       } finally {
         setLoadingAppReviews(false);
       }
@@ -175,7 +175,7 @@ const aoprojectsinfo = () => {
     fetchAppReviews();
   }, [AppId]);
 
-  const AddReviewReply = async (ReviewID: string) => {
+  const AddReportReply = async (ReviewID: string) => {
     if (!AppId) return;
     console.log(AppId);
     if (!ReviewID) return;
@@ -187,11 +187,11 @@ const aoprojectsinfo = () => {
         process: ARS,
 
         tags: [
-          { name: "Action", value: "AddReviewReply" },
+          { name: "Action", value: "AddBugReportReply" },
           { name: "AppId", value: String(AppId) },
           { name: "username", value: String(username) },
           { name: "profileUrl", value: String(profileUrl) },
-          { name: "ReviewId", value: String(ReviewID) },
+          { name: "BugReportId", value: String(ReviewID) },
           { name: "comment", value: String(comment) },
         ],
         signer: createDataItemSigner(othent),
@@ -202,7 +202,7 @@ const aoprojectsinfo = () => {
       });
 
       if (Error) {
-        alert("Error Adding review:" + Error);
+        alert("Error Adding reply:" + Error);
         return;
       }
       if (!Messages || Messages.length === 0) {
@@ -212,176 +212,10 @@ const aoprojectsinfo = () => {
       const data = Messages[0].Data;
       alert(data);
     } catch (error) {
-      alert("There was an error in the trade process: " + error);
+      alert("There was an error in the reply process: " + error);
       console.error(error);
     } finally {
       setAddReviewReply(false);
-    }
-  };
-
-  const AddHelpfulReview = async (ReviewID: string) => {
-    if (!AppId) return;
-    console.log(AppId);
-    if (!ReviewID) return;
-    console.log(ReviewID);
-
-    setAddHelpful(true);
-    try {
-      const getTradeMessage = await message({
-        process: ARS,
-
-        tags: [
-          { name: "Action", value: "MarkHelpfulReview" },
-          { name: "AppId", value: String(AppId) },
-          { name: "ReviewId", value: String(ReviewID) },
-          { name: "username", value: String(username) },
-        ],
-        signer: createDataItemSigner(othent),
-      });
-      const { Messages, Error } = await result({
-        message: getTradeMessage,
-        process: ARS,
-      });
-
-      if (Error) {
-        alert("Error Adding :" + Error);
-        return;
-      }
-      if (!Messages || Messages.length === 0) {
-        alert("No messages were returned from ao. Please try later.");
-        return;
-      }
-      const data = Messages[0].Data;
-      alert(data);
-    } catch (error) {
-      alert("There was an error in the review process: " + error);
-      console.error(error);
-    } finally {
-      setAddHelpful(false);
-    }
-  };
-
-  const AddUnhelpfulReview = async (ReviewID: string) => {
-    if (!AppId) return;
-    console.log(AppId);
-
-    if (!ReviewID) return;
-    console.log(ReviewID);
-
-    setAddUnhelpful(true);
-    try {
-      const getTradeMessage = await message({
-        process: ARS,
-
-        tags: [
-          { name: "Action", value: "MarkUnhelpfulReview" },
-          { name: "AppId", value: String(AppId) },
-          { name: "ReviewId", value: String(ReviewID) },
-          { name: "username", value: String(username) },
-        ],
-        signer: createDataItemSigner(othent),
-      });
-      const { Messages, Error } = await result({
-        message: getTradeMessage,
-        process: ARS,
-      });
-
-      if (Error) {
-        alert("Error Adding project to Favorite:" + Error);
-        return;
-      }
-      if (!Messages || Messages.length === 0) {
-        alert("No messages were returned from ao. Please try later.");
-        return;
-      }
-      const data = Messages[0].Data;
-      alert(data);
-    } catch (error) {
-      alert("There was an error in the trade process: " + error);
-      console.error(error);
-    } finally {
-      setAddUnhelpful(false);
-    }
-  };
-
-  const AddUpvoteReview = async (ReviewID: string) => {
-    if (!AppId) return;
-    console.log(AppId);
-    if (!ReviewID) return;
-    console.log(ReviewID);
-
-    setAddUpvote(true);
-    try {
-      const getTradeMessage = await message({
-        process: ARS,
-        tags: [
-          { name: "Action", value: "MarkUpvoteReview" },
-          { name: "AppId", value: String(AppId) },
-          { name: "ReviewId", value: String(ReviewID) },
-          { name: "username", value: String(username) },
-        ],
-        signer: createDataItemSigner(othent),
-      });
-      const { Messages, Error } = await result({
-        message: getTradeMessage,
-        process: ARS,
-      });
-
-      if (Error) {
-        alert("Error Adding Upvoting App:" + Error);
-        return;
-      }
-      if (!Messages || Messages.length === 0) {
-        alert("No messages were returned from ao. Please try later.");
-        return;
-      }
-      const data = Messages[0].Data;
-      alert(data);
-    } catch (error) {
-      alert("There was an error in the Upvoting process: " + error);
-      console.error(error);
-    } finally {
-      setAddUpvote(false);
-    }
-  };
-  const AddDownvoteReview = async (ReviewID: string) => {
-    if (!AppId) return;
-    console.log(AppId);
-    if (!ReviewID) return;
-    console.log(ReviewID);
-    setAddDownvote(true);
-    try {
-      const getTradeMessage = await message({
-        process: ARS,
-
-        tags: [
-          { name: "Action", value: "DownvoteReview" },
-          { name: "AppId", value: String(AppId) },
-          { name: "ReviewId", value: String(ReviewID) },
-          { name: "username", value: String(username) },
-        ],
-        signer: createDataItemSigner(othent),
-      });
-      const { Messages, Error } = await result({
-        message: getTradeMessage,
-        process: ARS,
-      });
-
-      if (Error) {
-        alert("Error Adding project to Favorite:" + Error);
-        return;
-      }
-      if (!Messages || Messages.length === 0) {
-        alert("No messages were returned from ao. Please try later.");
-        return;
-      }
-      const data = Messages[0].Data;
-      alert(data);
-    } catch (error) {
-      alert("There was an error in the trade process: " + error);
-      console.error(error);
-    } finally {
-      setAddDownvote(false);
     }
   };
 
@@ -397,57 +231,67 @@ const aoprojectsinfo = () => {
       )}
     >
       <Container>
-        <Menu pointing>
-          <MenuItem
-            onClick={() => handleProjectReviewsInfo(AppId)}
-            name="Reviews"
-          />
-          <MenuItem
-            onClick={() => handleOwnerStatisticsInfo(AppId)}
-            name="Statistics"
-          />
-          <MenuItem
-            onClick={() => handleOwnerAirdropInfo(AppId)}
-            name="Airdrops"
-          />
-          <MenuMenu position="right">
-            <MenuItem
-              onClick={() => handleOwnerUpdatesInfo(AppId)}
-              name="Update"
-            />
-            <MenuItem
-              onClick={() => handleOwnerChange(AppId)}
-              name="change owner"
-            />
-            <MenuItem
-              onClick={() => handleNotification(AppId)}
-              name="Send Messages."
-            />
-            <MenuItem
-              onClick={() => handleFeaturesandBugs(AppId)}
-              name="F Requests."
-            />
-            <MenuItem
-              onClick={() => handleBugReports(AppId)}
-              name="Bug Reports."
-            />
-
-            <MenuItem
-              onClick={() => handleAostoreAi(AppId)}
-              name="aostore AI"
-            />
-            <MenuItem onClick={() => handleTasks(AppId)} name="tasks" />
-          </MenuMenu>
-        </Menu>
-
-        <Header as="h1">Bug Reports.</Header>
-        <Divider />
-
         {loadingAppReviews ? (
-          <Loader active inline="centered" />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "60vh",
+            }}
+          >
+            <Loader active inline="centered" size="large">
+              Loading Bug Reports....
+            </Loader>
+          </div>
         ) : appReviews ? (
           <>
             <Container>
+              <Menu pointing>
+                <MenuItem
+                  onClick={() => handleProjectReviewsInfo(AppId)}
+                  name="Reviews"
+                />
+                <MenuItem
+                  onClick={() => handleOwnerStatisticsInfo(AppId)}
+                  name="Statistics"
+                />
+                <MenuItem
+                  onClick={() => handleOwnerAirdropInfo(AppId)}
+                  name="Airdrops"
+                />
+                <MenuMenu position="right">
+                  <MenuItem
+                    onClick={() => handleOwnerUpdatesInfo(AppId)}
+                    name="Update"
+                  />
+                  <MenuItem
+                    onClick={() => handleOwnerChange(AppId)}
+                    name="change owner"
+                  />
+                  <MenuItem
+                    onClick={() => handleNotification(AppId)}
+                    name="Send Messages."
+                  />
+                  <MenuItem
+                    onClick={() => handleFeaturesandBugs(AppId)}
+                    name="F Requests."
+                  />
+                  <MenuItem
+                    onClick={() => handleBugReports(AppId)}
+                    name="Bug Reports."
+                  />
+
+                  <MenuItem
+                    onClick={() => handleAostoreAi(AppId)}
+                    name="aostore AI"
+                  />
+                  <MenuItem onClick={() => handleTasks(AppId)} name="tasks" />
+                </MenuMenu>
+              </Menu>
+
+              <Header as="h1">Bug Reports.</Header>
+
               <Divider />
               <Grid>
                 <CommentGroup threaded>
@@ -469,67 +313,11 @@ const aoprojectsinfo = () => {
                         <SUIComment.Text>
                           {review.comment || "No comment provided."}
                         </SUIComment.Text>
-                        <SUIComment.Actions>
-                          <SUIComment.Action>
-                            <Button
-                              loading={addUpvote}
-                              onClick={() => AddUpvoteReview(review.reviewId)}
-                              primary
-                              color="blue"
-                              size="mini"
-                              icon
-                            >
-                              <Icon name="thumbs up" /> {review.upvotes || 0}{" "}
-                              Upvotes
-                            </Button>
-                            <Button
-                              loading={addDownvote}
-                              onClick={() => AddDownvoteReview(review.reviewId)}
-                              color="red"
-                              size="mini"
-                              icon
-                            >
-                              <Icon name="thumbs down" />{" "}
-                              {review.downvotes || 0} Downvotes
-                            </Button>
-                          </SUIComment.Action>
-                        </SUIComment.Actions>
-                        <SUIComment.Text>
-                          {review.helpfulVotes} Found This Review Helpful. Did
-                          You find this Review Helpful ?
-                        </SUIComment.Text>
-                        <SUIComment.Actions>
-                          <SUIComment.Action>
-                            <Button
-                              loading={addHelpful}
-                              onClick={() => AddHelpfulReview(review.reviewId)}
-                              color="blue"
-                              size="mini"
-                              icon
-                            >
-                              <Icon name="thumbs up" />
-                              Yes.
-                            </Button>
-                            <Button
-                              loading={addUnhelpful}
-                              onClick={() =>
-                                AddUnhelpfulReview(review.reviewId)
-                              }
-                              color="red"
-                              size="mini"
-                              icon
-                            >
-                              <Icon name="thumbs down" />
-                              No.
-                            </Button>
-                          </SUIComment.Action>
-                        </SUIComment.Actions>
                       </SUIComment.Content>
                       <SUIComment.Group>
                         {Object.entries(review.replies || {}).map(
                           ([replyKey, reply]) => {
                             const typedReply = reply as Reply; // 👈 Type assertion
-
                             return (
                               <SUIComment key={typedReply.replyId}>
                                 <SUIComment.Avatar
@@ -562,15 +350,15 @@ const aoprojectsinfo = () => {
                             name="comment"
                             value={comment}
                             onChange={handleInputChange}
-                            placeholder="Tell us about your experience..."
+                            placeholder="Reply"
                           />
                         </FormField>
                         <FormField>
                           <Button
                             primary
                             loading={addReviewReply}
-                            onClick={() => AddReviewReply(review.reviewId)}
-                            content="Add Review"
+                            onClick={() => AddReportReply(review.bugReportId)}
+                            content="Reply To this Bug report"
                             labelPosition="left"
                             icon="edit"
                           />
@@ -584,7 +372,7 @@ const aoprojectsinfo = () => {
           </>
         ) : (
           <Header as="h4" color="grey">
-            No reviews found for this app.
+            No Bug Reports found for this app.
           </Header>
         )}
 

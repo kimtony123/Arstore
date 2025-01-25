@@ -26,19 +26,14 @@ import { Comment as SUIComment } from "semantic-ui-react";
 import { useParams } from "react-router-dom";
 
 interface Review {
-  reviewId: string;
+  devForumId: string;
   forumId: string;
   username: string;
   comment: string;
   rating: number;
-  timestamp: number;
-  upvotes: number;
-  downvotes: number;
-  helpfulVotes: number;
-  unhelpfulVotes: number;
+  time: number;
   profileUrl: string;
   header: string;
-  voters: string[];
   replies: Reply[];
 }
 
@@ -46,8 +41,6 @@ interface Reply {
   replyId: string;
   comment: string;
   timestamp: number;
-  upvotes: number;
-  downvotes: number;
   user: string;
   username: string;
   profileUrl: string;
@@ -145,6 +138,10 @@ const Home = () => {
     navigate(`/projectdevinfo/${appId}`);
   };
 
+  const handleAppsAirdrops = (appId: string) => {
+    navigate(`/projectairdrops/${appId}`);
+  };
+
   const handleProjectTypeChange = (
     _: React.SyntheticEvent<HTMLElement, Event>,
     data: DropdownProps
@@ -162,7 +159,7 @@ const Home = () => {
         const messageResponse = await message({
           process: ARS,
           tags: [
-            { name: "Action", value: "FetchDevForumData" },
+            { name: "Action", value: "FetchDevForumDataN" },
             { name: "AppId", value: String(AppId) },
           ],
           signer: createDataItemSigner(othent),
@@ -181,12 +178,9 @@ const Home = () => {
         }
 
         if (Messages && Messages.length > 0) {
-          const rawData = Messages.map((msg) => JSON.parse(msg.Data));
-          console.log("Raw Messages:", rawData);
-          // const data = JSON.parse(Messages[0].Data);
-          // console.log(data);
-
-          setAppReviews(rawData);
+          const data = JSON.parse(Messages[0].Data);
+          console.log(data);
+          setAppReviews(data);
         }
       } catch (error) {
         console.error("Error fetching feature requests:", error);
@@ -254,60 +248,66 @@ const Home = () => {
       )}
     >
       <Container>
-        <Menu pointing>
-          <MenuItem onClick={() => handleProjectInfo(AppId)}>
-            <Icon name="pin" />
-            Project Info.
-          </MenuItem>
-          <MenuMenu position="right">
-            <MenuItem onClick={() => handleProjectStats(AppId)}>
-              <Icon name="line graph" />
-              View Detailed Statistics
-            </MenuItem>
-            <MenuItem onClick={() => handleDeveloperInfo(AppId)}>
-              <Icon name="github square" />
-              Developer Forum.
-            </MenuItem>
-          </MenuMenu>
-        </Menu>
-        <Divider />
-        <Container textAlign="center">
-          <Form>
-            <FormField required>
-              <label>Type of Question.</label>
-              <FormSelect
-                options={updateOptions}
-                placeholder="Question Type"
-                value={selectedProjectType}
-                onChange={handleProjectTypeChange}
-              />
-            </FormField>
-            <FormField required>
-              <label>Question.</label>
-              <Input
-                type="text"
-                name="updatevalue"
-                value={updateValue}
-                onChange={handleInputChange}
-                placeholder="Inquiry"
-              />
-            </FormField>
-            <Button
-              loading={updateApp}
-              color="green"
-              onClick={() => AskQuestion(AppId)}
-            >
-              {" "}
-              Ask Question.
-            </Button>
-          </Form>
-        </Container>
         <Container textAlign="center">
           {loadingAppReviews ? (
             <Loader active inline="centered" />
           ) : appReviews ? (
             <>
               <Container>
+                <Menu pointing>
+                  <MenuItem onClick={() => handleProjectInfo(AppId)}>
+                    <Icon name="pin" />
+                    Project Info.
+                  </MenuItem>
+                  <MenuMenu position="right">
+                    <MenuItem onClick={() => handleProjectStats(AppId)}>
+                      <Icon name="line graph" />
+                      View Detailed Statistics
+                    </MenuItem>
+                    <MenuItem onClick={() => handleAppsAirdrops(AppId)}>
+                      <Icon name="bitcoin" />
+                      Airdrops
+                    </MenuItem>
+                    <MenuItem onClick={() => handleDeveloperInfo(AppId)}>
+                      <Icon name="github square" />
+                      Developer Forum.
+                    </MenuItem>
+                  </MenuMenu>
+                </Menu>
+                <Divider />
+
+                <Container textAlign="center">
+                  <Form>
+                    <FormField required>
+                      <label>Type of Question.</label>
+                      <FormSelect
+                        options={updateOptions}
+                        placeholder="Question Type"
+                        value={selectedProjectType}
+                        onChange={handleProjectTypeChange}
+                      />
+                    </FormField>
+                    <FormField required>
+                      <label>Question.</label>
+                      <Input
+                        type="text"
+                        name="updatevalue"
+                        value={updateValue}
+                        onChange={handleInputChange}
+                        placeholder="Inquiry"
+                      />
+                    </FormField>
+                    <Button
+                      loading={updateApp}
+                      color="green"
+                      onClick={() => AskQuestion(AppId)}
+                    >
+                      {" "}
+                      Ask Question.
+                    </Button>
+                  </Form>
+                </Container>
+
                 <Divider />
                 <Header as="h1" textAlign="center">
                   Project Dev Forum
@@ -317,18 +317,23 @@ const Home = () => {
                 <Grid>
                   <CommentGroup threaded>
                     {Object.entries(appReviews).map(([, review]) => (
-                      <SUIComment key={review.forumId}>
+                      <SUIComment key={review.devForumId}>
+                        <SUIComment.Metadata>
+                          <Header textAlign="center">
+                            {" "}
+                            Topic :{review.header}
+                          </Header>{" "}
+                        </SUIComment.Metadata>
+                        <Divider />
                         <SUIComment.Avatar src={review.profileUrl} />
                         <SUIComment.Content>
                           <SUIComment.Author as="a">
                             {review.username || "Anonymous"}
                           </SUIComment.Author>
                           <SUIComment.Metadata>
-                            <span>{formatDate(review.timestamp)}</span>
+                            <span>{formatDate(review.time)}</span>
                           </SUIComment.Metadata>
-                          <SUIComment.Metadata>
-                            <span>{review.header}</span>
-                          </SUIComment.Metadata>
+
                           <SUIComment.Text>
                             {review.comment || "No comment provided."}
                           </SUIComment.Text>
@@ -341,11 +346,11 @@ const Home = () => {
                               return (
                                 <SUIComment key={typedReply.replyId}>
                                   <SUIComment.Avatar
-                                    src={typedReply.username}
+                                    src={typedReply.profileUrl}
                                   />
                                   <SUIComment.Content>
                                     <SUIComment.Author as="a">
-                                      {typedReply.user || "Anonymous"}
+                                      {typedReply.username || "Anonymous"}
                                     </SUIComment.Author>
                                     <SUIComment.Metadata>
                                       <span>

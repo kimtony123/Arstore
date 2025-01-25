@@ -29,8 +29,6 @@ const Home = () => {
   const [loadingAirdrops, setLoadingAirdrops] = useState(true);
   const [airdropData, setAppAirdropData] = useState<AppAirdropData[]>([]);
 
-  const [deletingApp, setDeletingApp] = useState(true);
-
   const ARS = "e-lOufTQJ49ZUX1vPxO-QxjtYXiqM8RQgKovrnJKJ18";
   const navigate = useNavigate();
 
@@ -40,7 +38,7 @@ const Home = () => {
       try {
         const messageResponse = await message({
           process: ARS,
-          tags: [{ name: "Action", value: "getAllAirdrops" }],
+          tags: [{ name: "Action", value: "getAllAirdropsN" }],
           signer: createDataItemSigner(othent),
         });
 
@@ -82,6 +80,11 @@ const Home = () => {
     navigate(`/project/${appId}`);
   };
 
+  const formatDate = (timestamp: number) => {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString() + " " + date.toLocaleTimeString();
+  };
+
   return (
     <div
       className={classNames(
@@ -89,48 +92,74 @@ const Home = () => {
       )}
     >
       <Container>
-        <Header as="h1"> Airdrops List</Header>
-        <Button
-          onClick={handleAddAoprojects}
-          floated="right"
-          icon="add circle"
-          primary
-          size="large"
-        >
-          Add Project.
-        </Button>
-        <Divider />
-        <Header> Airdrops list.</Header>
         {loadingAirdrops ? (
-          <Loader active inline="centered" content="Loading My Apps..." />
-        ) : (
-          <Table celled>
-            <Table.Header>
-              <Table.Row>
-                <Table.HeaderCell>App Name</Table.HeaderCell>
-                <Table.HeaderCell> Amount</Table.HeaderCell>
-                <Table.HeaderCell>Status</Table.HeaderCell>
-                <Table.HeaderCell>App Info</Table.HeaderCell>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {airdropData.map((app, index) => (
-                <Table.Row key={index}>
-                  <Table.Cell>{app.appname}</Table.Cell>
-                  <Table.Cell>{app.amount}</Table.Cell>
-                  <Table.Cell>{app.status}</Table.Cell>
-                  <Table.Cell>
-                    <Button
-                      primary
-                      onClick={() => handleProjectInfo(app.appId)}
-                    >
-                      App Info
-                    </Button>
-                  </Table.Cell>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "60vh",
+            }}
+          >
+            <Loader active inline="centered" size="large">
+              Loading airdrops...
+            </Loader>
+          </div>
+        ) : airdropData.length > 0 ? (
+          <>
+            <Header as="h1"> Airdrops List</Header>
+            <Button
+              onClick={handleAddAoprojects}
+              floated="right"
+              icon="add circle"
+              primary
+              size="large"
+            >
+              Add Project.
+            </Button>
+            <Divider />
+            <Header as="h1" textAlign="center">
+              {" "}
+              Airdrops list.
+            </Header>
+            <Table celled>
+              <Table.Header>
+                <Table.Row>
+                  <Table.HeaderCell>App Name</Table.HeaderCell>
+                  <Table.HeaderCell>Created Time</Table.HeaderCell>
+                  <Table.HeaderCell> Amount</Table.HeaderCell>
+                  <Table.HeaderCell>Status</Table.HeaderCell>
+                  <Table.HeaderCell>App Info</Table.HeaderCell>
                 </Table.Row>
-              ))}
-            </Table.Body>
-          </Table>
+              </Table.Header>
+              <Table.Body>
+                {airdropData.map((app, index) => (
+                  <Table.Row key={index}>
+                    <Table.Cell>{app.appname}</Table.Cell>
+                    <Table.Cell>{formatDate(app.timestamp)}</Table.Cell>
+                    <Table.Cell>{app.amount}</Table.Cell>
+                    <Table.Cell>{app.status}</Table.Cell>
+                    <Table.Cell>
+                      <Button
+                        primary
+                        onClick={() => handleProjectInfo(app.appId)}
+                      >
+                        App Info
+                      </Button>
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table>
+          </>
+        ) : (
+          <>
+            <Container>
+              <Header as="h1" color="red" textAlign="center">
+                There is no airdrops Now , check back later.
+              </Header>
+            </Container>
+          </>
         )}
       </Container>
       <Footer />

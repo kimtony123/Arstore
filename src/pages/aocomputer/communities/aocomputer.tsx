@@ -4,19 +4,15 @@ import React, { useState, useEffect } from "react";
 import { FaSpinner } from "react-icons/fa";
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
 import {
-  MenuItem,
-  Menu,
   Container,
-  Grid,
   Divider,
   CardGroup,
   Card,
-  Icon,
   Button,
-  GridColumn,
   Tab,
   TabPane,
   Header,
+  Loader,
 } from "semantic-ui-react";
 import { useNavigate } from "react-router-dom";
 import Footer from "../../../components/footer/Footer";
@@ -57,6 +53,7 @@ const aocommunities = () => {
   const [loading, setLoading] = useState(false);
   const [activeProjectType, setActiveProjectType] = useState(projectTypes[0]);
   const [errorMessage, setErrorMessage] = useState("");
+  const [activeIndex, setActiveIndex] = useState(0); // New state to track the active tab index
 
   const ARS = "e-lOufTQJ49ZUX1vPxO-QxjtYXiqM8RQgKovrnJKJ18";
   const navigate = useNavigate();
@@ -74,7 +71,7 @@ const aocommunities = () => {
   }, [activeProjectType]);
 
   const getProject = async (projectType: string) => {
-    const protocol = "Arweave";
+    const protocol = "aocomputer";
     setLoading(true);
     try {
       const messageResponse = await message({
@@ -118,56 +115,58 @@ const aocommunities = () => {
     render: () => (
       <TabPane attached={false}>
         <Container>
-          <Header>{type} Projects</Header>
-          <Divider />
-          <Button
-            onClick={handleAddAoprojects}
-            floated="right"
-            primary
-            size="large"
-          >
-            Add AO Project
-          </Button>
-          <Divider />
           {loading ? (
-            <div style={{ textAlign: "center", marginTop: "20px" }}>
-              <FaSpinner className="spinner" size={30} />
+            <div style={{ textAlign: "center", marginTop: "40px" }}>
+              <FaSpinner className="spinner" size={70} />
             </div>
           ) : errorMessage ? (
             <Header as="h4" color="red" textAlign="center">
               {errorMessage}
             </Header>
           ) : (
-            <CardGroup>
-              {projects.map((app, index) => (
-                <Card
-                  size="mini"
-                  key={index}
-                  image={app.AppIconUrl}
-                  header={app.AppName}
-                  meta={app.CompanyName}
-                  description={app.ProjectType}
-                  extra={
-                    <>
-                      <a
-                        href={app.WebsiteUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Visit Site
-                      </a>
-                      <Divider />
-                      <Button
-                        primary
-                        onClick={() => handleProjectInfo(app.AppId)}
-                      >
-                        App Info
-                      </Button>
-                    </>
-                  }
-                />
-              ))}
-            </CardGroup>
+            <>
+              <Header>{type} Projects</Header>
+              <Divider />
+              <Button
+                onClick={handleAddAoprojects}
+                floated="right"
+                primary
+                size="large"
+              >
+                Add AO Project
+              </Button>
+              <Divider />
+              <CardGroup>
+                {projects.map((app, index) => (
+                  <Card
+                    size="mini"
+                    key={index}
+                    image={app.AppIconUrl}
+                    header={app.AppName}
+                    meta={app.CompanyName}
+                    description={app.ProjectType}
+                    extra={
+                      <>
+                        <a
+                          href={app.WebsiteUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Visit Site
+                        </a>
+                        <Divider />
+                        <Button
+                          primary
+                          onClick={() => handleProjectInfo(app.AppId)}
+                        >
+                          App Info
+                        </Button>
+                      </>
+                    }
+                  />
+                ))}
+              </CardGroup>
+            </>
           )}
         </Container>
       </TabPane>
@@ -175,7 +174,8 @@ const aocommunities = () => {
   }));
 
   const handleTabChange = (e: any, { activeIndex }: any) => {
-    setActiveProjectType(projectTypes[activeIndex]);
+    setActiveIndex(activeIndex); // Update activeIndex
+    setActiveProjectType(projectTypes[activeIndex]); // Update activeProjectType
   };
 
   return (
@@ -184,17 +184,53 @@ const aocommunities = () => {
         "content text-black dark:text-white flex flex-col h-full justify-between"
       )}
     >
-      <Tab
-        menu={{
-          secondary: true,
-          pointing: true,
-          style: { display: "flex", flexWrap: "nowrap" },
-        }}
-        panes={panes}
-        onTabChange={handleTabChange}
-      />
-      <Divider />
+      {loading ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "60vh",
+          }}
+        >
+          <Loader active inline="centered" size="large">
+            Loading aocomputer projects...
+          </Loader>
+        </div>
+      ) : projects.length > 0 ? (
+        <>
+          <Tab
+            menu={{
+              secondary: true,
+              pointing: true,
+              style: { display: "flex", flexWrap: "nowrap" },
+            }}
+            panes={panes}
+            activeIndex={activeIndex} // Controlled Tab
+            onTabChange={handleTabChange}
+          />
 
+          <Divider />
+        </>
+      ) : (
+        <>
+          <Container>
+            <Header as="h1" color="red" textAlign="center">
+              There are no projects in this category Click another Tab!
+            </Header>
+            <Tab
+              menu={{
+                secondary: true,
+                pointing: true,
+                style: { display: "flex", flexWrap: "nowrap" },
+              }}
+              panes={panes}
+              activeIndex={activeIndex} // Controlled Tab
+              onTabChange={handleTabChange}
+            />
+          </Container>
+        </>
+      )}
       <Footer />
     </div>
   );

@@ -7,6 +7,7 @@ import {
   FaCoins,
   FaAsymmetrik,
   FaInbox,
+  FaChartLine,
 } from "react-icons/fa";
 import {
   Squares2X2Icon,
@@ -64,13 +65,14 @@ const Sidebar: React.FC<SidebarBarProps> = ({
       tooltip: "arweave",
     },
     { icon: <FaWallet className="size-4 md:size-5" />, tooltip: "Wallet" },
-    {
-      icon: <TrophyIcon className="size-4 md:size-5" />,
-      tooltip: "LeaderBoard",
-    },
+
     { icon: <FaCoins className="size-4 md:size-5" />, tooltip: "airdrops" },
 
     { icon: <FaErlang className="size-4 md:size-5" />, tooltip: "myapps" },
+    {
+      icon: <FaChartLine className="size-4 md:size-5" />,
+      tooltip: "aostorestats",
+    },
   ];
 
   return (

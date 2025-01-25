@@ -55,6 +55,8 @@
     "generateFeatureRequestId",
     "generateNewUpdateId",
     "generateTaskId",
-    "generateTableId"
+    "generateTableId",
+    "generateRatingsChart",
+    "airdropTable"
   ]
 }

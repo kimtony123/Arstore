@@ -139,7 +139,7 @@ const aoprojectsinfo = () => {
 
   const handleOwnerAirdropInfo = (appId: string | undefined) => {
     if (!appId) return;
-    navigate(`/projectairdrops/${appId}`);
+    navigate(`/projectairdropsadmin/${appId}`);
   };
 
   const handleOwnerUpdatesInfo = (appId: string | undefined) => {
@@ -312,78 +312,105 @@ const aoprojectsinfo = () => {
       <div className="text-white flex flex-col items-center lg:items-start">
         <Container textAlign="center">
           <Divider />
-          <Menu pointing>
-            <MenuItem
-              onClick={() => handleProjectReviewsInfo(AppId)}
-              name="Reviews"
-            />
-            <MenuItem
-              onClick={() => handleOwnerStatisticsInfo(AppId)}
-              name="Statistics"
-            />
-            <MenuItem
-              onClick={() => handleOwnerAirdropInfo(AppId)}
-              name="Airdrops"
-            />
-            <MenuMenu position="right">
-              <MenuItem
-                onClick={() => handleOwnerUpdatesInfo(AppId)}
-                name="Update"
-              />
-              <MenuItem
-                onClick={() => handleOwnerChange(AppId)}
-                name="changeowner"
-              />
-              <MenuItem
-                onClick={() => handleNotification(AppId)}
-                name="Send Messages."
-              />
-              <MenuItem
-                onClick={() => handleFeaturesandBugs(AppId)}
-                name="F Requests."
-              />
-              <MenuItem
-                onClick={() => handleBugReports(AppId)}
-                name="Bug Reports."
-              />
 
-              <MenuItem
-                onClick={() => handleAostoreAi(AppId)}
-                name="aostore AI"
-              />
-              <MenuItem onClick={() => handleTasks(AppId)} name="tasks" />
-            </MenuMenu>
-          </Menu>
-          <Header textAlign="center" as="h1">
-            Project Sentiment Analysis.
-          </Header>
-          <Form>
-            <FormField required>
-              <label>What are you planning To analyse? </label>
-              <FormSelect
-                options={updateOptions}
-                placeholder="Data Type"
-                value={selectedProjectType}
-                onChange={handleProjectTypeChange}
-              />
-            </FormField>
-            <Button
-              loading={updateApp}
-              color="purple"
-              onClick={() => updateproject(AppId)}
+          {loadingAppInfo ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "60vh",
+              }}
             >
-              {" "}
-              Deploy Data
-            </Button>
-          </Form>
+              <Loader active inline="centered" size="large">
+                Loading your aostore Ai...
+              </Loader>
+            </div>
+          ) : apps ? (
+            <>
+              <Menu pointing>
+                <MenuItem
+                  onClick={() => handleProjectReviewsInfo(AppId)}
+                  name="Reviews"
+                />
+                <MenuItem
+                  onClick={() => handleOwnerStatisticsInfo(AppId)}
+                  name="Statistics"
+                />
+                <MenuItem
+                  onClick={() => handleOwnerAirdropInfo(AppId)}
+                  name="Airdrops"
+                />
+                <MenuMenu position="right">
+                  <MenuItem
+                    onClick={() => handleOwnerUpdatesInfo(AppId)}
+                    name="Update"
+                  />
+                  <MenuItem
+                    onClick={() => handleOwnerChange(AppId)}
+                    name="changeowner"
+                  />
+                  <MenuItem
+                    onClick={() => handleNotification(AppId)}
+                    name="Send Messages."
+                  />
+                  <MenuItem
+                    onClick={() => handleFeaturesandBugs(AppId)}
+                    name="F Requests."
+                  />
+                  <MenuItem
+                    onClick={() => handleBugReports(AppId)}
+                    name="Bug Reports."
+                  />
+
+                  <MenuItem
+                    onClick={() => handleAostoreAi(AppId)}
+                    name="aostore AI"
+                  />
+                  <MenuItem onClick={() => handleTasks(AppId)} name="tasks" />
+                </MenuMenu>
+              </Menu>
+
+              <Header color="red" textAlign="center" as="h1">
+                Feature Development in Progress.
+              </Header>
+              <Header textAlign="center" as="h1">
+                Project Sentiment Analysis.
+              </Header>
+              <Form>
+                <FormField required>
+                  <label>What are you planning To analyse? </label>
+                  <FormSelect
+                    options={updateOptions}
+                    placeholder="Data Type"
+                    value={selectedProjectType}
+                    onChange={handleProjectTypeChange}
+                  />
+                </FormField>
+                <Button
+                  loading={updateApp}
+                  color="purple"
+                  onClick={() => updateproject(AppId)}
+                >
+                  {" "}
+                  Deploy Data
+                </Button>
+              </Form>
+              <Divider />
+              <Container textAlign="center">
+                <Button loading={useAi} color="purple" onClick={() => UseAi()}>
+                  {" "}
+                  Analyse.
+                </Button>
+              </Container>
+            </>
+          ) : (
+            <Header as="h4" color="grey">
+              No reviews found for this app.
+            </Header>
+          )}
         </Container>
-        <Divider />
-        <Container textAlign="center">
-          <Button loading={useAi} color="purple" onClick={() => UseAi()}>
-            {" "}
-            Analyse.
-          </Button>
-        </Container>
+
         <Divider />
       </div>
       <Footer />

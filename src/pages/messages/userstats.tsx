@@ -132,28 +132,33 @@ const Home = () => {
       )}
     >
       <Container>
-        <Divider />
-        <Menu pointing>
-          <MenuItem onClick={() => handleMessages()} name="Messages" />
-          <MenuItem
-            onClick={() => handleFeatureRequests()}
-            name="Feature Requests."
-          />
-          <MenuMenu position="right">
-            <MenuItem onClick={() => handleBugReports()} name="Bug Reports." />
-            <MenuItem onClick={() => handleUserStats()} name="My statistics." />
-          </MenuMenu>
-        </Menu>
-
-        <Header as="h1" textAlign="center">
-          User Statistics.
-        </Header>
-        <Divider />
-
         {loadingUserStats ? (
           <Loader active inline="centered" />
         ) : userStats ? (
           <>
+            <Divider />
+            <Menu pointing>
+              <MenuItem onClick={() => handleMessages()} name="Messages" />
+              <MenuItem
+                onClick={() => handleFeatureRequests()}
+                name="Feature Requests."
+              />
+              <MenuMenu position="right">
+                <MenuItem
+                  onClick={() => handleBugReports()}
+                  name="Bug Reports."
+                />
+                <MenuItem
+                  onClick={() => handleUserStats()}
+                  name="My statistics."
+                />
+              </MenuMenu>
+            </Menu>
+
+            <Header as="h1" textAlign="center">
+              User Statistics.
+            </Header>
+            <Divider />
             {/* Total Earnings Header with Money Icon */}
             <Header as="h3" textAlign="center">
               <FaDollarSign style={{ marginRight: "8px" }} />

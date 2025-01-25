@@ -91,10 +91,6 @@ const Home = () => {
       )}
     >
       <Container textAlign="center">
-        <Header as="h1" textAlign="center">
-          Favorite Projects.
-        </Header>
-
         {isloadingFavoriteApps ? (
           <div
             style={{
@@ -109,35 +105,47 @@ const Home = () => {
             </Loader>
           </div>
         ) : FavoriteApps.length > 0 ? (
-          <CardGroup itemsPerRow={3}>
-            {FavoriteApps.map((app, index) => (
-              <Card key={index}>
-                <Image src={app.AppIconUrl} wrapped ui={false} />
-                <CardContent>
-                  <CardHeader>{app.AppName}</CardHeader>
-                  <Divider />
-                  <CardMeta>{app.CompanyName}</CardMeta>
-                </CardContent>
-                <CardContent extra>
-                  <a
-                    href={app.WebsiteUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Visit Site
-                  </a>
-                  <Divider />
-                  <Button primary onClick={() => handleProjectInfo(app.AppId)}>
-                    App Info
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </CardGroup>
+          <>
+            <Header as="h1" textAlign="center">
+              Favorite Projects.
+            </Header>
+            <CardGroup itemsPerRow={3}>
+              {FavoriteApps.map((app, index) => (
+                <Card key={index}>
+                  <Image src={app.AppIconUrl} wrapped ui={false} />
+                  <CardContent>
+                    <CardHeader>{app.AppName}</CardHeader>
+                    <Divider />
+                    <CardMeta>{app.CompanyName}</CardMeta>
+                  </CardContent>
+                  <CardContent extra>
+                    <a
+                      href={app.WebsiteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Visit Site
+                    </a>
+                    <Divider />
+                    <Button
+                      primary
+                      onClick={() => handleProjectInfo(app.AppId)}
+                    >
+                      App Info
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </CardGroup>
+          </>
         ) : (
-          <Header as="h4" color="grey" textAlign="center">
-            You have not added any apps as favorites.
-          </Header>
+          <>
+            <Container>
+              <Header as="h4" color="grey" textAlign="center">
+                You have not added any apps as favorites.
+              </Header>
+            </Container>
+          </>
         )}
       </Container>
       <Footer />

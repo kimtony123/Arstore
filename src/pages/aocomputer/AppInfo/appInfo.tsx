@@ -714,6 +714,10 @@ const aoprojectsinfo = () => {
     navigate(`/projectdevinfo/${appId}`);
   };
 
+  const handleAppsAirdrops = (appId: string) => {
+    navigate(`/projectairdrops/${appId}`);
+  };
+
   return (
     <div
       className={classNames(
@@ -723,7 +727,18 @@ const aoprojectsinfo = () => {
       <div className="text-white flex flex-col items-center lg:items-start">
         <Container>
           {loadingAppInfo ? (
-            <Loader active inline="centered" />
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "60vh",
+              }}
+            >
+              <Loader active inline="centered" size="large">
+                Loading App Info...
+              </Loader>
+            </div>
           ) : appInfo ? (
             <>
               <Container>
@@ -735,7 +750,11 @@ const aoprojectsinfo = () => {
                   <MenuMenu position="right">
                     <MenuItem onClick={() => handleProjectStats(appInfo.AppId)}>
                       <Icon name="line graph" />
-                      View Detailed Statistics
+                      View Project Statistics
+                    </MenuItem>
+                    <MenuItem onClick={() => handleAppsAirdrops(appInfo.AppId)}>
+                      <Icon name="bitcoin" />
+                      Airdrops
                     </MenuItem>
                     <MenuItem
                       onClick={() => handleDeveloperInfo(appInfo.AppId)}
@@ -1090,7 +1109,7 @@ const aoprojectsinfo = () => {
                         </GridRow>
                       </GridColumn>
                       <GridColumn width={8}>
-                        <RatingsBarChart ratingsData={ratingsData} />
+                        <RatingsBarChart ratingsData={appInfo.RatingsChart} />
                       </GridColumn>
                     </Grid>
                     <Divider />
@@ -1151,7 +1170,18 @@ const aoprojectsinfo = () => {
           <Container>
             <Divider />
             {loadingAppReviews ? (
-              <Loader active inline="centered" />
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: "60vh",
+                }}
+              >
+                <Loader active inline="centered" size="large">
+                  Loading Reviews...
+                </Loader>
+              </div>
             ) : appReviews ? (
               <>
                 <Container>
@@ -1212,8 +1242,8 @@ const aoprojectsinfo = () => {
                               </SUIComment.Action>
                             </SUIComment.Actions>
                             <SUIComment.Text>
-                              {review.helpfulVotes} Found This Review Helpful.
-                              Did You find this Review Helpful ?
+                              {review.voters.foundHelpful.count} Found This
+                              Review Helpful. Did You find this Review Helpful ?
                             </SUIComment.Text>
                             <SUIComment.Actions>
                               <SUIComment.Action>
@@ -1238,8 +1268,8 @@ const aoprojectsinfo = () => {
                                   size="mini"
                                   icon
                                 >
-                                  <Icon name="thumbs up" />{" "}
-                                  {review.voters.foundUnhelpful.count || 0} Yes
+                                  <Icon name="thumbs down" />{" "}
+                                  {review.voters.foundUnhelpful.count || 0} No
                                 </Button>
                               </SUIComment.Action>
                             </SUIComment.Actions>

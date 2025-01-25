@@ -148,7 +148,7 @@ const aoprojectsinfo = () => {
 
   const handleOwnerAirdropInfo = (appId: string | undefined) => {
     if (!appId) return;
-    navigate(`/projectairdrops/${appId}`);
+    navigate(`/projectairdropsadmin/${appId}`);
   };
 
   const handleOwnerUpdatesInfo = (appId: string | undefined) => {
@@ -290,81 +290,102 @@ const aoprojectsinfo = () => {
     >
       <div className="text-white flex flex-col items-center lg:items-start">
         <Container>
-          <Divider />
-          <Menu pointing>
-            <MenuItem
-              onClick={() => handleProjectReviewsInfo(AppId)}
-              name="Reviews"
-            />
-            <MenuItem
-              onClick={() => handleOwnerStatisticsInfo(AppId)}
-              name="Statistics"
-            />
-            <MenuItem
-              onClick={() => handleOwnerAirdropInfo(AppId)}
-              name="Airdrops"
-            />
-            <MenuMenu position="right">
-              <MenuItem
-                onClick={() => handleOwnerUpdatesInfo(AppId)}
-                name="Update"
-              />
-              <MenuItem
-                onClick={() => handleOwnerChange(AppId)}
-                name="changeowner"
-              />
-              <MenuItem
-                onClick={() => handleNotification(AppId)}
-                name="Send Messages."
-              />
-              <MenuItem
-                onClick={() => handleFeaturesandBugs(AppId)}
-                name="F Requests."
-              />
-              <MenuItem
-                onClick={() => handleBugReports(AppId)}
-                name="Bug Reports."
-              />
-
-              <MenuItem
-                onClick={() => handleAostoreAi(AppId)}
-                name="aostore AI"
-              />
-              <MenuItem onClick={() => handleTasks(AppId)} name="tasks" />
-            </MenuMenu>
-          </Menu>
-          <Header textAlign="center" as="h1">
-            Update App.
-          </Header>
-          <Form>
-            <FormField required>
-              <label>What are you planning to update?</label>
-              <FormSelect
-                options={updateOptions}
-                placeholder="Project Type"
-                value={selectedProjectType}
-                onChange={handleProjectTypeChange}
-              />
-            </FormField>
-            <FormField required>
-              <label>New Updated Value?</label>
-              <Input
-                type="text"
-                name="updatevalue"
-                value={updateValue}
-                onChange={handleInputChange}
-                placeholder="New Value"
-              />
-            </FormField>
-            <Button
-              loading={updateApp}
-              color="purple"
-              onClick={() => updateproject(AppId)}
+          {loadingAppInfo ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "60vh",
+              }}
             >
-              {" "}
-              Update App.
-            </Button>
-          </Form>
+              <Loader active inline="centered" size="large">
+                Loading App Updates...
+              </Loader>
+            </div>
+          ) : apps ? (
+            <>
+              <Menu pointing>
+                <MenuItem
+                  onClick={() => handleProjectReviewsInfo(AppId)}
+                  name="Reviews"
+                />
+                <MenuItem
+                  onClick={() => handleOwnerStatisticsInfo(AppId)}
+                  name="Statistics"
+                />
+                <MenuItem
+                  onClick={() => handleOwnerAirdropInfo(AppId)}
+                  name="Airdrops"
+                />
+                <MenuMenu position="right">
+                  <MenuItem
+                    onClick={() => handleOwnerUpdatesInfo(AppId)}
+                    name="Update"
+                  />
+                  <MenuItem
+                    onClick={() => handleOwnerChange(AppId)}
+                    name="changeowner"
+                  />
+                  <MenuItem
+                    onClick={() => handleNotification(AppId)}
+                    name="Send Messages."
+                  />
+                  <MenuItem
+                    onClick={() => handleFeaturesandBugs(AppId)}
+                    name="F Requests."
+                  />
+                  <MenuItem
+                    onClick={() => handleBugReports(AppId)}
+                    name="Bug Reports."
+                  />
+
+                  <MenuItem
+                    onClick={() => handleAostoreAi(AppId)}
+                    name="aostore AI"
+                  />
+                  <MenuItem onClick={() => handleTasks(AppId)} name="tasks" />
+                </MenuMenu>
+              </Menu>
+              <Header textAlign="center" as="h1">
+                Update App.
+              </Header>
+              <Form>
+                <FormField required>
+                  <label>What are you planning to update?</label>
+                  <FormSelect
+                    options={updateOptions}
+                    placeholder="Project Type"
+                    value={selectedProjectType}
+                    onChange={handleProjectTypeChange}
+                  />
+                </FormField>
+                <FormField required>
+                  <label>New Updated Value?</label>
+                  <Input
+                    type="text"
+                    name="updatevalue"
+                    value={updateValue}
+                    onChange={handleInputChange}
+                    placeholder="New Value"
+                  />
+                </FormField>
+                <Button
+                  loading={updateApp}
+                  color="purple"
+                  onClick={() => updateproject(AppId)}
+                >
+                  {" "}
+                  Update App.
+                </Button>
+              </Form>
+            </>
+          ) : (
+            <Header as="h4" color="grey">
+              No reviews found for this app.
+            </Header>
+          )}
+          <Divider />
         </Container>
         <Divider />
       </div>

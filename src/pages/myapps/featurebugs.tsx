@@ -13,7 +13,6 @@ import {
   Menu,
   MenuItem,
   MenuMenu,
-  Rating,
   FormField,
   Input,
 } from "semantic-ui-react";
@@ -26,16 +25,16 @@ import { useNavigate } from "react-router-dom";
 
 interface Review {
   reviewId: string;
+  appId: string;
+  bugReportId: string;
   username: string;
   comment: string;
-  rating: number;
   timestamp: number;
   upvotes: number;
   downvotes: number;
   helpfulVotes: number;
   unhelpfulVotes: number;
   profileUrl: string;
-  voters: Record<string, any>;
   replies: Reply[];
 }
 
@@ -60,10 +59,7 @@ interface AppData {
 const aoprojectsinfo = () => {
   const { AppId: paramAppId } = useParams();
   const AppId = paramAppId || "defaultAppId"; // Provide a default AppId
-
-  const [appReviews, setAppReviews] = useState<Record<string, any> | null>(
-    null
-  );
+  const [appReviews, setAppReviews] = useState<Review[]>(null);
   const [loadingAppReviews, setLoadingAppReviews] = useState(true);
   const [addReviewReply, setAddReviewReply] = useState(false);
   const [comment, setComment] = useState("");
@@ -98,7 +94,7 @@ const aoprojectsinfo = () => {
 
   const handleOwnerAirdropInfo = (appId: string | undefined) => {
     if (!appId) return;
-    navigate(`/projectairdrops/${appId}`);
+    navigate(`/projectairdropsadmin/${appId}`);
   };
 
   const handleOwnerUpdatesInfo = (appId: string | undefined) => {
@@ -146,8 +142,8 @@ const aoprojectsinfo = () => {
         const messageResponse = await message({
           process: ARS,
           tags: [
-            { name: "Action", value: "FetchFeatureRequestsData" },
-            { name: "AppId", value: String(AppId) },
+            { name: "Action", value: "FetchFeaturesDataN" },
+            { name: "AppId", value: AppId },
           ],
           signer: createDataItemSigner(othent),
         });
@@ -160,7 +156,7 @@ const aoprojectsinfo = () => {
         const { Messages, Error } = resultResponse;
 
         if (Error) {
-          alert("Error fetching app reviews: " + Error);
+          alert("Error fetching project Features: " + Error);
           return;
         }
 
@@ -170,7 +166,7 @@ const aoprojectsinfo = () => {
           setAppReviews(data);
         }
       } catch (error) {
-        console.error("Error fetching app reviews:", error);
+        console.error("Error fetching project Features:", error);
       } finally {
         setLoadingAppReviews(false);
       }
@@ -179,7 +175,7 @@ const aoprojectsinfo = () => {
     fetchAppReviews();
   }, [AppId]);
 
-  const AddReviewReply = async (ReviewID: string) => {
+  const AddFeatureRequestReply = async (ReviewID: string) => {
     if (!AppId) return;
     console.log(AppId);
     if (!ReviewID) return;
@@ -191,11 +187,11 @@ const aoprojectsinfo = () => {
         process: ARS,
 
         tags: [
-          { name: "Action", value: "AddReviewReply" },
+          { name: "Action", value: "AddFeatureRequestReply" },
           { name: "AppId", value: String(AppId) },
           { name: "username", value: String(username) },
           { name: "profileUrl", value: String(profileUrl) },
-          { name: "ReviewId", value: String(ReviewID) },
+          { name: "FeatureRequestId", value: String(ReviewID) },
           { name: "comment", value: String(comment) },
         ],
         signer: createDataItemSigner(othent),
@@ -206,7 +202,7 @@ const aoprojectsinfo = () => {
       });
 
       if (Error) {
-        alert("Error Adding review:" + Error);
+        alert("Error Adding reply:" + Error);
         return;
       }
       if (!Messages || Messages.length === 0) {
@@ -263,7 +259,7 @@ const aoprojectsinfo = () => {
             />
             <MenuItem
               onClick={() => handleFeaturesandBugs(AppId)}
-              name="F Requests.."
+              name="F Requests."
             />
             <MenuItem
               onClick={() => handleBugReports(AppId)}
@@ -278,11 +274,22 @@ const aoprojectsinfo = () => {
           </MenuMenu>
         </Menu>
 
-        <Header as="h1">Reviews</Header>
+        <Header as="h1">Feature Requests.</Header>
         <Divider />
 
         {loadingAppReviews ? (
-          <Loader active inline="centered" />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "60vh",
+            }}
+          >
+            <Loader active inline="centered" size="large">
+              Loading Feature Requests...
+            </Loader>
+          </div>
         ) : appReviews ? (
           <>
             <Container>
@@ -290,7 +297,7 @@ const aoprojectsinfo = () => {
               <Grid>
                 <CommentGroup threaded>
                   {Object.entries(appReviews).map(([key, review]) => (
-                    <SUIComment key={review.reviewId}>
+                    <SUIComment key={review.bugReportId}>
                       <SUIComment.Avatar
                         src={
                           review.profileUrl ||
@@ -303,71 +310,15 @@ const aoprojectsinfo = () => {
                         </SUIComment.Author>
                         <SUIComment.Metadata>
                           <span>{formatDate(review.timestamp)}</span>
-                          <Rating
-                            icon="star"
-                            defaultRating={review.rating}
-                            maxRating={5}
-                            disabled
-                          />
                         </SUIComment.Metadata>
                         <SUIComment.Text>
                           {review.comment || "No comment provided."}
                         </SUIComment.Text>
-                        <SUIComment.Actions>
-                          <SUIComment.Action>
-                            <Button
-                              loading={addUpvote}
-                              primary
-                              color="blue"
-                              size="mini"
-                              icon
-                            >
-                              <Icon name="thumbs up" /> {review.upvotes || 0}{" "}
-                              Upvotes
-                            </Button>
-                            <Button
-                              loading={addDownvote}
-                              color="red"
-                              size="mini"
-                              icon
-                            >
-                              <Icon name="thumbs down" />{" "}
-                              {review.downvotes || 0} Downvotes
-                            </Button>
-                          </SUIComment.Action>
-                        </SUIComment.Actions>
-                        <SUIComment.Text>
-                          {review.helpfulVotes} Found This Review Helpful. Did
-                          You find this Review Helpful ?
-                        </SUIComment.Text>
-                        <SUIComment.Actions>
-                          <SUIComment.Action>
-                            <Button
-                              loading={addHelpful}
-                              color="blue"
-                              size="mini"
-                              icon
-                            >
-                              <Icon name="thumbs up" />
-                              Yes.
-                            </Button>
-                            <Button
-                              loading={addUnhelpful}
-                              color="red"
-                              size="mini"
-                              icon
-                            >
-                              <Icon name="thumbs down" />
-                              No.
-                            </Button>
-                          </SUIComment.Action>
-                        </SUIComment.Actions>
                       </SUIComment.Content>
                       <SUIComment.Group>
                         {Object.entries(review.replies || {}).map(
                           ([replyKey, reply]) => {
                             const typedReply = reply as Reply; // 👈 Type assertion
-
                             return (
                               <SUIComment key={typedReply.replyId}>
                                 <SUIComment.Avatar
@@ -400,15 +351,17 @@ const aoprojectsinfo = () => {
                             name="comment"
                             value={comment}
                             onChange={handleInputChange}
-                            placeholder="Tell us about your experience..."
+                            placeholder="Reply"
                           />
                         </FormField>
                         <FormField>
                           <Button
                             primary
                             loading={addReviewReply}
-                            onClick={() => AddReviewReply(review.reviewId)}
-                            content="Add Review"
+                            onClick={() =>
+                              AddFeatureRequestReply(review.bugReportId)
+                            }
+                            content="Reply To this Feature Requests. "
                             labelPosition="left"
                             icon="edit"
                           />
@@ -422,7 +375,7 @@ const aoprojectsinfo = () => {
           </>
         ) : (
           <Header as="h4" color="grey">
-            No reviews found for this app.
+            No Features requests found for this project.
           </Header>
         )}
 

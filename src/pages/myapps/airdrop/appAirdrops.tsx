@@ -49,7 +49,7 @@ const aoprojectsinfo = () => {
   const [depositAmount, setDepositAmount] = useState("");
   const [isLoadingDeposit, setIsLoadingDeposit] = useState(false);
 
-  const ARS = "Gwx7lNgoDtObgJ0LC-kelDprvyv2zUdjIY6CTZeYYvk";
+  const ARS = "e-lOufTQJ49ZUX1vPxO-QxjtYXiqM8RQgKovrnJKJ18";
   const navigate = useNavigate();
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,7 +79,7 @@ const aoprojectsinfo = () => {
 
   const handleOwnerAirdropInfo = (appId: string | undefined) => {
     if (!appId) return;
-    navigate(`/projectairdrops/${appId}`);
+    navigate(`/projectairdropsadmin/${appId}`);
   };
 
   const handleOwnerUpdatesInfo = (appId: string | undefined) => {
@@ -128,7 +128,7 @@ const aoprojectsinfo = () => {
       try {
         const messageResponse = await message({
           process: ARS,
-          tags: [{ name: "Action", value: "getOwnerAirdrops" }],
+          tags: [{ name: "Action", value: "getOwnerAirdropsN" }],
           signer: createDataItemSigner(othent),
         });
 
@@ -208,7 +208,7 @@ const aoprojectsinfo = () => {
       const getPropMessage = await message({
         process: ARS,
         tags: [
-          { name: "Action", value: "DepositConfirmed" },
+          { name: "Action", value: "DepositConfirmedN" },
           { name: "AppId", value: String(AppId) },
           { name: "processId", value: String(processId) },
           { name: "Amount", value: String(depositAmount) },
@@ -232,7 +232,7 @@ const aoprojectsinfo = () => {
       alert("Error in deposit process: " + error);
     } finally {
       setIsLoadingDeposit(false); // Stop spinner for deposit
-      reloadPage();
+      reloadPage(true);
     }
   };
 
@@ -245,123 +245,135 @@ const aoprojectsinfo = () => {
       <div className="text-white flex flex-col items-center lg:items-start">
         <Container>
           <Divider />
-          <Menu pointing>
-            <MenuItem
-              onClick={() => handleProjectReviewsInfo(AppId)}
-              name="Reviews"
-            />
-            <MenuItem
-              onClick={() => handleOwnerStatisticsInfo(AppId)}
-              name="Statistics"
-            />
-            <MenuItem
-              onClick={() => handleOwnerAirdropInfo(AppId)}
-              name="Airdrops"
-            />
-            <MenuMenu position="right">
-              <MenuItem
-                onClick={() => handleOwnerUpdatesInfo(AppId)}
-                name="Update"
-              />
-              <MenuItem
-                onClick={() => handleOwnerChange(AppId)}
-                name="changeowner"
-              />
-              <MenuItem
-                onClick={() => handleNotification(AppId)}
-                name="Send Messages."
-              />
-              <MenuItem
-                onClick={() => handleFeaturesandBugs(AppId)}
-                name="F Requests."
-              />
-              <MenuItem
-                onClick={() => handleBugReports(AppId)}
-                name="Bug Reports."
-              />
-
-              <MenuItem
-                onClick={() => handleAostoreAi(AppId)}
-                name="aostore AI"
-              />
-              <MenuItem onClick={() => handleTasks(AppId)} name="tasks" />
-            </MenuMenu>
-          </Menu>
-          <Header textAlign="center" as="h1">
-            Airdrop users.
-          </Header>
-
-          <Header />
-          <Form>
-            <FormField required>
-              <label>Enter Your Token Process Id.</label>
-              <Input
-                type="text"
-                name="processid"
-                value={processId}
-                onChange={handleInputChange}
-                placeholder="Token Process Id."
-              />
-            </FormField>
-            <FormField required>
-              <label>Enter Airdrop Amount.</label>
-              <Input
-                type="text"
-                name="depositamount"
-                value={depositAmount}
-                onChange={handleInputChange}
-                placeholder="Enter Airdrop Amount"
-              />
-            </FormField>
-            <Button onClick={deposit} color="green">
-              Deposit
-            </Button>
-          </Form>
-
-          <Divider />
-          <Header textAlign="center" as="h1">
-            Airdrops.
-          </Header>
 
           {loadingAirdrops ? (
-            <Loader active inline="centered" content="Loading My Apps..." />
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "60vh",
+              }}
+            >
+              <Loader active inline="centered" size="large">
+                Loading Airdrops Data...
+              </Loader>
+            </div>
           ) : (
-            <Table celled>
-              <Table.Header>
-                <Table.Row>
-                  <Table.HeaderCell>App name</Table.HeaderCell>
-                  <Table.HeaderCell> Amount</Table.HeaderCell>
-                  <Table.HeaderCell>AirdropId</Table.HeaderCell>
-                  <Table.HeaderCell>Status</Table.HeaderCell>
-                  <Table.HeaderCell>Airdrop Info.</Table.HeaderCell>
-                  <Table.HeaderCell>Delete App.</Table.HeaderCell>
-                </Table.Row>
-              </Table.Header>
+            <>
+              <Menu pointing>
+                <MenuItem
+                  onClick={() => handleProjectReviewsInfo(AppId)}
+                  name="Reviews"
+                />
+                <MenuItem
+                  onClick={() => handleOwnerStatisticsInfo(AppId)}
+                  name="Statistics"
+                />
+                <MenuItem
+                  onClick={() => handleOwnerAirdropInfo(AppId)}
+                  name="Airdrops"
+                />
+                <MenuMenu position="right">
+                  <MenuItem
+                    onClick={() => handleOwnerUpdatesInfo(AppId)}
+                    name="Update"
+                  />
+                  <MenuItem
+                    onClick={() => handleOwnerChange(AppId)}
+                    name="changeowner"
+                  />
+                  <MenuItem
+                    onClick={() => handleNotification(AppId)}
+                    name="Send Messages."
+                  />
+                  <MenuItem
+                    onClick={() => handleFeaturesandBugs(AppId)}
+                    name="F Requests."
+                  />
+                  <MenuItem
+                    onClick={() => handleBugReports(AppId)}
+                    name="Bug Reports."
+                  />
 
-              <Table.Body>
-                {airdropData.map((app, index) => (
-                  <Table.Row key={index}>
-                    <Table.Cell>{app.appname}</Table.Cell>
-                    <Table.Cell>{app.amount}</Table.Cell>
-                    <Table.Cell>{app.airdropId}</Table.Cell>
-                    <Table.Cell>{app.status}</Table.Cell>
-                    <Table.Cell>
-                      {" "}
-                      <Button
-                        primary
-                        onClick={() => handleAirdropInfo(app.airdropId)}
-                      >
-                        Airdrop Info
-                      </Button>
-                    </Table.Cell>
-                    <Table.Cell>
-                      {" "}
-                      <Button color="red">Delete Airdrop.</Button>
-                    </Table.Cell>
+                  <MenuItem
+                    onClick={() => handleAostoreAi(AppId)}
+                    name="aostore AI"
+                  />
+                  <MenuItem onClick={() => handleTasks(AppId)} name="tasks" />
+                </MenuMenu>
+              </Menu>
+              <Header textAlign="center" as="h1">
+                Airdrop Your Users.
+              </Header>
+
+              <Header />
+              <Form>
+                <FormField required>
+                  <label>Enter Your Token Process Id.</label>
+                  <Input
+                    type="text"
+                    name="processid"
+                    value={processId}
+                    onChange={handleInputChange}
+                    placeholder="Token Process Id."
+                  />
+                </FormField>
+                <FormField required>
+                  <label>Enter Airdrop Amount.</label>
+                  <Input
+                    type="text"
+                    name="depositamount"
+                    value={depositAmount}
+                    onChange={handleInputChange}
+                    placeholder="Enter Airdrop Amount"
+                  />
+                </FormField>
+                <Button
+                  loading={isLoadingDeposit}
+                  onClick={deposit}
+                  color="green"
+                >
+                  Deposit
+                </Button>
+              </Form>
+
+              <Divider />
+              <Header textAlign="center" as="h1">
+                Airdrops.
+              </Header>
+              <Table celled>
+                <Table.Header>
+                  <Table.Row>
+                    <Table.HeaderCell>App name</Table.HeaderCell>
+                    <Table.HeaderCell> Amount</Table.HeaderCell>
+                    <Table.HeaderCell>AirdropId</Table.HeaderCell>
+                    <Table.HeaderCell>Status</Table.HeaderCell>
+                    <Table.HeaderCell>Airdrop Info.</Table.HeaderCell>
                   </Table.Row>
-                ))}
-              </Table.Body>
-            </Table>
+                </Table.Header>
+
+                <Table.Body>
+                  {airdropData.map((app, index) => (
+                    <Table.Row key={index}>
+                      <Table.Cell>{app.appname}</Table.Cell>
+                      <Table.Cell>{app.amount}</Table.Cell>
+                      <Table.Cell>{app.airdropId}</Table.Cell>
+                      <Table.Cell>{app.status}</Table.Cell>
+                      <Table.Cell>
+                        {" "}
+                        <Button
+                          primary
+                          onClick={() => handleAirdropInfo(app.airdropId)}
+                        >
+                          Airdrop Info
+                        </Button>
+                      </Table.Cell>
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table>
+            </>
           )}
         </Container>
         <Divider />

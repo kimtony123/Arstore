@@ -204,7 +204,7 @@ const Navbar: React.FC<NavbarProps> = ({
           disabled={isSigningIn}
         >
           <FaGoogle className="h-5 w-5" />
-          <span>{isConnected ? "Sign Out" : "Sign In via Google"}</span>
+          <span>{isConnected ? "Sign Out" : "Sign In via Othent"}</span>
         </button>
 
         {/* Mobile Sidebar Toggle */}

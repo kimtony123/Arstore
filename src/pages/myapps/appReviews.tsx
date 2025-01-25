@@ -98,7 +98,7 @@ const aoprojectsinfo = () => {
 
   const handleOwnerAirdropInfo = (appId: string | undefined) => {
     if (!appId) return;
-    navigate(`/projectairdrops/${appId}`);
+    navigate(`/projectairdropsadmin/${appId}`);
   };
 
   const handleOwnerUpdatesInfo = (appId: string | undefined) => {
@@ -400,57 +400,66 @@ const aoprojectsinfo = () => {
       )}
     >
       <Container>
-        <Menu pointing>
-          <MenuItem
-            onClick={() => handleProjectReviewsInfo(AppId)}
-            name="Reviews"
-          />
-          <MenuItem
-            onClick={() => handleOwnerStatisticsInfo(AppId)}
-            name="Statistics"
-          />
-          <MenuItem
-            onClick={() => handleOwnerAirdropInfo(AppId)}
-            name="Airdrops"
-          />
-          <MenuMenu position="right">
-            <MenuItem
-              onClick={() => handleOwnerUpdatesInfo(AppId)}
-              name="Update"
-            />
-            <MenuItem
-              onClick={() => handleOwnerChange(AppId)}
-              name="change owner"
-            />
-            <MenuItem
-              onClick={() => handleNotification(AppId)}
-              name="Send Messages."
-            />
-            <MenuItem
-              onClick={() => handleFeaturesandBugs(AppId)}
-              name="F Requests."
-            />
-            <MenuItem
-              onClick={() => handleBugReports(AppId)}
-              name="Bug Reports."
-            />
-
-            <MenuItem
-              onClick={() => handleAostoreAi(AppId)}
-              name="aostore AI"
-            />
-            <MenuItem onClick={() => handleTasks(AppId)} name="tasks" />
-          </MenuMenu>
-        </Menu>
-
-        <Header as="h1">Reviews</Header>
-        <Divider />
-
         {loadingAppReviews ? (
-          <Loader active inline="centered" />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "60vh",
+            }}
+          >
+            <Loader active inline="centered" size="large">
+              Loading your reviews...
+            </Loader>
+          </div>
         ) : appReviews ? (
           <>
             <Container>
+              <Menu pointing>
+                <MenuItem
+                  onClick={() => handleProjectReviewsInfo(AppId)}
+                  name="Reviews"
+                />
+                <MenuItem
+                  onClick={() => handleOwnerStatisticsInfo(AppId)}
+                  name="Statistics"
+                />
+                <MenuItem
+                  onClick={() => handleOwnerAirdropInfo(AppId)}
+                  name="Airdrops"
+                />
+                <MenuMenu position="right">
+                  <MenuItem
+                    onClick={() => handleOwnerUpdatesInfo(AppId)}
+                    name="Update"
+                  />
+                  <MenuItem
+                    onClick={() => handleOwnerChange(AppId)}
+                    name="change owner"
+                  />
+                  <MenuItem
+                    onClick={() => handleNotification(AppId)}
+                    name="Send Messages."
+                  />
+                  <MenuItem
+                    onClick={() => handleFeaturesandBugs(AppId)}
+                    name="F Requests."
+                  />
+                  <MenuItem
+                    onClick={() => handleBugReports(AppId)}
+                    name="Bug Reports."
+                  />
+
+                  <MenuItem
+                    onClick={() => handleAostoreAi(AppId)}
+                    name="aostore AI"
+                  />
+                  <MenuItem onClick={() => handleTasks(AppId)} name="tasks" />
+                </MenuMenu>
+              </Menu>
+
+              <Header as="h1">Reviews</Header>
               <Divider />
               <Grid>
                 <CommentGroup threaded>
@@ -488,8 +497,8 @@ const aoprojectsinfo = () => {
                               size="mini"
                               icon
                             >
-                              <Icon name="thumbs up" /> {review.upvotes || 0}{" "}
-                              Upvotes
+                              <Icon name="thumbs up" />{" "}
+                              {review.voters.upvoted.count || 0} Upvotes
                             </Button>
                             <Button
                               loading={addDownvote}
@@ -498,14 +507,15 @@ const aoprojectsinfo = () => {
                               size="mini"
                               icon
                             >
+                              {" "}
                               <Icon name="thumbs down" />{" "}
-                              {review.downvotes || 0} Downvotes
+                              {review.voters.downvoted.count || 0} Downvotes
                             </Button>
                           </SUIComment.Action>
                         </SUIComment.Actions>
                         <SUIComment.Text>
-                          {review.helpfulVotes} Found This Review Helpful. Did
-                          You find this Review Helpful ?
+                          {review.voters.foundHelpful.count} Found This Review
+                          Helpful. Did You find this Review Helpful ?
                         </SUIComment.Text>
                         <SUIComment.Actions>
                           <SUIComment.Action>
@@ -516,8 +526,8 @@ const aoprojectsinfo = () => {
                               size="mini"
                               icon
                             >
-                              <Icon name="thumbs up" />
-                              Yes.
+                              <Icon name="thumbs up" />{" "}
+                              {review.voters.foundHelpful.count || 0} Yes
                             </Button>
                             <Button
                               loading={addUnhelpful}
@@ -528,8 +538,8 @@ const aoprojectsinfo = () => {
                               size="mini"
                               icon
                             >
-                              <Icon name="thumbs down" />
-                              No.
+                              <Icon name="thumbs down" />{" "}
+                              {review.voters.foundUnhelpful.count || 0} No
                             </Button>
                           </SUIComment.Action>
                         </SUIComment.Actions>
@@ -571,7 +581,7 @@ const aoprojectsinfo = () => {
                             name="comment"
                             value={comment}
                             onChange={handleInputChange}
-                            placeholder="Tell us about your experience..."
+                            placeholder="Reply to Review..."
                           />
                         </FormField>
                         <FormField>
@@ -579,7 +589,7 @@ const aoprojectsinfo = () => {
                             primary
                             loading={addReviewReply}
                             onClick={() => AddReviewReply(review.reviewId)}
-                            content="Add Review"
+                            content="Reply"
                             labelPosition="left"
                             icon="edit"
                           />

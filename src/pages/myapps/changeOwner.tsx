@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   Container,
@@ -8,6 +8,7 @@ import {
   FormField,
   Header,
   Input,
+  Loader,
   Menu,
   MenuItem,
   MenuMenu,
@@ -20,9 +21,33 @@ import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
 import Footer from "../../components/footer/Footer";
 import { useNavigate } from "react-router-dom";
 
+interface AppData {
+  AppName: string;
+  CompanyName: string;
+  WebsiteUrl: string;
+  ProjectType: string;
+  AppIconUrl: string;
+  CoverUrl: string;
+  Company: string;
+  Description: string;
+  Ratings: Array<number>; // Assuming ratings are numbers
+  AppId: string;
+  BannerUrls: Array<string>; // Assuming banner URLs are strings
+  CreatedTime: number;
+  DiscordUrl: string;
+  Downvotes: Array<string>; // Assuming downvotes are strings (user IDs)
+  Protocol: string;
+  Reviews: Array<string>; // Assuming reviews are strings
+  TwitterUrl: string;
+  Upvotes: Array<string>; // Assuming upvotes are strings (user IDs)
+}
+
 const aoprojectsinfo = () => {
   const { AppId: paramAppId } = useParams();
   const AppId = paramAppId || "defaultAppId"; // Ensure AppId is always a valid string
+  const [apps, setAppInfo] = useState<AppData[]>([]);
+
+  const [loadingAppInfo, setLoadingAppInfo] = useState(true);
 
   const [newOwner, setNewOwner] = useState("");
 
@@ -55,7 +80,7 @@ const aoprojectsinfo = () => {
 
   const handleOwnerAirdropInfo = (appId: string | undefined) => {
     if (!appId) return;
-    navigate(`/projectairdrops/${appId}`);
+    navigate(`/projectairdropsadmin/${appId}`);
   };
 
   const handleOwnerUpdatesInfo = (appId: string | undefined) => {
@@ -91,6 +116,51 @@ const aoprojectsinfo = () => {
     if (!appId) return;
     navigate(`/projecttasks/${appId}`);
   };
+
+  useEffect(() => {
+    const fetchAppInfo = async () => {
+      if (!AppId) return;
+      console.log(AppId);
+      setLoadingAppInfo(true);
+
+      try {
+        const messageResponse = await message({
+          process: ARS,
+          tags: [
+            { name: "Action", value: "AppInfo" },
+            { name: "AppId", value: String(AppId) },
+          ],
+          signer: createDataItemSigner(othent),
+        });
+
+        const resultResponse = await result({
+          message: messageResponse,
+          process: ARS,
+        });
+
+        const { Messages, Error } = resultResponse;
+
+        if (Error) {
+          alert("Error fetching app info: " + Error);
+          return;
+        }
+
+        if (Messages && Messages.length > 0) {
+          const data = JSON.parse(Messages[0].Data);
+          console.log(data);
+          setAppInfo(data);
+        }
+      } catch (error) {
+        console.error("Error fetching app info:", error);
+      } finally {
+        setLoadingAppInfo(false);
+      }
+    };
+
+    (async () => {
+      await fetchAppInfo();
+    })();
+  }, [AppId]);
 
   const changeowner = async (AppId: string) => {
     if (!AppId) return;
@@ -142,67 +212,88 @@ const aoprojectsinfo = () => {
       <div className="text-white flex flex-col items-center lg:items-start">
         <Container>
           <Divider />
-          <Menu pointing>
-            <MenuItem
-              onClick={() => handleProjectReviewsInfo(AppId)}
-              name="Reviews"
-            />
-            <MenuItem
-              onClick={() => handleOwnerStatisticsInfo(AppId)}
-              name="Statistics"
-            />
-            <MenuItem
-              onClick={() => handleOwnerAirdropInfo(AppId)}
-              name="Airdrops"
-            />
-            <MenuMenu position="right">
-              <MenuItem
-                onClick={() => handleOwnerUpdatesInfo(AppId)}
-                name="Update"
-              />
-              <MenuItem
-                onClick={() => handleOwnerChange(AppId)}
-                name="changeowner"
-              />
-              <MenuItem
-                onClick={() => handleNotification(AppId)}
-                name="Send Messages."
-              />
-              <MenuItem
-                onClick={() => handleFeaturesandBugs(AppId)}
-                name="F Requests."
-              />
-              <MenuItem
-                onClick={() => handleBugReports(AppId)}
-                name="Bug Reports."
-              />
+          {loadingAppInfo ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "60vh",
+              }}
+            >
+              <Loader active inline="centered" size="large">
+                Loading Change Owner...
+              </Loader>
+            </div>
+          ) : apps ? (
+            <>
+              <Menu pointing>
+                <MenuItem
+                  onClick={() => handleProjectReviewsInfo(AppId)}
+                  name="Reviews"
+                />
+                <MenuItem
+                  onClick={() => handleOwnerStatisticsInfo(AppId)}
+                  name="Statistics"
+                />
+                <MenuItem
+                  onClick={() => handleOwnerAirdropInfo(AppId)}
+                  name="Airdrops"
+                />
+                <MenuMenu position="right">
+                  <MenuItem
+                    onClick={() => handleOwnerUpdatesInfo(AppId)}
+                    name="Update"
+                  />
+                  <MenuItem
+                    onClick={() => handleOwnerChange(AppId)}
+                    name="changeowner"
+                  />
+                  <MenuItem
+                    onClick={() => handleNotification(AppId)}
+                    name="Send Messages."
+                  />
+                  <MenuItem
+                    onClick={() => handleFeaturesandBugs(AppId)}
+                    name="F Requests."
+                  />
+                  <MenuItem
+                    onClick={() => handleBugReports(AppId)}
+                    name="Bug Reports."
+                  />
 
-              <MenuItem
-                onClick={() => handleAostoreAi(AppId)}
-                name="aostore AI"
-              />
-              <MenuItem onClick={() => handleTasks(AppId)} name="tasks" />
-            </MenuMenu>
-          </Menu>
-          <Header textAlign="center" as="h1">
-            Change App ownership.
-          </Header>
-          <Form>
-            <FormField required>
-              <label>New Owner Address.</label>
-              <Input
-                type="text"
-                name="newowner"
-                value={newOwner}
-                onChange={handleInputChange}
-                placeholder="New Owner Address."
-              />
-            </FormField>
-            <Button color="purple" onClick={() => changeowner(AppId)}>
-              {" "}
-              Change Owner.
-            </Button>
-          </Form>
+                  <MenuItem
+                    onClick={() => handleAostoreAi(AppId)}
+                    name="aostore AI"
+                  />
+                  <MenuItem onClick={() => handleTasks(AppId)} name="tasks" />
+                </MenuMenu>
+              </Menu>
+              <Header textAlign="center" as="h1">
+                Change App ownership.
+              </Header>
+              <Form>
+                <FormField required>
+                  <label>New Owner Address.</label>
+                  <Input
+                    type="text"
+                    name="newowner"
+                    value={newOwner}
+                    onChange={handleInputChange}
+                    placeholder="New Owner Address."
+                  />
+                </FormField>
+                <Button color="purple" onClick={() => changeowner(AppId)}>
+                  {" "}
+                  Change Owner.
+                </Button>
+              </Form>
+            </>
+          ) : (
+            <Header as="h4" color="grey">
+              No reviews found for this app.
+            </Header>
+          )}
         </Container>
         <Divider />
       </div>

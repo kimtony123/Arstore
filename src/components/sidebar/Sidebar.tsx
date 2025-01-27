@@ -89,7 +89,7 @@ const Sidebar: React.FC<SidebarBarProps> = ({
     >
       <div className="flex flex-col">
         <div className="py-3 px-2 md:py-4 md:px-3 flex items-center justify-center">
-          <img className="logo" src="AO.svg" alt="Arstore logo" />
+          <img className="logo" src="AO.png" alt="Aostore logo" />
         </div>
         <div className="flex-grow flex flex-col items-center space-y-2">
           {menuItems.map((item, index) => (

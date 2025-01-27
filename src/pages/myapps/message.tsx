@@ -328,7 +328,7 @@ const aoprojectsinfo = () => {
                   />
                   <MenuItem
                     onClick={() => handleNotification(AppId)}
-                    name="Send Messages."
+                    name="Messages."
                   />
                   <MenuItem
                     onClick={() => handleFeaturesandBugs(AppId)}
@@ -343,7 +343,10 @@ const aoprojectsinfo = () => {
                     onClick={() => handleAostoreAi(AppId)}
                     name="aostore AI"
                   />
-                  <MenuItem onClick={() => handleTasks(AppId)} name="tasks" />
+                  <MenuItem
+                    onClick={() => handleTasks(AppId)}
+                    name="Whats New"
+                  />
                 </MenuMenu>
               </Menu>
               <Header textAlign="center" as="h1">

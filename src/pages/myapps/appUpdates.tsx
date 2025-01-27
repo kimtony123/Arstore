@@ -76,14 +76,6 @@ interface LeaderboardEntry {
 }
 
 const aoprojectsinfo = () => {
-  const ratingsData = {
-    1: 20,
-    2: 10,
-    3: 15,
-    4: 25,
-    5: 30,
-  };
-
   const { AppId: paramAppId } = useParams();
   const AppId = paramAppId || "defaultAppId"; // Ensure AppId is always a valid string
 
@@ -329,7 +321,7 @@ const aoprojectsinfo = () => {
                   />
                   <MenuItem
                     onClick={() => handleNotification(AppId)}
-                    name="Send Messages."
+                    name="Messages."
                   />
                   <MenuItem
                     onClick={() => handleFeaturesandBugs(AppId)}
@@ -344,7 +336,10 @@ const aoprojectsinfo = () => {
                     onClick={() => handleAostoreAi(AppId)}
                     name="aostore AI"
                   />
-                  <MenuItem onClick={() => handleTasks(AppId)} name="tasks" />
+                  <MenuItem
+                    onClick={() => handleTasks(AppId)}
+                    name="Whats New"
+                  />
                 </MenuMenu>
               </Menu>
               <Header textAlign="center" as="h1">

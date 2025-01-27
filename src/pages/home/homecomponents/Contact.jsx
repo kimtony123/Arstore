@@ -3,34 +3,46 @@ import { FaGithub, FaTwitter } from "react-icons/fa";
 
 const Footer = () => {
   return (
-    <footer className="w-full bg-gradient-to-b from-black to-gray-800 p-4 text-white flex items-center justify-center space-x-8">
-      {/* Twitter Link */}
-      <a
-        href="https://x.com/antonyk139"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-white bg-blue-500 hover:bg-blue-600 focus:ring-4 focus:ring-blue-400 font-medium rounded-lg text-sm px-5 py-2.5 flex items-center space-x-2 shadow-lg"
-      >
-        <span>Twitter</span>
-        <FaTwitter className="w-5 h-5" />
-      </a>
-
-      {/* Placeholder for logo or central content */}
-      <div className="text-center">
-        <p className="text-lg font-bold">AO Robotics</p>
+    <div className="w-full pb-8 px-4 md:px-8 flex items-center flex-wrap justify-center space-x-5">
+      <div>
+        <a
+          type="button"
+          className="text-white bg-[#1da1f2] hover:bg-[#1da1f2]/90 focus:ring-4 
+                        focus:outline-none focus:ring-[#1da1f2]/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center 
+                        inline-flex items-center dark:focus:ring-[#1da1f2]/55"
+          href="https://x.com/ar_aostore"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Twitter
+          <FaTwitter className="w-3.5 h-3.5 text-white ml-2" />
+        </a>
+      </div>
+      <div className="text-xl font-bold text-center flex flex-col justify-center py-2.5">
+        <a
+          href="https://ao.arweave.dev/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img className="h-12 w-12" src="AO.svg" alt="ACO logo" />
+        </a>
       </div>
 
-      {/* GitHub Link */}
-      <a
-        href="https://protocol.land/#/user/1J_5LXOiHRZQtOYYyjL7CpG-SdAXMVtwkcsYo7-ky40"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-white bg-gray-800 hover:bg-gray-900 focus:ring-4 focus:ring-gray-700 font-medium rounded-lg text-sm px-5 py-2.5 flex items-center space-x-2 shadow-lg"
-      >
-        <FaGithub className="w-5 h-5" />
-        <span>GitHub</span>
-      </a>
-    </footer>
+      <div>
+        <a
+          type="button"
+          className="text-white bg-[#24292F] hover:bg-[#24292F]/90 focus:ring-4 
+                        focus:outline-none focus:ring-[#24292F]/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center 
+                        inline-flex items-center dark:focus:ring-gray-500 dark:hover:bg-[#050708]/30"
+          href="https://github.com/kimtony123/Arstore"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <FaGithub className="w-3.5 h-3.5 text-white me-2" />
+          Github
+        </a>
+      </div>
+    </div>
   );
 };
 

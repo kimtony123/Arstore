@@ -89,7 +89,7 @@ const Home = () => {
       try {
         const messageResponse = await message({
           process: ARS,
-          tags: [{ name: "Action", value: "FetchBugReportUserDataN" }],
+          tags: [{ name: "Action", value: "FetchBugReportUserDataM" }],
           signer: createDataItemSigner(othent),
         });
 
@@ -211,9 +211,30 @@ const Home = () => {
               </Container>
             </>
           ) : (
-            <Header as="h4" color="grey">
-              You have not reported any bugs.
-            </Header>
+            <>
+              <Container>
+                <Menu pointing>
+                  <MenuItem onClick={() => handleMessages()} name="Messages" />
+                  <MenuItem
+                    onClick={() => handleFeatureRequests()}
+                    name="Feature Requests."
+                  />
+                  <MenuMenu position="right">
+                    <MenuItem
+                      onClick={() => handleBugReports()}
+                      name="Bug Reports."
+                    />
+                    <MenuItem
+                      onClick={() => handleUserStats()}
+                      name="My statistics."
+                    />
+                  </MenuMenu>
+                </Menu>
+                <Header as="h4" color="grey">
+                  You have not made any Bug reports.
+                </Header>
+              </Container>
+            </>
           )}
 
           <Divider />

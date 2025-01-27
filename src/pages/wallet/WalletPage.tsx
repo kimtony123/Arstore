@@ -2,21 +2,33 @@ import React, { useState, useEffect } from "react";
 import * as othent from "@othent/kms";
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
 import { useNavigate } from "react-router-dom";
+import Footer from "../../components/footer/Footer";
 import { FaSpinner } from "react-icons/fa"; // Spinner Icon
 import OverviewSection from "../../components/walletOverview/WalletOverview";
 import {
   Button,
   Container,
+  Divider,
   Grid,
+  GridColumn,
   GridRow,
   Header,
   Loader,
   Table,
+  Form,
+  FormSelect,
+  FormField,
+  Input,
+  DropdownProps,
+  Statistic,
+  StatisticLabel,
+  StatisticValue,
+  Image,
 } from "semantic-ui-react";
 
 const WalletPage: React.FC = () => {
   const ARS = "e-lOufTQJ49ZUX1vPxO-QxjtYXiqM8RQgKovrnJKJ18";
-
+  const AOS = "KdSVyVyL72FskV8f3jfW3SCI8PV5d8LDvYBhcYqVYzg";
   interface Tag {
     name: string;
     value: string;
@@ -33,12 +45,60 @@ const WalletPage: React.FC = () => {
 
   const [arsBalance, setArsBalance] = useState(0);
   const [arsPoints, setArsPoints] = useState(0);
+  const [bcatBalance, setbcatBalance] = useState(0);
 
+  const [receiverAddress, setReceiversAddress] = useState("");
+  const [amount, setAmount] = useState("");
   const [transactionlist, setTransactionDetails] = useState<Transaction[]>([]);
 
+  const updateOptions = [
+    {
+      key: "1",
+      text: "AOS",
+      value: "KdSVyVyL72FskV8f3jfW3SCI8PV5d8LDvYBhcYqVYzg",
+    },
+    {
+      key: "2",
+      text: "BenCat",
+      value: "5d91yO7AQxeHr3XNWIomRsfqyhYbeKPG2awuZd-EyH4",
+    },
+  ];
   const [isLoadingData, setIsLoadingData] = useState(true); // New loading state for fetching data
   const [isLoadingArsPoints, setIsLoadingArsPoints] = useState(true);
+  const [isLoadingBcatBalance, setIsLoadingBcatBalance] = useState(true);
+
+  const [transfer, setTransfer] = useState(false);
+
   const navigate = useNavigate();
+
+  const [projectTypeValue, setProjectTypeValue] = useState<
+    string | undefined
+  >();
+  const [selectedProjectType, setSelectedProjectType] = useState<
+    string | undefined
+  >(undefined);
+
+  const handleProjectTypeChange = (
+    _: React.SyntheticEvent<HTMLElement, Event>,
+    data: DropdownProps
+  ) => {
+    const value = data.value as string | undefined;
+    setProjectTypeValue(value);
+  };
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    switch (name) {
+      case "receiver":
+        setReceiversAddress(value);
+        break;
+      case "amount":
+        setAmount(value);
+        break;
+      default:
+        break;
+    }
+  };
 
   useEffect(() => {
     const fetchArsBalance = async () => {
@@ -46,14 +106,14 @@ const WalletPage: React.FC = () => {
         setIsLoadingData(true); // Start loading for data
         // Fetch AOC balance first
         const aocMessageResponse = await message({
-          process: ARS,
+          process: AOS,
           tags: [{ name: "Action", value: "Balance" }],
           signer: createDataItemSigner(othent),
         });
 
         const aocResult = await result({
           message: aocMessageResponse,
-          process: ARS,
+          process: AOS,
         });
 
         if (!aocResult.Error) {
@@ -66,6 +126,35 @@ const WalletPage: React.FC = () => {
         console.error("Error fetching balances or transactions:", error);
       } finally {
         setIsLoadingData(false);
+      }
+    };
+
+    const fetchBcatBalance = async () => {
+      const BCAT = "5d91yO7AQxeHr3XNWIomRsfqyhYbeKPG2awuZd-EyH4";
+      try {
+        setIsLoadingBcatBalance(true); // Start loading for data
+        // Fetch AOC balance first
+        const aocMessageResponse = await message({
+          process: BCAT,
+          tags: [{ name: "Action", value: "Balance" }],
+          signer: createDataItemSigner(othent),
+        });
+
+        const aocResult = await result({
+          message: aocMessageResponse,
+          process: BCAT,
+        });
+
+        if (!aocResult.Error) {
+          const aocBalanceTag = aocResult.Messages?.[0].Tags.find(
+            (tag: Tag) => tag.name === "Balance"
+          );
+          setbcatBalance(aocBalanceTag?.value);
+        }
+      } catch (error) {
+        console.error("Error fetching balances or transactions:", error);
+      } finally {
+        setIsLoadingBcatBalance(false);
       }
     };
 
@@ -147,11 +236,52 @@ const WalletPage: React.FC = () => {
       await fetchArsBalance();
       await fetchTransactions();
       await fetchArsPoints();
+      await fetchBcatBalance();
     })();
   }, []);
   useEffect(() => {
     // Fetch balances and transactions in sequence
   }, []);
+
+  const TransferTokens = async () => {
+    setTransfer(true);
+    const value = parseInt(amount);
+    const Amount = value * 1000000000000;
+    try {
+      const getTradeMessage = await message({
+        process: projectTypeValue,
+        tags: [
+          { name: "Action", value: "Transfer" },
+          { name: "Recipient", value: String(receiverAddress) },
+          { name: "Quantity", value: String(Amount) },
+        ],
+
+        signer: createDataItemSigner(othent),
+      });
+      const { Messages, Error } = await result({
+        message: getTradeMessage,
+        process: projectTypeValue,
+      });
+
+      if (Error) {
+        alert("Error Updating Project:" + Error);
+        return;
+      }
+      if (!Messages || Messages.length === 0) {
+        alert("No messages were returned from ao. Please try later.");
+        return;
+      }
+      const data = Messages[0].Data;
+      alert(data);
+      setReceiversAddress("");
+      setAmount("");
+    } catch (error) {
+      alert("There was an error in the trade process: " + error);
+      console.error(error);
+    } finally {
+      setTransfer(false);
+    }
+  };
 
   return (
     <div className="content text-black h-full dark:text-white">
@@ -165,7 +295,83 @@ const WalletPage: React.FC = () => {
           <OverviewSection arsBalance={arsBalance} />
           <Container>
             <Grid centered>
-              <Header as="h1">{arsPoints} </Header>
+              <Grid columns="equal">
+                <GridColumn textAlign="left">
+                  <Statistic>
+                    <Image
+                      size="small"
+                      src="AO.png"
+                      className="circular inline"
+                    />
+                    <StatisticValue>
+                      {" "}
+                      {(arsBalance * 0.000000000001).toFixed(1)}
+                    </StatisticValue>
+                  </Statistic>
+                </GridColumn>
+                <GridColumn textAlign="right">
+                  <Statistic>
+                    <Image
+                      size="small"
+                      src="Bcat.jpg"
+                      className="circular inline"
+                    />
+
+                    <StatisticValue>
+                      {(bcatBalance * 0.000000000001).toFixed(1)}
+                    </StatisticValue>
+                  </Statistic>
+                </GridColumn>
+              </Grid>
+
+              <Divider />
+              <GridRow>
+                <Header textAlign="center" as="h4">
+                  {" "}
+                  Transfer Tokens.{" "}
+                </Header>
+              </GridRow>
+              <GridRow>
+                <Form>
+                  <FormField required>
+                    <label>Token</label>
+                    <FormSelect
+                      options={updateOptions}
+                      placeholder="Token"
+                      value={selectedProjectType}
+                      onChange={handleProjectTypeChange}
+                    />
+                  </FormField>
+                  <FormField required>
+                    <label>Receivers Address.</label>
+                    <Input
+                      type="text"
+                      name="receiver"
+                      value={receiverAddress}
+                      onChange={handleInputChange}
+                      placeholder="Receivers Address. "
+                    />
+                  </FormField>
+                  <FormField required>
+                    <label>Amount</label>
+                    <Input
+                      type="number"
+                      name="amount"
+                      value={amount}
+                      onChange={handleInputChange}
+                      placeholder="Amount"
+                    />
+                  </FormField>
+                  <Button
+                    loading={transfer}
+                    color="green"
+                    onClick={() => TransferTokens()}
+                  >
+                    {" "}
+                    Transfer Token.
+                  </Button>
+                </Form>
+              </GridRow>
               <GridRow>
                 <Header as="h1" dividing>
                   Rewards.
@@ -205,6 +411,7 @@ const WalletPage: React.FC = () => {
               </GridRow>
             </Grid>
           </Container>
+          <Footer />
         </>
       )}
     </div>

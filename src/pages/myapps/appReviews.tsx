@@ -212,7 +212,7 @@ const aoprojectsinfo = () => {
         alert("No messages were returned from ao. Please try later.");
         return;
       }
-      const data = Messages[0].Data;
+      const data = Messages[Messages.length - 1]?.Data;
       alert(data);
     } catch (error) {
       alert("There was an error in the trade process: " + error);
@@ -254,7 +254,7 @@ const aoprojectsinfo = () => {
         alert("No messages were returned from ao. Please try later.");
         return;
       }
-      const data = Messages[0].Data;
+      const data = Messages[Messages.length - 1]?.Data;
       alert(data);
     } catch (error) {
       alert("There was an error in the review process: " + error);
@@ -297,7 +297,7 @@ const aoprojectsinfo = () => {
         alert("No messages were returned from ao. Please try later.");
         return;
       }
-      const data = Messages[0].Data;
+      const data = Messages[Messages.length - 1]?.Data;
       alert(data);
     } catch (error) {
       alert("There was an error in the trade process: " + error);
@@ -338,7 +338,7 @@ const aoprojectsinfo = () => {
         alert("No messages were returned from ao. Please try later.");
         return;
       }
-      const data = Messages[0].Data;
+      const data = Messages[Messages.length - 1]?.Data;
       alert(data);
     } catch (error) {
       alert("There was an error in the Upvoting process: " + error);
@@ -378,7 +378,7 @@ const aoprojectsinfo = () => {
         alert("No messages were returned from ao. Please try later.");
         return;
       }
-      const data = Messages[0].Data;
+      const data = Messages[Messages.length - 1]?.Data;
       alert(data);
     } catch (error) {
       alert("There was an error in the trade process: " + error);
@@ -440,7 +440,7 @@ const aoprojectsinfo = () => {
                   />
                   <MenuItem
                     onClick={() => handleNotification(AppId)}
-                    name="Send Messages."
+                    name="Messages."
                   />
                   <MenuItem
                     onClick={() => handleFeaturesandBugs(AppId)}
@@ -455,11 +455,14 @@ const aoprojectsinfo = () => {
                     onClick={() => handleAostoreAi(AppId)}
                     name="aostore AI"
                   />
-                  <MenuItem onClick={() => handleTasks(AppId)} name="tasks" />
+                  <MenuItem
+                    onClick={() => handleTasks(AppId)}
+                    name="Whats New"
+                  />
                 </MenuMenu>
               </Menu>
 
-              <Header as="h1">Reviews</Header>
+              <Header as="h1"> Project Reviews</Header>
               <Divider />
               <Grid>
                 <CommentGroup threaded>
@@ -602,9 +605,55 @@ const aoprojectsinfo = () => {
             </Container>
           </>
         ) : (
-          <Header as="h4" color="grey">
-            No reviews found for this app.
-          </Header>
+          <>
+            <Container>
+              <Menu pointing>
+                <MenuItem
+                  onClick={() => handleProjectReviewsInfo(AppId)}
+                  name="Reviews"
+                />
+                <MenuItem
+                  onClick={() => handleOwnerStatisticsInfo(AppId)}
+                  name="Statistics"
+                />
+                <MenuItem
+                  onClick={() => handleOwnerAirdropInfo(AppId)}
+                  name="Airdrops"
+                />
+                <MenuMenu position="right">
+                  <MenuItem
+                    onClick={() => handleOwnerUpdatesInfo(AppId)}
+                    name="Update"
+                  />
+                  <MenuItem
+                    onClick={() => handleOwnerChange(AppId)}
+                    name="change owner"
+                  />
+                  <MenuItem
+                    onClick={() => handleNotification(AppId)}
+                    name="Send Messages."
+                  />
+                  <MenuItem
+                    onClick={() => handleFeaturesandBugs(AppId)}
+                    name="F Requests."
+                  />
+                  <MenuItem
+                    onClick={() => handleBugReports(AppId)}
+                    name="Bug Reports."
+                  />
+
+                  <MenuItem
+                    onClick={() => handleAostoreAi(AppId)}
+                    name="aostore AI"
+                  />
+                  <MenuItem onClick={() => handleTasks(AppId)} name="tasks" />
+                </MenuMenu>
+              </Menu>
+              <Header as="h4" color="grey">
+                No reviews found for this app.
+              </Header>
+            </Container>
+          </>
         )}
 
         <Divider />

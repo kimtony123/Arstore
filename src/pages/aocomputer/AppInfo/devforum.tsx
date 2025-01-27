@@ -207,7 +207,7 @@ const Home = () => {
       const getTradeMessage = await message({
         process: ARS,
         tags: [
-          { name: "Action", value: "AskDevForum" },
+          { name: "Action", value: "AskDevForumN" },
           { name: "AppId", value: String(AppId) },
           { name: "comment", value: String(updateValue) },
           { name: "header", value: String(projectTypeValue) },
@@ -230,7 +230,7 @@ const Home = () => {
         alert("No messages were returned from ao. Please try later.");
         return;
       }
-      const data = Messages[0].Data;
+      const data = Messages[Messages.length - 1]?.Data;
       alert(data);
       setUpdateValue("");
     } catch (error) {
@@ -374,9 +374,33 @@ const Home = () => {
               </Container>
             </>
           ) : (
-            <Header as="h4" color="grey">
-              No Dev Forum Questions found for this app.
-            </Header>
+            <>
+              <Container>
+                <Menu pointing>
+                  <MenuItem onClick={() => handleProjectInfo(AppId)}>
+                    <Icon name="pin" />
+                    Project Info.
+                  </MenuItem>
+                  <MenuMenu position="right">
+                    <MenuItem onClick={() => handleProjectStats(AppId)}>
+                      <Icon name="line graph" />
+                      View Detailed Statistics
+                    </MenuItem>
+                    <MenuItem onClick={() => handleAppsAirdrops(AppId)}>
+                      <Icon name="bitcoin" />
+                      Airdrops
+                    </MenuItem>
+                    <MenuItem onClick={() => handleDeveloperInfo(AppId)}>
+                      <Icon name="github square" />
+                      Developer Forum.
+                    </MenuItem>
+                  </MenuMenu>
+                </Menu>
+                <Header as="h4" color="grey" textAlign="center">
+                  Dev Forum failed to load.
+                </Header>
+              </Container>
+            </>
           )}
 
           <Divider />

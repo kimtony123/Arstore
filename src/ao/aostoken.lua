@@ -21,8 +21,8 @@ Variant = "0.0.3"
 
 -- token should be idempotent and not change previous state updates
 Denomination = Denomination or 12
-Balances = Balances or { [ao.id] = utils.toBalanceValue(1000000000000 * 10 ^ Denomination) }
-TotalSupply = TotalSupply or utils.toBalanceValue(10000000000000 * 10 ^ Denomination)
+Balances = Balances or { [ao.id] = utils.toBalanceValue(1000000 * 10 ^ Denomination) }
+TotalSupply = TotalSupply or utils.toBalanceValue(1000000 * 10 ^ Denomination)
 Name = Name or 'Aostore'
 Ticker = Ticker or 'AOS'
 Logo = Logo or 'Ayx4457G_p3xZxv-joIrcjwABct8RUAaInSzYcxi_Wk'

@@ -291,7 +291,7 @@ const aoprojectsinfo = () => {
         alert("No messages were returned from ao. Please try later.");
         return;
       }
-      const data = Messages[0].Data;
+      const data = Messages[Messages.length - 1]?.Data;
       alert(data);
     } catch (error) {
       alert("There was an error in the trade process: " + error);
@@ -311,7 +311,7 @@ const aoprojectsinfo = () => {
         process: ARS,
 
         tags: [
-          { name: "Action", value: "AddReviewApp" },
+          { name: "Action", value: "AddReviewAppN" },
           { name: "AppId", value: String(AppId) },
           { name: "username", value: String(username) },
           { name: "profileUrl", value: String(profileUrl) },
@@ -333,7 +333,7 @@ const aoprojectsinfo = () => {
         alert("No messages were returned from ao. Please try later.");
         return;
       }
-      const data = Messages[0].Data;
+      const data = Messages[Messages.length - 1]?.Data;
       alert(data);
     } catch (error) {
       alert("There was an error in the trade process: " + error);
@@ -371,7 +371,7 @@ const aoprojectsinfo = () => {
         alert("No messages were returned from ao. Please try later.");
         return;
       }
-      const data = Messages[0].Data;
+      const data = Messages[Messages.length - 1]?.Data;
       alert(data);
     } catch (error) {
       alert("There was an error in the trade process: " + error);
@@ -409,7 +409,7 @@ const aoprojectsinfo = () => {
         alert("No messages were returned from ao. Please try later.");
         return;
       }
-      const data = Messages[0].Data;
+      const data = Messages[Messages.length - 1]?.Data;
       alert(data);
     } catch (error) {
       alert("There was an error in the trade process: " + error);
@@ -446,7 +446,7 @@ const aoprojectsinfo = () => {
         alert("No messages were returned from ao. Please try later.");
         return;
       }
-      const data = Messages[0].Data;
+      const data = Messages[Messages.length - 1]?.Data;
       alert(data);
     } catch (error) {
       alert("There was an error in the Upvoting process: " + error);
@@ -483,7 +483,7 @@ const aoprojectsinfo = () => {
         alert("No messages were returned from ao. Please try later.");
         return;
       }
-      const data = Messages[0].Data;
+      const data = Messages[Messages.length - 1]?.Data;
       alert(data);
     } catch (error) {
       alert("There was an error in the trade process: " + error);
@@ -525,7 +525,7 @@ const aoprojectsinfo = () => {
         alert("No messages were returned from ao. Please try later.");
         return;
       }
-      const data = Messages[0].Data;
+      const data = Messages[Messages.length - 1]?.Data;
       alert(data);
     } catch (error) {
       alert("There was an error in the review process: " + error);
@@ -568,7 +568,7 @@ const aoprojectsinfo = () => {
         alert("No messages were returned from ao. Please try later.");
         return;
       }
-      const data = Messages[0].Data;
+      const data = Messages[Messages.length - 1]?.Data;
       alert(data);
     } catch (error) {
       alert("There was an error in the trade process: " + error);
@@ -609,7 +609,7 @@ const aoprojectsinfo = () => {
         alert("No messages were returned from ao. Please try later.");
         return;
       }
-      const data = Messages[0].Data;
+      const data = Messages[Messages.length - 1]?.Data;
       alert(data);
     } catch (error) {
       alert("There was an error in the Upvoting process: " + error);
@@ -649,7 +649,7 @@ const aoprojectsinfo = () => {
         alert("No messages were returned from ao. Please try later.");
         return;
       }
-      const data = Messages[0].Data;
+      const data = Messages[Messages.length - 1]?.Data;
       alert(data);
     } catch (error) {
       alert("There was an error in the trade process: " + error);
@@ -691,7 +691,7 @@ const aoprojectsinfo = () => {
         alert("No messages were returned from ao. Please try later.");
         return;
       }
-      const data = Messages[0].Data;
+      const data = Messages[Messages.length - 1]?.Data;
       alert(data);
       setUpdateValue("");
     } catch (error) {
@@ -1161,9 +1161,35 @@ const aoprojectsinfo = () => {
               </Container>
             </>
           ) : (
-            <Header as="h4" color="grey">
-              No reviews found for this app.
-            </Header>
+            <>
+              <Container>
+                <Menu pointing>
+                  <MenuItem onClick={() => handleProjectInfo(appInfo.AppId)}>
+                    <Icon name="pin" />
+                    Project Info.
+                  </MenuItem>
+                  <MenuMenu position="right">
+                    <MenuItem onClick={() => handleProjectStats(appInfo.AppId)}>
+                      <Icon name="line graph" />
+                      View Project Statistics
+                    </MenuItem>
+                    <MenuItem onClick={() => handleAppsAirdrops(appInfo.AppId)}>
+                      <Icon name="bitcoin" />
+                      Airdrops
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => handleDeveloperInfo(appInfo.AppId)}
+                    >
+                      <Icon name="github square" />
+                      Developer Forum.
+                    </MenuItem>
+                  </MenuMenu>
+                </Menu>
+                <Header as="h4" color="grey">
+                  No reviews found for this app.
+                </Header>
+              </Container>
+            </>
           )}
         </Container>
         <Container>

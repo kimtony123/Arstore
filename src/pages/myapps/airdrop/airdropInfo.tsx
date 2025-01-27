@@ -15,6 +15,9 @@ import {
   Header,
   Input,
   Loader,
+  Menu,
+  MenuItem,
+  MenuMenu,
   Table,
 } from "semantic-ui-react";
 import { useParams } from "react-router-dom";
@@ -212,6 +215,62 @@ const aoprojectsinfo = () => {
     }
   };
 
+  // Ensure AppId is never undefined
+  const handleProjectReviewsInfo = (appId: string | undefined) => {
+    if (!appId) return;
+    navigate(`/projectreviews/${appId}`);
+  };
+
+  const handleOwnerStatisticsInfo = (appId: string | undefined) => {
+    if (!appId) return;
+    navigate(`/projectstats/${appId}`);
+  };
+
+  const handleOwnerAirdropInfo = (appId: string | undefined) => {
+    if (!appId) return;
+    navigate(`/projectairdropsadmin/${appId}`);
+  };
+
+  const handleOwnerUpdatesInfo = (appId: string | undefined) => {
+    if (!appId) return;
+    navigate(`/projectupdates/${appId}`);
+  };
+
+  const handleOwnerChange = (appId: string | undefined) => {
+    if (!appId) return;
+    navigate(`/ownerchange/${appId}`);
+  };
+
+  const handleAirdropInfo = (appId: string | undefined) => {
+    if (!appId) return;
+    navigate(`/airdropinfo/${appId}`);
+  };
+
+  const handleNotification = (appId: string | undefined) => {
+    if (!appId) return;
+    navigate(`/sendupdates/${appId}`);
+  };
+
+  const handleFeaturesandBugs = (appId: string | undefined) => {
+    if (!appId) return;
+    navigate(`/projectfeaturesbugs/${appId}`);
+  };
+
+  const handleBugReports = (appId: string | undefined) => {
+    if (!appId) return;
+    navigate(`/projectbugreports/${appId}`);
+  };
+
+  const handleAostoreAi = (appId: string | undefined) => {
+    if (!appId) return;
+    navigate(`/projectaostoreai/${appId}`);
+  };
+
+  const handleTasks = (appId: string | undefined) => {
+    if (!appId) return;
+    navigate(`/projecttasks/${appId}`);
+  };
+
   return (
     <div
       className={classNames(
@@ -220,62 +279,68 @@ const aoprojectsinfo = () => {
     >
       <Container>
         <Header as="h1" textAlign="center">
-          Finalize Airdrop.
+          Airdrop Information.
         </Header>
 
         <Divider />
         {loadingAirdropInfo ? (
           <Loader active inline="centered" />
         ) : appInfo ? (
-          <Container textAlign="center">
-            <Table celled>
-              <Table.Header>
-                <Table.Row>
-                  <Table.HeaderCell>Field</Table.HeaderCell>
-                  <Table.HeaderCell>Value</Table.HeaderCell>
-                </Table.Row>
-              </Table.Header>
-              <Table.Body>
-                <Table.Row>
-                  <Table.Cell>Airdrop ID</Table.Cell>
-                  <Table.Cell>{appInfo.airdropId}</Table.Cell>
-                </Table.Row>
-                <Table.Row>
-                  <Table.Cell>Amount</Table.Cell>
-                  <Table.Cell>{appInfo.amount}</Table.Cell>
-                </Table.Row>
-                <Table.Row>
-                  <Table.Cell>App ID</Table.Cell>
-                  <Table.Cell>{appInfo.appId}</Table.Cell>
-                </Table.Row>
-                <Table.Row>
-                  <Table.Cell>App Name</Table.Cell>
-                  <Table.Cell>{appInfo.appname}</Table.Cell>
-                </Table.Row>
-                <Table.Row>
-                  <Table.Cell>Status</Table.Cell>
-                  <Table.Cell>{appInfo.status}</Table.Cell>
-                </Table.Row>
-                <Table.Row>
-                  <Table.Cell>Timestamp</Table.Cell>
-                  <Table.Cell>{formatDate(appInfo.timestamp)}</Table.Cell>
-                </Table.Row>
-                <Table.Row>
-                  <Table.Cell>Token ID</Table.Cell>
-                  <Table.Cell>{appInfo.tokenId}</Table.Cell>
-                </Table.Row>
-                <Table.Row>
-                  <Table.Cell>User ID</Table.Cell>
-                  <Table.Cell>{appInfo.Owner}</Table.Cell>
-                </Table.Row>
-              </Table.Body>
-            </Table>
-            <Divider />
-          </Container>
+          <>
+            <Container textAlign="center">
+              <Table celled>
+                <Table.Header>
+                  <Table.Row>
+                    <Table.HeaderCell>Field</Table.HeaderCell>
+                    <Table.HeaderCell>Value</Table.HeaderCell>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                  <Table.Row>
+                    <Table.Cell>Airdrop ID</Table.Cell>
+                    <Table.Cell>{appInfo.airdropId}</Table.Cell>
+                  </Table.Row>
+                  <Table.Row>
+                    <Table.Cell>Amount</Table.Cell>
+                    <Table.Cell>{appInfo.amount}</Table.Cell>
+                  </Table.Row>
+                  <Table.Row>
+                    <Table.Cell>App ID</Table.Cell>
+                    <Table.Cell>{appInfo.appId}</Table.Cell>
+                  </Table.Row>
+                  <Table.Row>
+                    <Table.Cell>App Name</Table.Cell>
+                    <Table.Cell>{appInfo.appname}</Table.Cell>
+                  </Table.Row>
+                  <Table.Row>
+                    <Table.Cell>Status</Table.Cell>
+                    <Table.Cell>{appInfo.status}</Table.Cell>
+                  </Table.Row>
+                  <Table.Row>
+                    <Table.Cell>Timestamp</Table.Cell>
+                    <Table.Cell>{formatDate(appInfo.timestamp)}</Table.Cell>
+                  </Table.Row>
+                  <Table.Row>
+                    <Table.Cell>Token ID</Table.Cell>
+                    <Table.Cell>{appInfo.tokenId}</Table.Cell>
+                  </Table.Row>
+                  <Table.Row>
+                    <Table.Cell>User ID</Table.Cell>
+                    <Table.Cell>{appInfo.Owner}</Table.Cell>
+                  </Table.Row>
+                </Table.Body>
+              </Table>
+              <Divider />
+            </Container>
+          </>
         ) : (
-          <Header as="h4" color="grey">
-            No App Info found for this app.
-          </Header>
+          <>
+            <Container>
+              <Header as="h4" color="grey">
+                No App Info found for this app.
+              </Header>
+            </Container>
+          </>
         )}
 
         <Divider />

@@ -87,7 +87,7 @@ const Home = () => {
       try {
         const messageResponse = await message({
           process: ARS,
-          tags: [{ name: "Action", value: "FetchFeatureRequestUserDataN" }],
+          tags: [{ name: "Action", value: "FetchFeatureRequestUserDataM" }],
           signer: createDataItemSigner(othent),
         });
 
@@ -209,9 +209,30 @@ const Home = () => {
               </Container>
             </>
           ) : (
-            <Header as="h4" color="grey">
-              You have not made any feature requests.
-            </Header>
+            <>
+              <Container>
+                <Menu pointing>
+                  <MenuItem onClick={() => handleMessages()} name="Messages" />
+                  <MenuItem
+                    onClick={() => handleFeatureRequests()}
+                    name="Feature Requests."
+                  />
+                  <MenuMenu position="right">
+                    <MenuItem
+                      onClick={() => handleBugReports()}
+                      name="Bug Reports."
+                    />
+                    <MenuItem
+                      onClick={() => handleUserStats()}
+                      name="My statistics."
+                    />
+                  </MenuMenu>
+                </Menu>
+                <Header as="h4" color="grey">
+                  You have not made any feature requests.
+                </Header>
+              </Container>
+            </>
           )}
 
           <Divider />

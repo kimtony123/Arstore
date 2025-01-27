@@ -26,6 +26,10 @@ interface AppData {
   timestamp: number;
   tokenId: string;
   Owner: string;
+  Description: string;
+  airdropsReceivers: string;
+  startTime: number;
+  endTime: number;
 }
 
 const AoprojectsInfo: React.FC = () => {
@@ -145,19 +149,11 @@ const AoprojectsInfo: React.FC = () => {
               </Table.Header>
               <Table.Body>
                 <Table.Row>
-                  <Table.Cell>Airdrop ID</Table.Cell>
-                  <Table.Cell>{appInfo.airdropId}</Table.Cell>
-                </Table.Row>
-                <Table.Row>
-                  <Table.Cell>App ID</Table.Cell>
-                  <Table.Cell>{appInfo.appId}</Table.Cell>
-                </Table.Row>
-                <Table.Row>
-                  <Table.Cell>App Name</Table.Cell>
+                  <Table.Cell>Project Name</Table.Cell>
                   <Table.Cell>{appInfo.appname}</Table.Cell>
                 </Table.Row>
                 <Table.Row>
-                  <Table.Cell>Amount</Table.Cell>
+                  <Table.Cell> Airdrop Amount</Table.Cell>
                   <Table.Cell>{appInfo.amount}</Table.Cell>
                 </Table.Row>
                 <Table.Row>
@@ -176,14 +172,55 @@ const AoprojectsInfo: React.FC = () => {
                   <Table.Cell>User ID</Table.Cell>
                   <Table.Cell>{appInfo.Owner}</Table.Cell>
                 </Table.Row>
+                <Table.Row>
+                  <Table.Cell>Description</Table.Cell>
+                  <Table.Cell>{appInfo.Description}</Table.Cell>
+                </Table.Row>
+                <Table.Row>
+                  <Table.Cell>Airdrops Receivers</Table.Cell>
+                  <Table.Cell>{appInfo.airdropsReceivers}</Table.Cell>
+                </Table.Row>
+                <Table.Row>
+                  <Table.Cell>Start Time</Table.Cell>
+                  <Table.Cell>{formatDate(appInfo.startTime)}</Table.Cell>
+                </Table.Row>
+                <Table.Row>
+                  <Table.Cell>End Time</Table.Cell>
+                  <Table.Cell>{formatDate(appInfo.endTime)}</Table.Cell>
+                </Table.Row>
               </Table.Body>
             </Table>
+
             <Divider />
           </Container>
         ) : (
-          <Header as="h4" color="grey">
-            No Information found for this airdrop.
-          </Header>
+          <>
+            <Container>
+              <Menu pointing>
+                <MenuItem onClick={() => handleProjectInfo(appInfo.appId)}>
+                  <Icon name="pin" />
+                  Project Info
+                </MenuItem>
+                <MenuMenu position="right">
+                  <MenuItem onClick={() => handleProjectStats(appInfo.appId)}>
+                    <Icon name="line graph" />
+                    View Detailed Statistics
+                  </MenuItem>
+                  <MenuItem onClick={() => handleAppsAirdrops(appInfo.appId)}>
+                    <Icon name="bitcoin" />
+                    Airdrops
+                  </MenuItem>
+                  <MenuItem onClick={() => handleDeveloperInfo(appInfo.appId)}>
+                    <Icon name="github square" />
+                    Developer Forum
+                  </MenuItem>
+                </MenuMenu>
+              </Menu>
+              <Header as="h4" color="grey">
+                No Information found for this airdrop.
+              </Header>
+            </Container>
+          </>
         )}
       </Container>
       <Footer />

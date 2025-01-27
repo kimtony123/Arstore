@@ -26,7 +26,7 @@ import { useNavigate } from "react-router-dom";
 interface Review {
   reviewId: string;
   appId: string;
-  bugReportId: string;
+  TableId: string;
   username: string;
   comment: string;
   timestamp: number;
@@ -63,10 +63,6 @@ const aoprojectsinfo = () => {
   const [loadingAppReviews, setLoadingAppReviews] = useState(true);
   const [addReviewReply, setAddReviewReply] = useState(false);
   const [comment, setComment] = useState("");
-  const [addHelpful, setAddHelpful] = useState(false);
-  const [addUnhelpful, setAddUnhelpful] = useState(false);
-  const [addUpvote, setAddUpvote] = useState(false);
-  const [addDownvote, setAddDownvote] = useState(false);
 
   const ARS = "e-lOufTQJ49ZUX1vPxO-QxjtYXiqM8RQgKovrnJKJ18";
   const navigate = useNavigate();
@@ -255,7 +251,7 @@ const aoprojectsinfo = () => {
             />
             <MenuItem
               onClick={() => handleNotification(AppId)}
-              name="Send Messages."
+              name="Messages."
             />
             <MenuItem
               onClick={() => handleFeaturesandBugs(AppId)}
@@ -270,7 +266,7 @@ const aoprojectsinfo = () => {
               onClick={() => handleAostoreAi(AppId)}
               name="aostore AI"
             />
-            <MenuItem onClick={() => handleTasks(AppId)} name="tasks" />
+            <MenuItem onClick={() => handleTasks(AppId)} name="Whats New" />
           </MenuMenu>
         </Menu>
 
@@ -297,7 +293,7 @@ const aoprojectsinfo = () => {
               <Grid>
                 <CommentGroup threaded>
                   {Object.entries(appReviews).map(([key, review]) => (
-                    <SUIComment key={review.bugReportId}>
+                    <SUIComment key={review.TableId}>
                       <SUIComment.Avatar
                         src={
                           review.profileUrl ||
@@ -359,7 +355,7 @@ const aoprojectsinfo = () => {
                             primary
                             loading={addReviewReply}
                             onClick={() =>
-                              AddFeatureRequestReply(review.bugReportId)
+                              AddFeatureRequestReply(review.TableId)
                             }
                             content="Reply To this Feature Requests. "
                             labelPosition="left"

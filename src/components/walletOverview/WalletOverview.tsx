@@ -28,7 +28,7 @@ const OverviewSection: React.FC<OverviewProps> = ({ arsBalance }) => {
             </h2>
             <div className="flex space-x-3 mt-2">
               <span className="text-green-400 text-xs md:text-sm lg:text-md font-bold">
-                ARS: {arsBalance}
+                Aostore: {arsBalance}
               </span>
             </div>
             {/* <span className="text-green-400 text-3xl font-bold">/Aoc {aocBalance}</span> */}

@@ -66,7 +66,8 @@
     "qualifiedUsers",
     "tokenProcessIds",
     "totalAirdropAmount",
-    "mockBalances"
+    "mockBalances",
+    "getBalances"
   ],
   "Lua.diagnostics.disable": ["undefined-global"]
 }

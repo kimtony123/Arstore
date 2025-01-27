@@ -7,12 +7,18 @@ import {
   DropdownProps,
   Form,
   FormField,
-  FormSelect,
+  Image,
+  Grid,
+  GridColumn,
+  GridRow,
   Header,
   Input,
+  Loader,
   Menu,
   MenuItem,
   MenuMenu,
+  Message,
+  Segment,
 } from "semantic-ui-react";
 import { useParams } from "react-router-dom";
 
@@ -46,11 +52,16 @@ interface AppData {
   Upvotes: Array<string>; // Assuming upvotes are strings (user IDs)
 }
 
-interface LeaderboardEntry {
-  name: any;
-  ratings: any;
-  rank: any;
-  AppIconUrl: any;
+// Home Component
+interface MessagesData {
+  AppName: string;
+  AppIconUrl: string;
+  Company: string;
+  Header: string;
+  Message: string;
+  LinkInfo: string;
+  currentTime: number;
+  comment: string;
 }
 
 const aoprojectsinfo = () => {
@@ -72,6 +83,8 @@ const aoprojectsinfo = () => {
   const [loadingAppInfo, setLoadingAppInfo] = useState(true);
   const [rating, setRating] = useState(0); // ✅ State to hold the rating value
   const [updateApp, setUpdatingApp] = useState(false);
+  const [isloadingmessages, setisLoadingMessages] = useState(true);
+  const [MessageList, setMessageList] = useState<MessagesData[]>([]);
 
   const [projectTypeValue, setProjectTypeValue] = useState<
     string | undefined
@@ -212,12 +225,53 @@ const aoprojectsinfo = () => {
       }
     };
 
+    const fetchUpdates = async () => {
+      setisLoadingMessages(true);
+      try {
+        const messageResponse = await message({
+          process: ARS,
+          tags: [
+            { name: "Action", value: "FetchNewTableByAppId" },
+            { name: "AppId", value: String(AppId) },
+          ],
+
+          signer: createDataItemSigner(othent),
+        });
+
+        const resultResponse = await result({
+          message: messageResponse,
+          process: ARS,
+        });
+
+        const { Messages, Error } = resultResponse;
+
+        if (Error) {
+          alert("Error fetching messages: " + Error);
+          return;
+        }
+
+        if (!Messages || Messages.length === 0) {
+          alert("No messages returned from AO. Please try later.");
+          return;
+        }
+
+        const data = JSON.parse(Messages[0].Data);
+        console.log(data);
+        setMessageList(Object.values(data));
+      } catch (error) {
+        console.error("Error fetching messages:", error);
+      } finally {
+        setisLoadingMessages(false);
+      }
+    };
+
     (async () => {
       await fetchAppInfo();
+      await fetchUpdates();
     })();
   }, [AppId]);
 
-  const updateproject = async (AppId: string) => {
+  const AddWhatsNew = async (AppId: string) => {
     if (!AppId) return;
     console.log(AppId);
 
@@ -226,9 +280,9 @@ const aoprojectsinfo = () => {
       const getTradeMessage = await message({
         process: ARS,
         tags: [
-          { name: "Action", value: "fetchAppData" },
+          { name: "Action", value: "AddRequestToNewTable" },
           { name: "AppId", value: String(AppId) },
-          { name: "TableType", value: String(projectTypeValue) },
+          { name: "comment", value: String(updateValue) },
         ],
 
         signer: createDataItemSigner(othent),
@@ -267,52 +321,112 @@ const aoprojectsinfo = () => {
     >
       <div className="text-white flex flex-col items-center lg:items-start">
         <Container>
-          <Divider />
-          <Menu pointing>
-            <MenuItem
-              onClick={() => handleProjectReviewsInfo(AppId)}
-              name="Reviews"
-            />
-            <MenuItem
-              onClick={() => handleOwnerStatisticsInfo(AppId)}
-              name="Statistics"
-            />
-            <MenuItem
-              onClick={() => handleOwnerAirdropInfo(AppId)}
-              name="Airdrops"
-            />
-            <MenuMenu position="right">
-              <MenuItem
-                onClick={() => handleOwnerUpdatesInfo(AppId)}
-                name="Update"
-              />
-              <MenuItem
-                onClick={() => handleOwnerChange(AppId)}
-                name="changeowner"
-              />
-              <MenuItem
-                onClick={() => handleNotification(AppId)}
-                name="Send Messages."
-              />
-              <MenuItem
-                onClick={() => handleFeaturesandBugs(AppId)}
-                name="F Requests."
-              />
-              <MenuItem
-                onClick={() => handleBugReports(AppId)}
-                name="Bug Reports."
-              />
+          {isloadingmessages ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "50vh",
+              }}
+            >
+              <Loader active inline="centered" size="large">
+                Loading Whats New...
+              </Loader>
+            </div>
+          ) : (
+            <>
+              <Menu pointing>
+                <MenuItem
+                  onClick={() => handleProjectReviewsInfo(AppId)}
+                  name="Reviews"
+                />
+                <MenuItem
+                  onClick={() => handleOwnerStatisticsInfo(AppId)}
+                  name="Statistics"
+                />
+                <MenuItem
+                  onClick={() => handleOwnerAirdropInfo(AppId)}
+                  name="Airdrops"
+                />
+                <MenuMenu position="right">
+                  <MenuItem
+                    onClick={() => handleOwnerUpdatesInfo(AppId)}
+                    name="Update"
+                  />
+                  <MenuItem
+                    onClick={() => handleOwnerChange(AppId)}
+                    name="changeowner"
+                  />
+                  <MenuItem
+                    onClick={() => handleNotification(AppId)}
+                    name="Messages."
+                  />
+                  <MenuItem
+                    onClick={() => handleFeaturesandBugs(AppId)}
+                    name="F Requests."
+                  />
+                  <MenuItem
+                    onClick={() => handleBugReports(AppId)}
+                    name="Bug Reports."
+                  />
 
-              <MenuItem
-                onClick={() => handleAostoreAi(AppId)}
-                name="aostore AI"
-              />
-              <MenuItem onClick={() => handleTasks(AppId)} name="tasks" />
-            </MenuMenu>
-          </Menu>
-          <Header color="red" textAlign="center" as="h1">
-            Feature Development in Progress.
-          </Header>
+                  <MenuItem
+                    onClick={() => handleAostoreAi(AppId)}
+                    name="aostore AI"
+                  />
+                  <MenuItem
+                    onClick={() => handleTasks(AppId)}
+                    name="Whats New"
+                  />
+                </MenuMenu>
+              </Menu>
+              <Header as="h1" textAlign="center">
+                WhatsNew Updates.
+              </Header>
+
+              <Form>
+                <FormField required></FormField>
+                <FormField required>
+                  <label>New Update ? </label>
+                  <Input
+                    type="text"
+                    name="updatevalue"
+                    value={updateValue}
+                    onChange={handleInputChange}
+                    placeholder="New Update."
+                  />
+                </FormField>
+                <Button
+                  loading={updateApp}
+                  color="green"
+                  onClick={() => AddWhatsNew(AppId)}
+                >
+                  {" "}
+                  Update Projects.
+                </Button>
+              </Form>
+
+              <Divider />
+              {MessageList.length > 0 ? (
+                MessageList.map((app, index) => (
+                  <Segment textAlign="center" key={index} inverted tertiary>
+                    <GridRow>
+                      <Message compact>{app.comment}</Message>
+                    </GridRow>
+                  </Segment>
+                ))
+              ) : (
+                <>
+                  <Container>
+                    <Header as="h4" color="grey" textAlign="center">
+                      You have no whats New Updates.
+                    </Header>
+                  </Container>
+                </>
+              )}
+            </>
+          )}
         </Container>
         <Divider />
       </div>

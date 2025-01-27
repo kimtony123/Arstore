@@ -1,92 +1,101 @@
 import React from "react";
+import {
+  FaSearch,
+  FaStar,
+  FaHandshake,
+  FaShieldAlt,
+  FaComments,
+  FaRobot,
+  FaTasks,
+} from "react-icons/fa";
 
-import html from "../../../assets/luaa.jpg";
-import css from "../../../assets/protocol.jpg";
-import javascript from "../../../assets/ao.png";
-import reactImage from "../../../assets/arweavex.jpg";
-import nextjs from "../../../assets/scalability.jpg";
-import tailwind from "../../../assets/default.svg";
-
-const Ao = () => {
-  const cards = [
+const Benefits = () => {
+  const benefits = [
     {
       id: 1,
-      src: html,
-      title: "Lua for Robotics",
+      icon: <FaSearch className="w-12 h-12 mx-auto" />,
+      title: "Effortless Discovery",
       description:
-        "Most robotics projects like Arduino pilot use Lua, so robotics programmers won't need to learn a new language.",
-      style: "shadow-orange-500",
+        "Aostore makes it easy to find and explore projects on the Permaweb. No more navigating a fragmented ecosystem—everything you need is in one place.",
+      style: "bg-gradient-to-r from-cyan-500 to-blue-500",
     },
     {
       id: 2,
-      src: css,
-      title: "Monetize Your IoT Dapp",
+      icon: <FaStar className="w-12 h-12 mx-auto" />,
+      title: "Build Your Reputation",
       description:
-        "Easily monetize your IOT DApp with tokens using protocol.land, integrating blockchain and IoT seamlessly.",
-      style: "shadow-blue-500",
+        "Earn AOS tokens and points for your contributions. Your reputation grows as you engage, creating opportunities for recognition and rewards.",
+      style: "bg-gradient-to-r from-purple-500 to-pink-500",
     },
     {
       id: 3,
-      src: javascript,
-      title: "Modular Architecture.",
+      icon: <FaHandshake className="w-12 h-12 mx-auto" />,
+      title: "Global Collaboration",
       description:
-        "Ao supports concurrent computation, ensuring fast processing for your IoT applications just like ROS2.",
-      style: "shadow-yellow-500",
+        "Connect with projects and users worldwide. Aostore fosters collaboration through airdrops, tasks, and community-driven initiatives.",
+      style: "bg-gradient-to-r from-green-500 to-teal-500",
     },
     {
       id: 4,
-      src: reactImage,
-      title: "Permanent Data Logs",
+      icon: <FaShieldAlt className="w-12 h-12 mx-auto" />,
+      title: "Ecosystem Protection",
       description:
-        "Data logs from IOT devices are permanently stored on Arweave, ensuring secure and unalterable storage.",
-      style: "shadow-blue-600",
+        "Our unique airdrop formula ensures tokens go to engaged users, reducing the risk of market dumps and promoting a healthier ecosystem.",
+      style: "bg-gradient-to-r from-yellow-500 to-orange-500",
     },
     {
       id: 5,
-      src: nextjs,
-      title: "Scalability",
+      icon: <FaComments className="w-12 h-12 mx-auto" />,
+      title: "Direct Communication",
       description:
-        "Ao's architecture allows you to scale your IoT applications easily, even with large amounts of data and devices.",
-      style: "shadow-sky-400",
+        "Projects can interact directly with their communities. Share updates, gather feedback, and build trust through transparent communication.",
+      style: "bg-gradient-to-r from-red-500 to-pink-500",
     },
     {
       id: 6,
-      src: tailwind,
-      title: "ao-robotics",
+      icon: <FaRobot className="w-12 h-12 mx-auto" />,
+      title: "AI-Powered Insights",
       description:
-        "ao-robotics allows your process to access ROS2 , giving you access to the best robotic packages.",
-      style: "shadow-white",
+        "Our AI agent analyzes reviews and generates actionable insights, helping project owners improve and grow their platforms.",
+      style: "bg-gradient-to-r from-indigo-500 to-blue-500",
+    },
+    {
+      id: 7,
+      icon: <FaTasks className="w-12 h-12 mx-auto" />,
+      title: "Drive Engagement",
+      description:
+        "Create tasks to engage your community and reward participation. From social media follows to bug reports, Aostore makes it easy to connect.",
+      style: "bg-gradient-to-r from-teal-500 to-green-500",
     },
   ];
 
   return (
     <div
-      name="why ao"
-      className="bg-gradient-to-b from-gray-800 to-black w- min-h-screen"
+      name="benefits" // Update the ID to match the navbar link
+      className="bg-gradient-to-b from-gray-800 to-black w-full min-h-screen"
     >
-      <div className="max-w-screen-lg mx-auto p-4 flex flex-col justify-center w-[90%] h-full text-white">
+      <div className="max-w-screen-lg mx-auto p-4 flex flex-col justify-center w-full h-full text-white">
         <div>
           <p className="text-4xl font-bold border-b-4 border-gray-500 p-2 inline">
-            Why ao?
+            Why Choose Aostore?
           </p>
           <p className="py-6">
-            Key features of aocomputer that make it ideal for your IoT projects:
+            Aostore isn’t just a platform—it’s a gateway to a stronger, more
+            connected Arweave ecosystem. Here’s what you gain:
           </p>
         </div>
 
-        {/* Cards Container */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center py-8 px-4">
-          {cards.map(({ id, src, title, description, style }) => (
+        {/* Benefits Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 py-8">
+          {benefits.map(({ id, icon, title, description, style }) => (
             <div
               key={id}
-              className={`relative shadow-md hover:scale-105 duration-500 py-4 rounded-lg ${style}`}
+              className={`p-6 rounded-lg transform transition-all duration-300 hover:scale-105 ${style}`}
             >
-              <div className="h-40 flex flex-col justify-center items-center">
-                <img src={src} alt="" className="w-20 mx-auto" />
-                <p className="mt-4 text-xl font-bold">{title}</p>
-              </div>
-              <div className="absolute inset-0 flex flex-col justify-center items-center bg-gray-800 rounded-lg text-white opacity-0 hover:opacity-100 transition-opacity duration-500 px-4 py-8">
-                <p className="text-sm">{description}</p>
+              <div className="text-center">
+                <div className="text-white">{icon}</div>
+                <h3 className="text-xl font-bold mt-4 mb-2">{title}</h3>
+                <p className="text-gray-200 text-sm">{description}</p>
               </div>
             </div>
           ))}
@@ -96,4 +105,4 @@ const Ao = () => {
   );
 };
 
-export default Ao;
+export default Benefits;

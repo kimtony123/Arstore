@@ -254,6 +254,26 @@ const aoprojectsinfo = () => {
           ) : (
             <>
               <Container>
+                <Menu pointing>
+                  <MenuItem onClick={() => handleProjectInfo(AppId)}>
+                    <Icon name="pin" />
+                    Project Info.
+                  </MenuItem>
+                  <MenuMenu position="right">
+                    <MenuItem onClick={() => handleProjectStats(AppId)}>
+                      <Icon name="line graph" />
+                      View Detailed Statistics
+                    </MenuItem>
+                    <MenuItem onClick={() => handleAppsAirdrops(AppId)}>
+                      <Icon name="bitcoin" />
+                      Airdrops
+                    </MenuItem>
+                    <MenuItem onClick={() => handleDeveloperInfo(AppId)}>
+                      <Icon name="github square" />
+                      Developer Forum.
+                    </MenuItem>
+                  </MenuMenu>
+                </Menu>
                 <Header as="h4" color="grey" textAlign="center">
                   App Statistics failed to load .
                 </Header>

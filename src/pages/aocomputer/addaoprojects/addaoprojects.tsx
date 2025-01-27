@@ -10,6 +10,7 @@ import {
   FormSelect,
   Input,
   Confirm,
+  Header,
 } from "semantic-ui-react";
 import * as othent from "@othent/kms";
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
@@ -212,7 +213,9 @@ const addaoprojects = () => {
     >
       <div className="text-white flex flex-col items-center lg:items-start">
         <Container>
-          <h1> Add Your Project to aocomputer.</h1>
+          <Header textAlign="center" as="h1">
+            Add Your Project to Aostore.
+          </Header>
           <Form>
             <FormField required>
               <label>Name of the App.</label>

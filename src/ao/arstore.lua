@@ -472,7 +472,6 @@ Handlers.add(
             currentTime = currentTime
         }
 
-        local ratingsChart = generateRatingsChart(ratingsTable[AppId])
 
         -- Create the App record
         Apps[AppId] = {
@@ -576,7 +575,25 @@ Handlers.add(
 
         -- Update the countHistory
         table.insert(verifiedUsers.countHistory, { time = currentTime, count = verifiedUsers.count })
-
+         local points = 150
+        local userPointsData = getOrInitializeUserPoints(user)
+        userPointsData.points = userPointsData.points + points
+        local amount = 100 * 1000000000000
+         ao.send({
+            Target = ARS,
+            Action = "Transfer",
+            Quantity = tostring(amount),
+            Recipient = tostring(user)
+        })
+        local transactionId = generateTransactionId()
+        table.insert(transactions, {
+            user = userId,
+            transactionid = transactionId,
+            type = "Welcome to aostore.",
+            amount = amount,
+            points = userPointsData.points,
+            timestamp = currentTime
+        })
         -- Confirm the address has been added
         ao.send({ Target = m.From, Data = "Address added successfully for new user: " .. userId })
     end
@@ -711,7 +728,7 @@ Handlers.add(
         local appDetails = Apps[AppId]
 
         local ratingsChart = generateRatingsChart(ratingsTable[AppId])
-
+        local requests = appDetails.WhatsNew.requests
         -- Prepare the response with all relevant app details
         local AppInfoResponse = {
             AppId = appDetails.AppId,
@@ -724,26 +741,26 @@ Handlers.add(
             CoverUrl = appDetails.CoverUrl,
             CompanyName = appDetails.CompanyName,
             AppIconUrl = appDetails.AppIconUrl,
-            Reviews =  appDetails.Reviews,
+            Reviews =  appDetails.Reviews.count,
             Ratings = appDetails.Ratings,
             RatingsCount = appDetails.RatingsCount,
-            Upvotes = appDetails.Upvotes,
-            Downvotes = appDetails.Downvotes,
-            FeatureRequests = appDetails.FeatureRequests,
-            BugsReports = appDetails.BugsReports,
+            Upvotes = appDetails.Upvotes.count,
+            Downvotes = appDetails.Downvotes.count,
+            FeatureRequests = appDetails.FeatureRequests.count,
+            BugsReports = appDetails.BugsReports.count,
             ProjectType = appDetails.ProjectType,
             CreatedTime = appDetails.CreatedTime,
-            Favorites = appDetails.Favorites,
-            Flags = appDetails.FlagTable,
-            HelpfulRatings = appDetails.HelpfulRatings,
-            UnHelpfulRatings = appDetails.UnHelpfulRatings,
-            WhatsNew = appDetails.WhatsNew,
+            Favorites = appDetails.Favorites.count,
+            Flags = appDetails.FlagTable.count,
+            HelpfulRatings = appDetails.HelpfulRatings.count,
+            UnHelpfulRatings = appDetails.UnHelpfulRatings.count,
+            WhatsNew = appDetails.WhatsNew.requests[#requests].comment,
             BannerUrl1 = appDetails.BannerUrl1,
             BannerUrl2 = appDetails.BannerUrl2,
             BannerUrl3 = appDetails.BannerUrl3,
             BannerUrl4 = appDetails.BannerUrl4,
             LastUpdated = appDetails.LastUpdated,
-            RatingsChart = appDetails.ratingsChart
+            RatingsChart = ratingsChart
         }
 
         -- Send the app info as a JSON response
@@ -1665,6 +1682,26 @@ Handlers.add(
             timestamp = currentTime
         })
 
+         local points = 15
+        local userPointsData = getOrInitializeUserPoints(user)
+        userPointsData.points = userPointsData.points + points
+        local amount = 6 * 1000000000000
+        local transactionId = generateTransactionId()
+         ao.send({
+            Target = ARS,
+            Action = "Transfer",
+            Quantity = tostring(amount),
+            Recipient = tostring(user)
+        })
+        table.insert(transactions, {
+            user = user,
+            transactionid = transactionId,
+            type = "Replied to review.",
+            amount = amount,
+            points = userPointsData.points,
+            timestamp = currentTime
+        })
+
         ao.send({ Target = m.From, Data = "Reply added successfully." })
     end
 )
@@ -1738,6 +1775,12 @@ Handlers.add(
         userPointsData.points = userPointsData.points + points
         local amount = 2
         local transactionId = generateTransactionId()
+         ao.send({
+            Target = ARS,
+            Action = "Transfer",
+            Quantity = tostring(amount),
+            Recipient = tostring(user)
+        })
         table.insert(transactions, {
             user = user,
             transactionid = transactionId,
@@ -2006,6 +2049,12 @@ Handlers.add(
         userPointsData.points = userPointsData.points + points
         local amount = 1 * 1000000000000
         local transactionId = generateTransactionId()
+         ao.send({
+            Target = ARS,
+            Action = "Transfer",
+            Quantity = tostring(amount),
+            Recipient = tostring(user)
+        })
         table.insert(transactions, {
             user = user,
             transactionid = transactionId,
@@ -2052,6 +2101,26 @@ Handlers.add(
 
         -- Transfer ownership
         Apps[appId].Owner = newOwner
+
+         local points = 35
+        local userPointsData = getOrInitializeUserPoints(user)
+        userPointsData.points = userPointsData.points + points
+        local amount = 10 * 1000000000000
+        local transactionId = generateTransactionId()
+         ao.send({
+            Target = ARS,
+            Action = "Transfer",
+            Quantity = tostring(amount),
+            Recipient = tostring(user)
+        })
+        table.insert(transactions, {
+            user = user,
+            transactionid = transactionId,
+            type = "Transfered Ownership.",
+            amount = amount,
+            points = userPointsData.points,
+            timestamp = currentTime
+        })
         ao.send({ Target = m.From, Data = "Ownership transferred to " .. newOwner })
     end
 )
@@ -2124,6 +2193,26 @@ Handlers.add(
 
         -- Perform the update
         Apps[appId][updateOption] = newValue
+
+         local points = 40
+        local userPointsData = getOrInitializeUserPoints(user)
+        userPointsData.points = userPointsData.points + points
+        local amount = 1 * 1000000000000
+        local transactionId = generateTransactionId()
+         ao.send({
+            Target = ARS,
+            Action = "Transfer",
+            Quantity = tostring(amount),
+            Recipient = tostring(user)
+        })
+        table.insert(transactions, {
+            user = user,
+            transactionid = transactionId,
+            type = "Updated Project.",
+            amount = amount,
+            points = userPointsData.points,
+            timestamp = currentTime
+        })
         ao.send({ Target = m.From, Data = updateOption .. " updated successfully." })
     end
 )
@@ -2209,6 +2298,26 @@ Handlers.add(
                 currentTime = currentTime
             })
         end
+
+         local points = 50
+        local userPointsData = getOrInitializeUserPoints(user)
+        userPointsData.points = userPointsData.points + points
+        local amount = 5 * 1000000000000
+        local transactionId = generateTransactionId()
+         ao.send({
+            Target = ARS,
+            Action = "Transfer",
+            Quantity = tostring(amount),
+            Recipient = tostring(user)
+        })
+        table.insert(transactions, {
+            user = user,
+            transactionid = transactionId,
+            type = "Sent Messages to users.",
+            amount = amount,
+            points = userPointsData.points,
+            timestamp = currentTime
+        })
 
         -- Confirm the notifications were sent
         ao.send({ Target = m.From, Data = "Message successfully added to the inbox of all users who favorited your app." })
@@ -2426,6 +2535,20 @@ Handlers.add(
             timestamp = currentTime
         })
 
+         local points = 40
+        local userPointsData = getOrInitializeUserPoints(user)
+        userPointsData.points = userPointsData.points + points
+        local amount = 5 * 1000000000000
+        local transactionId = generateTransactionId()
+        table.insert(transactions, {
+            user = user,
+            transactionid = transactionId,
+            type = "Replied To feature Request.",
+            amount = amount,
+            points = userPointsData.points,
+            timestamp = currentTime
+        })
+
         -- Confirm success
         ao.send({ Target = m.From, Data = "Reply added successfully." })
     end
@@ -2578,6 +2701,27 @@ Handlers.add(
             timestamp = currentTime
         })
 
+         local points = 40
+        local userPointsData = getOrInitializeUserPoints(user)
+        userPointsData.points = userPointsData.points + points
+        local amount = 5 * 1000000000000
+        local transactionId = generateTransactionId()
+
+         ao.send({
+            Target = ARS,
+            Action = "Transfer",
+            Quantity = tostring(amount),
+            Recipient = tostring(user)
+        })
+        table.insert(transactions, {
+            user = user,
+            transactionid = transactionId,
+            type = "Replied to Bug Report.",
+            amount = amount,
+            points = userPointsData.points,
+            timestamp = currentTime
+        })
+
         -- Confirm success
         ao.send({ Target = m.From, Data = "Reply added successfully." })
     end
@@ -2692,6 +2836,27 @@ Handlers.add(
         table.insert(airdropTable[appId].countHistory, {
             count = airdropTable[appId].count,
             time = currentTime
+        })
+
+
+        local points = 400
+        local userPointsData = getOrInitializeUserPoints(user)
+        userPointsData.points = userPointsData.points + points
+        local amount = 10 * 1000000000000
+        local transactionId = generateTransactionId()
+         ao.send({
+            Target = ARS,
+            Action = "Transfer",
+            Quantity = tostring(amount),
+            Recipient = tostring(user)
+        })
+        table.insert(transactions, {
+            user = user,
+            transactionid = transactionId,
+            type = "Airdropped Users.",
+            amount = amount,
+            points = userPointsData.points,
+            timestamp = currentTime
         })
 
         -- Send confirmation back to the App Owner
@@ -3044,6 +3209,26 @@ Handlers.add(
             replies = {},
         })
 
+         local points = 25
+        local userPointsData = getOrInitializeUserPoints(user)
+        userPointsData.points = userPointsData.points + points
+        local amount = 5 * 1000000000000
+        local transactionId = generateTransactionId()
+         ao.send({
+            Target = ARS,
+            Action = "Transfer",
+            Quantity = tostring(amount),
+            Recipient = tostring(user)
+        })
+        table.insert(transactions, {
+            user = user,
+            transactionid = transactionId,
+            type = "Asked quiz in Dev Forum.",
+            amount = amount,
+            points = userPointsData.points,
+            timestamp = currentTime
+        })
+
         ao.send({ Target = m.From, Data = updateOption .. " updated successfully." })
     end
 )
@@ -3281,6 +3466,26 @@ Handlers.add(
         -- Debugging: Log the updated `newTable` data
         print(string.format("Request Added -> AppId: %s, newTableId: %s, Comment: %s", appId, newTableId, comment))
         print("Updated newTable:", tableToJson(newTable))
+
+         local points = 60
+        local userPointsData = getOrInitializeUserPoints(user)
+        userPointsData.points = userPointsData.points + points
+        local amount = 10 * 1000000000000
+        local transactionId = generateTransactionId()
+         ao.send({
+            Target = ARS,
+            Action = "Transfer",
+            Quantity = tostring(amount),
+            Recipient = tostring(user)
+        })
+        table.insert(transactions, {
+            user = user,
+            transactionid = transactionId,
+            type = "Updated Users",
+            amount = amount,
+            points = userPointsData.points,
+            timestamp = currentTime
+        })
 
         -- Acknowledge the addition
         ao.send({ Target = m.From, Data = "Request added successfully." })
@@ -3579,6 +3784,8 @@ Handlers.add(
         end
     end
 )
+
+
 
 
 

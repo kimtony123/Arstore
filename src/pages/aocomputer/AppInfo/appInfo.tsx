@@ -58,11 +58,11 @@ interface AppData {
   BannerUrls: Record<string, any>;
   CreatedTime: number;
   DiscordUrl: string;
-  Downvotes: number;
+  Downvotes: Record<string, any>;
   Protocol: string;
   Reviews: Record<string, any>;
   TwitterUrl: string;
-  Upvotes: number;
+  Upvotes: Record<string, any>;
   TotalRatings: number;
 }
 

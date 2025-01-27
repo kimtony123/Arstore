@@ -261,7 +261,7 @@ const aoprojectsinfo = () => {
         alert("No messages were returned from ao. Please try later.");
         return;
       }
-      const data = Messages[0].Data;
+      const data = Messages[Messages.length - 1]?.Data;
       alert(data);
       setUpdateValue("");
     } catch (error) {

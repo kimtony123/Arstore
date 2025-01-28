@@ -58,13 +58,19 @@ function fetchAppData(AppId, userId, TableType)
     })
 end
 
+
 Send({
      Target = ao.id, -- Target process name
         Tags = {
-            {name = "Action", value = "FetchAppComments"},
-            {name = "AppId", value = AppId},
-            {name = "userId", value = userId},
-            {name = "TableType", value = TableType}
+            {name = "Action", value = "DeleteApp"},
+            {name = "AppIds", value = {"TX52", "TX36", "TX45", "TX69", "TX68", "TX41", "TX26", "TX66",
+    "TX65", "TX64", "TX40", "TX63", "TX49", "TX61", "TX34", "TX53",
+    "TX59", "TX58", "TX57", "TX50", "TX56", "TX55", "TX19", "TX44",
+    "TX54", "TX30", "TX22", "TX38", "TX60", "TX51", "TX62", "TX48",
+    "TX20", "TX43", "TX28", "TX37", "TX47", "TX33", "TX46",
+    "TX42", "TX35", "TX25", "TX24", "TX67", "TX31", "TX17", "TX18", 
+    "TX32", "TX39", "TX23"}},
+           
             
         }
 

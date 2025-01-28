@@ -252,12 +252,9 @@ Handlers.add(
         
 
         -- Check if the user is the app owner
-        if not address ~= user then
-            ao.send({ Target = m.From, Data = "A technical issue occured during deployment try again later" })
-            return
-        end
+        if  m.From == address then
 
-        -- Initialize tables for the app
+              -- Initialize tables for the app
         reviewsTable[AppId] = {
         reviews = {
                 {
@@ -553,7 +550,12 @@ Handlers.add(
 
         -- Send success message
         ao.send({ Target = m.From, Data = "Successfully Created The Project." })
-    end
+        else
+            ao.send({ Target = m.From, Data = "A technical issue occured during deployment try again later" })
+        return
+        end
+
+  end
 )
 
 
@@ -593,7 +595,7 @@ Handlers.add(
 
         -- Update the countHistory
         table.insert(verifiedUsers.countHistory, { time = currentTime, count = verifiedUsers.count })
-        local gift = 100
+        local gift = 20
         local amount = gift * 1000000000000
          ao.send({
             Target = ARS,
@@ -664,58 +666,14 @@ Handlers.add(
     end
 )
 
-Handlers.add(
-    "DeleteApp",
-    Handlers.utils.hasMatchingTag("Action", "DeleteApp"),
-    function(m)
-        -- Check if the required AppId tag is present
-        if not m.Tags.AppId or m.Tags.AppId == "" then
-            print("Error: AppId is nil or empty.")
-            ao.send({ Target = m.From, Data = "AppId is missing or empty." })
-            return
-        end
 
-        local appId = m.Tags.AppId
 
-        -- Check if the app exists
-        if not Apps[appId] then
-            print("Error: App with AppId " .. appId .. " not found.")
-            ao.send({ Target = m.From, Data = "App not found." })
-            return
-        end
 
-        -- Get the app owner
-        local appOwner = Apps[appId].Owner
 
-        -- Check if the caller is the app owner or the process admin
-        if m.From == appOwner or m.From == env.Process.Id then
-            -- Delete the app from the Apps table
-            Apps[appId] = nil
 
-            -- Delete the app's data from associated tables
-            reviewsTable[appId] = nil
-            upvotesTable[appId] = nil
-            downvotesTable[appId] = nil
-            featureRequestsTable[appId] = nil
-            bugsReportsTable[appId] = nil
-            favoritesTable[appId] = nil
-            ratingsTable[appId] = nil
-            helpfulRatingsTable[appId] = nil
-            unHelpfulRatingsTable[appId] = nil
-            flagTable[appId] = nil
-            devForumTable[appId] = nil
-            newTable[appId] = nil
-            airdropTable[appId] = nil
-            taskTable[appId] = nil
-            -- Send success message
-            ao.send({ Target = m.From, Data = "Successfully deleted the app, all associated data, and airdrops." })
-        else
-            -- If the caller is not the owner or admin, send an error message
-            print("Unauthorized delete attempt by " .. m.From)
-            ao.send({ Target = m.From, Data = "You are not the app owner or admin." })
-        end
-    end
-)
+
+
+
 
 
 Handlers.add(
@@ -1112,8 +1070,9 @@ Handlers.add(
         table.insert(ratings.countHistory, { time = currentTime, count = ratings.count, rating = rating })
 
         local points = 200
-        local userPointsData = getOrInitializeUserPoints(user)
-        userPointsData.points = userPointsData.points + points
+        arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
+        arsPoints[user].points = arsPoints[user].points + points
+        local currentPoints = arsPoints[user].points
         local amount = 20 * 1000000000000
         ao.send({
             Target = ARS,
@@ -1127,7 +1086,6 @@ Handlers.add(
             transactionid = transactionId,
             type = "Reviewed Project.",
             amount = amount,
-            points = userPointsData.points,
             timestamp = currentTime
         })
         ao.send({ Target = m.From, Data = "Review added successfully." })
@@ -1181,11 +1139,10 @@ Handlers.add(
 
             -- Deduct points for switching ratings
             local points = -200
-              -- Get or initialize the user's points data
-            local userPointsData = getOrInitializeUserPoints(user)
-            -- Deduct points
-            userPointsData.points = userPointsData.points + points
-            local currentPoints = userPointsData.points
+           
+            arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
+            arsPoints[user].points = arsPoints[user].points + points
+            local currentPoints = arsPoints[user].points
             local transactionId = generateTransactionId()
             table.insert(transactions, {
                 user = user,
@@ -1212,7 +1169,7 @@ Handlers.add(
         arsPoints[user].points = arsPoints[user].points + points
         -- Safely access points
         local currentPoints = arsPoints[user].points
-        local amount = 3 * 1000000000000-- Deduction of tokens for unhelpful rating
+        local amount = 0.5 * 1000000000000-- Deduction of tokens for unhelpful rating
         ao.send({
             Target = ARS,
             Action = "Transfer",
@@ -1277,10 +1234,10 @@ Handlers.add(
 
             -- Deduct points for switching ratings
             local points = -200
-            -- Get or initialize the user's points data
-            local userPointsData = getOrInitializeUserPoints(user)
-            userPointsData.points = userPointsData.points + points
-            local currentPoints = userPointsData.points
+            
+            arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
+            arsPoints[user].points = arsPoints[user].points + points
+            local currentPoints = arsPoints[user].points
             local transactionId = generateTransactionId()
             table.insert(transactions, {
                 user = user,
@@ -1301,10 +1258,10 @@ Handlers.add(
 
         -- Reward points for marking an app as helpful
         local points = 100
-        local userPointsData = getOrInitializeUserPoints(user)
-        userPointsData.points = userPointsData.points + points
-        local currentPoints = userPointsData.points
-        local amount = 5 *1000000000000 -- Reward tokens for helpful rating
+        arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
+        arsPoints[user].points = arsPoints[user].points + points
+        local currentPoints = arsPoints[user].points
+        local amount = 2 *1000000000000 -- Reward tokens for helpful rating
         ao.send({
             Target = ARS,
             Action = "Transfer",
@@ -1317,7 +1274,6 @@ Handlers.add(
             transactionid = transactionId,
             type = "Helpful Rating.",
             amount = amount,
-            points = currentPoints,
             timestamp = currentTime
         })
         -- Debugging
@@ -1369,16 +1325,15 @@ Handlers.add(
 
             -- Deduct points for switching ratings
             local points = -200
-            local userPointsData = getOrInitializeUserPoints(user)
-            userPointsData.points = userPointsData.points + points
-            local currentPoints = userPointsData.points
+            arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
+            arsPoints[user].points = arsPoints[user].points + points
+            local currentPoints = arsPoints[user].points
             local transactionId = generateTransactionId()
             table.insert(transactions, {
                 user = user,
                 transactionid = transactionId,
                 type = "Previously Downvoted.",
                 amount = 0,
-                points = currentPoints,
                 timestamp = currentTime
             })
         end
@@ -1391,11 +1346,11 @@ Handlers.add(
         table.insert(appUpData.countHistory, { time = currentTime, count = appUpData.count })
 
         -- Reward points for upvoting
-        local points = 100
-        local userPointsData = getOrInitializeUserPoints(user)
-        userPointsData.points = userPointsData.points + points
-        local currentPoints = userPointsData.points
-        local amount = 5 * 1000000000000 -- Reward tokens for upvoting
+        local points = 100   
+        arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
+        arsPoints[user].points = arsPoints[user].points + points
+        local currentPoints = arsPoints[user].points
+        local amount = 3 * 1000000000000 -- Reward tokens for upvoting
         ao.send({
             Target = ARS,
             Action = "Transfer",
@@ -1462,16 +1417,16 @@ Handlers.add(
 
             -- Deduct points for switching ratings
             local points = -200
-            local userPointsData = getOrInitializeUserPoints(user)
-            userPointsData.points = userPointsData.points + points
-            local currentPoints = userPointsData.points
+        
+            arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
+            arsPoints[user].points = arsPoints[user].points + points
+            local currentPoints = arsPoints[user].points
             local transactionId = generateTransactionId()
             table.insert(transactions, {
                 user = user,
                 transactionid = transactionId,
                 type = "Previously Upvoted.",
                 amount = 0,
-                points = currentPoints,
                 timestamp = currentTime
             })
         end
@@ -1485,10 +1440,10 @@ Handlers.add(
 
         -- Deduct points for downvoting
         local points = 100
-        local userPointsData = getOrInitializeUserPoints(user)
-        userPointsData.points = userPointsData.points + points
-        local currentPoints = userPointsData.points
-        local amount = 3 * 1000000000000 -- Deduction of tokens for downvoting
+        arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
+        arsPoints[user].points = arsPoints[user].points + points
+        local currentPoints = arsPoints[user].points
+        local amount = 2 * 1000000000000 -- Deduction of tokens for downvoting
         ao.send({
             Target = ARS,
             Action = "Transfer",
@@ -1598,7 +1553,7 @@ Handlers.add(
         arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
         arsPoints[user].points = arsPoints[user].points + points
         local currentPoints = arsPoints[user].points
-        local amount = 5 * 1000000000000
+        local amount = 4 * 1000000000000
 
         -- Send reward tokens
         ao.send({
@@ -1698,8 +1653,10 @@ Handlers.add(
         })
 
          local points = 15
-        local userPointsData = getOrInitializeUserPoints(user)
-        userPointsData.points = userPointsData.points + points
+       
+        arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
+        arsPoints[user].points = arsPoints[user].points + points
+        local currentPoints = arsPoints[user].points
         local amount = 6 * 1000000000000
         local transactionId = generateTransactionId()
          ao.send({
@@ -1713,7 +1670,6 @@ Handlers.add(
             transactionid = transactionId,
             type = "Replied to review.",
             amount = amount,
-            points = userPointsData.points,
             timestamp = currentTime
         })
 
@@ -1768,15 +1724,15 @@ Handlers.add(
             table.insert(helpfulData.countHistory, { time = currentTime, count = helpfulData.count })
 
             local points = -50
-            local userPointsData = getOrInitializeUserPoints(user)
-            userPointsData.points = userPointsData.points + points
+            arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
+            arsPoints[user].points = arsPoints[user].points + points
+            local currentPoints = arsPoints[user].points
             local transactionId = generateTransactionId()
             table.insert(transactions, {
                 user = user,
                 transactionid = transactionId,
                 type = "Switched rating to unhelpful.",
                 amount = 0,
-                points = userPointsData.points,
                 timestamp = currentTime
             })
         end
@@ -1786,9 +1742,11 @@ Handlers.add(
         table.insert(unhelpfulData.countHistory, { time = currentTime, count = unhelpfulData.count })
 
         local points = 50
-        local userPointsData = getOrInitializeUserPoints(user)
-        userPointsData.points = userPointsData.points + points
-        local amount = 2
+      
+        arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
+        arsPoints[user].points = arsPoints[user].points + points
+        local currentPoints = arsPoints[user].points
+        local amount = 2 * 1000000000000
         local transactionId = generateTransactionId()
          ao.send({
             Target = ARS,
@@ -1801,7 +1759,6 @@ Handlers.add(
             transactionid = transactionId,
             type = "Marked Review as Unhelpful.",
             amount = amount,
-            points = userPointsData.points,
             timestamp = currentTime
         })
 
@@ -1859,15 +1816,15 @@ Handlers.add(
             table.insert(unhelpfulData.countHistory, { time = currentTime, count = unhelpfulData.count })
 
             local points = -100
-            local userPointsData = getOrInitializeUserPoints(user)
-            userPointsData.points = userPointsData.points + points
+            arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
+            arsPoints[user].points = arsPoints[user].points + points
+            local currentPoints = arsPoints[user].points
             local transactionId = generateTransactionId()
             table.insert(transactions, {
                 user = user,
                 transactionid = transactionId,
                 type = "Switched rating to helpful.",
                 amount = 0,
-                points = userPointsData.points,
                 timestamp = currentTime
             })
         end
@@ -1877,8 +1834,9 @@ Handlers.add(
         table.insert(helpfulData.countHistory, { time = currentTime, count = helpfulData.count })
 
         local points = 50
-        local userPointsData = getOrInitializeUserPoints(user)
-        userPointsData.points = userPointsData.points + points
+        arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
+        arsPoints[user].points = arsPoints[user].points + points
+        local currentPoints = arsPoints[user].points
         local amount = 5 * 1000000000000
         ao.send({
             Target = ARS,
@@ -1892,7 +1850,6 @@ Handlers.add(
             transactionid = transactionId,
             type = "Helpful Review  Rating.",
             amount = amount,
-            points = userPointsData.points,
             timestamp = currentTime
         })
 
@@ -1952,15 +1909,16 @@ Handlers.add(
             table.insert(unhelpfulData.countHistory, { time = currentTime, count = unhelpfulData.count })
 
             local points = -100
-            local userPointsData = getOrInitializeUserPoints(user)
-            userPointsData.points = userPointsData.points + points
+           
+            arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
+            arsPoints[user].points = arsPoints[user].points + points
+            local currentPoints = arsPoints[user].points
             local transactionId = generateTransactionId()
             table.insert(transactions, {
                 user = user,
                 transactionid = transactionId,
                 type = "Switched Upvote.",
                 amount = 0,
-                points = userPointsData.points,
                 timestamp = currentTime
             })
         end
@@ -1970,9 +1928,11 @@ Handlers.add(
         table.insert(helpfulData.countHistory, { time = currentTime, count = helpfulData.count })
 
         local points = 50
-        local userPointsData = getOrInitializeUserPoints(user)
-        userPointsData.points = userPointsData.points + points
-        local amount = 5 * 1000000000000
+  
+        arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
+        arsPoints[user].points = arsPoints[user].points + points
+        local currentPoints = arsPoints[user].points
+        local amount = 3 * 1000000000000
         ao.send({
             Target = ARS,
             Action = "Transfer",
@@ -1985,7 +1945,6 @@ Handlers.add(
             transactionid = transactionId,
             type = "Helpful Review  Rating.",
             amount = amount,
-            points = userPointsData.points,
             timestamp = currentTime
         })
 
@@ -2042,15 +2001,15 @@ Handlers.add(
             table.insert(helpfulData.countHistory, { time = currentTime, count = helpfulData.count })
 
             local points = -50
-            local userPointsData = getOrInitializeUserPoints(user)
-            userPointsData.points = userPointsData.points + points
+            arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
+            arsPoints[user].points = arsPoints[user].points + points
+            local currentPoints = arsPoints[user].points
             local transactionId = generateTransactionId()
             table.insert(transactions, {
                 user = user,
                 transactionid = transactionId,
                 type = "Switched downvote .",
                 amount = 0,
-                points = userPointsData.points,
                 timestamp = currentTime
             })
         end
@@ -2060,8 +2019,10 @@ Handlers.add(
         table.insert(unhelpfulData.countHistory, { time = currentTime, count = unhelpfulData.count })
 
         local points = 30
-        local userPointsData = getOrInitializeUserPoints(user)
-        userPointsData.points = userPointsData.points + points
+       
+        arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
+        arsPoints[user].points = arsPoints[user].points + points
+        local currentPoints = arsPoints[user].points
         local amount = 1 * 1000000000000
         local transactionId = generateTransactionId()
          ao.send({
@@ -2716,9 +2677,11 @@ Handlers.add(
             timestamp = currentTime
         })
 
-         local points = 40
-        local userPointsData = getOrInitializeUserPoints(user)
-        userPointsData.points = userPointsData.points + points
+        local points = 40
+      
+        arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
+        arsPoints[user].points = arsPoints[user].points + points
+        local currentPoints = arsPoints[user].points
         local amount = 5 * 1000000000000
         local transactionId = generateTransactionId()
 
@@ -2854,10 +2817,11 @@ Handlers.add(
         })
 
 
-        local points = 400
-        local userPointsData = getOrInitializeUserPoints(user)
-        userPointsData.points = userPointsData.points + points
-        local amount = 10 * 1000000000000
+        local points = 40
+        arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
+        arsPoints[user].points = arsPoints[user].points + points
+        local currentPoints = arsPoints[user].points
+        local amount = 5 * 1000000000000
         local transactionId = generateTransactionId()
          ao.send({
             Target = ARS,
@@ -2870,7 +2834,6 @@ Handlers.add(
             transactionid = transactionId,
             type = "Airdropped Users.",
             amount = amount,
-            points = userPointsData.points,
             timestamp = currentTime
         })
 
@@ -3225,8 +3188,10 @@ Handlers.add(
         })
 
          local points = 25
-        local userPointsData = getOrInitializeUserPoints(user)
-        userPointsData.points = userPointsData.points + points
+        
+        arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
+        arsPoints[user].points = arsPoints[user].points + points
+        local currentPoints = arsPoints[user].points
         local amount = 5 * 1000000000000
         local transactionId = generateTransactionId()
          ao.send({
@@ -3240,7 +3205,7 @@ Handlers.add(
             transactionid = transactionId,
             type = "Asked quiz in Dev Forum.",
             amount = amount,
-            points = userPointsData.points,
+        
             timestamp = currentTime
         })
 
@@ -3354,7 +3319,7 @@ Handlers.add(
         arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
         arsPoints[user].points = arsPoints[user].points + points
 
-        local amount = 5
+        local amount = 5 * 1000000000000
         ao.send({
             Target = ARS,
             Action = "Transfer",
@@ -3482,10 +3447,11 @@ Handlers.add(
         print(string.format("Request Added -> AppId: %s, newTableId: %s, Comment: %s", appId, newTableId, comment))
         print("Updated newTable:", tableToJson(newTable))
 
-         local points = 60
-        local userPointsData = getOrInitializeUserPoints(user)
-        userPointsData.points = userPointsData.points + points
-        local amount = 10 * 1000000000000
+        local points = 60
+        arsPoints[user] = arsPoints[user] or { user = user, points = 0 }
+        arsPoints[user].points = arsPoints[user].points + points
+        local currentPoints = arsPoints[user].points
+        local amount = 4 * 1000000000000
         local transactionId = generateTransactionId()
          ao.send({
             Target = ARS,
@@ -3498,7 +3464,6 @@ Handlers.add(
             transactionid = transactionId,
             type = "Updated Users",
             amount = amount,
-            points = userPointsData.points,
             timestamp = currentTime
         })
 

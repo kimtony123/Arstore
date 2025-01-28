@@ -138,10 +138,12 @@ const aoprojectsinfo = () => {
                 // Transform TotalHistory into an array of {x, y} for the graph
                 const transformedData =
                   app.TotalHistory &&
-                  Object.entries(app.TotalHistory).map(([time, count]) => ({
-                    x: Number(time), // Convert timestamp to a number
-                    y: count,
-                  }));
+                  Object.entries(app.TotalHistory)
+                    .sort(([timeA], [timeB]) => Number(timeA) - Number(timeB)) // Sort by timestamp
+                    .map(([time, count]) => ({
+                      x: Number(time), // Convert timestamp to a number
+                      y: count,
+                    }));
 
                 return (
                   <div key={index} style={{ marginBottom: "50px" }}>
@@ -167,7 +169,7 @@ const aoprojectsinfo = () => {
                                   pointBackgroundColor: "rgba(75, 192, 192, 1)", // Color of the dots
                                   pointBorderColor: "rgba(0, 0, 0, 0.8)", // Border color of the dots
                                   pointBorderWidth: 1, // Border width of the dots
-                                  tension: 0.4, // Smooth the line (0 = no smoothing, 1 = maximum smoothing)
+                                  tension: 0.3, // Smooth the line (0 = no smoothing, 1 = maximum smoothing)
                                 },
                               ],
                             }}

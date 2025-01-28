@@ -184,7 +184,7 @@ const WalletPage: React.FC = () => {
         return {
           user: typedDetails.user,
           transactionid: typedDetails.transactionid,
-          amount: String(typedDetails.amount),
+          amount: typedDetails.amount,
           type: typedDetails.type,
           balance: typedDetails.balance,
           timestamp: new Date(typedDetails.timestamp).toLocaleString("en-US", {

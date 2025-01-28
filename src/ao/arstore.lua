@@ -570,6 +570,12 @@ Handlers.add(
             time = currentTime
         }
 
+        -- Add the new user to the Arspoints table
+        arsPoints.users[userId] = {
+            user = userId,
+            points = 250
+        }
+
         -- Increment the count of verified users
         verifiedUsers.count = verifiedUsers.count + 1
 
@@ -759,7 +765,7 @@ Handlers.add(
             BannerUrl2 = appDetails.BannerUrl2,
             BannerUrl3 = appDetails.BannerUrl3,
             BannerUrl4 = appDetails.BannerUrl4,
-            LastUpdated = appDetails.LastUpdated,
+            LastUpdated = appDetails.LastUpdated.currentTime,
             RatingsChart = ratingsChart
         }
 

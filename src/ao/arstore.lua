@@ -571,7 +571,7 @@ Handlers.add(
         }
 
         -- Add the new user to the Arspoints table
-        arsPoints.users[userId] = {
+        arsPoints[userId] = {
             user = userId,
             points = 250
         }
@@ -581,10 +581,8 @@ Handlers.add(
 
         -- Update the countHistory
         table.insert(verifiedUsers.countHistory, { time = currentTime, count = verifiedUsers.count })
-         local points = 150
-        local userPointsData = getOrInitializeUserPoints(user)
-        userPointsData.points = userPointsData.points + points
-        local amount = 100 * 1000000000000
+        local gift = 100
+        local amount = gift * 1000000000000
          ao.send({
             Target = ARS,
             Action = "Transfer",
@@ -597,11 +595,10 @@ Handlers.add(
             transactionid = transactionId,
             type = "Welcome to aostore.",
             amount = amount,
-            points = userPointsData.points,
             timestamp = currentTime
         })
         -- Confirm the address has been added
-        ao.send({ Target = m.From, Data = "Address added successfully for new user: " .. userId })
+        ao.send({ Target = m.From, Data = "Address added successfully for new user: " .. userId .." You have received " ..gift.. "AOS tokens" })
     end
 )
 

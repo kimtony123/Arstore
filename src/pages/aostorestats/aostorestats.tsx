@@ -167,7 +167,7 @@ const aoprojectsinfo = () => {
                                   pointBackgroundColor: "rgba(75, 192, 192, 1)", // Color of the dots
                                   pointBorderColor: "rgba(0, 0, 0, 0.8)", // Border color of the dots
                                   pointBorderWidth: 1, // Border width of the dots
-                                  tension: 0.7, // Smooth the line (0 = no smoothing, 1 = maximum smoothing)
+                                  tension: 0.4, // Smooth the line (0 = no smoothing, 1 = maximum smoothing)
                                 },
                               ],
                             }}

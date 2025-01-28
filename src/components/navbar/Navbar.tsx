@@ -73,7 +73,8 @@ const Navbar: React.FC<NavbarProps> = ({
         return;
       }
 
-      alert(Messages[0].Data);
+      const data = Messages[Messages.length - 1]?.Data;
+      alert(data);
     } catch (error) {
       alert("Error during verification process: " + error);
       console.error(error);

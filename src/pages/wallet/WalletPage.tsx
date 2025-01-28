@@ -37,7 +37,7 @@ const WalletPage: React.FC = () => {
   interface Transaction {
     user: string;
     transactionid: string;
-    amount: string;
+    amount: number;
     type: string;
     balance: number;
     timestamp: string;
@@ -400,7 +400,9 @@ const WalletPage: React.FC = () => {
                           <Table.Cell>
                             {transaction.user.substring(0, 8)}
                           </Table.Cell>
-                          <Table.Cell>{transaction.amount}</Table.Cell>
+                          <Table.Cell>
+                            {(transaction.amount * 0.000000000001).toFixed(1)}
+                          </Table.Cell>
                           <Table.Cell>{transaction.type}</Table.Cell>
                           <Table.Cell>{transaction.timestamp}</Table.Cell>
                         </Table.Row>

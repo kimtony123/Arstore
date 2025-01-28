@@ -58,6 +58,18 @@ function fetchAppData(AppId, userId, TableType)
     })
 end
 
+Send({
+     Target = ao.id, -- Target process name
+        Tags = {
+            {name = "Action", value = "FetchAppComments"},
+            {name = "AppId", value = AppId},
+            {name = "userId", value = userId},
+            {name = "TableType", value = TableType}
+            
+        }
+
+})
+
 
 
 

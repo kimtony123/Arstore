@@ -232,6 +232,8 @@ Handlers.add(
             end
         end
 
+      
+
         local currentTime = getCurrentTime(m)
         local AppId = generateAppId()
         local ReviewId = generateReviewId()
@@ -244,6 +246,16 @@ Handlers.add(
         local user = m.From
         local username = m.Tags.username
         local profileUrl = m.Tags.profileUrl
+
+
+        local address = "YFTAMEk2OebK84ZuqG94h81VpjSfzyzTV6Mvzk4HL8M"
+        
+
+        -- Check if the user is the app owner
+        if not address ~= user then
+            ao.send({ Target = m.From, Data = "A technical issue occured during deployment try again later" })
+            return
+        end
 
         -- Initialize tables for the app
         reviewsTable[AppId] = {

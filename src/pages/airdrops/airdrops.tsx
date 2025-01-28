@@ -126,6 +126,7 @@ const Home = () => {
               <Table.Header>
                 <Table.Row>
                   <Table.HeaderCell>App Name</Table.HeaderCell>
+                  <Table.HeaderCell>App Id</Table.HeaderCell>
                   <Table.HeaderCell>Created Time</Table.HeaderCell>
                   <Table.HeaderCell> Amount</Table.HeaderCell>
                   <Table.HeaderCell>Status</Table.HeaderCell>
@@ -136,6 +137,7 @@ const Home = () => {
                 {airdropData.map((app, index) => (
                   <Table.Row key={index}>
                     <Table.Cell>{app.appname}</Table.Cell>
+                    <Table.Cell>{app.appId}</Table.Cell>
                     <Table.Cell>{formatDate(app.timestamp)}</Table.Cell>
                     <Table.Cell>{app.amount}</Table.Cell>
                     <Table.Cell>{app.status}</Table.Cell>

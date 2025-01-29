@@ -234,9 +234,9 @@ const WalletPage: React.FC = () => {
 
     (async () => {
       await fetchArsBalance();
-      await fetchTransactions();
       await fetchArsPoints();
       await fetchBcatBalance();
+      await fetchTransactions();
     })();
   }, []);
   useEffect(() => {

@@ -9,7 +9,7 @@ import {
   Loader,
 } from "semantic-ui-react";
 import { useParams } from "react-router-dom";
-import { Line } from "react-chartjs-2";
+import { Line, Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -135,7 +135,6 @@ const aoprojectsinfo = () => {
               <Divider />
 
               {appStats.map((app, index) => {
-                // Transform TotalHistory into an array of {x, y} for the graph
                 const transformedData =
                   app.TotalHistory &&
                   Object.entries(app.TotalHistory)
@@ -156,20 +155,19 @@ const aoprojectsinfo = () => {
                     {transformedData && transformedData.length > 0 ? (
                       <Grid>
                         <GridColumn width={14}>
-                          <Line
+                          <Bar
                             data={{
+                              labels: transformedData.map((d) =>
+                                new Date(d.x).toLocaleDateString()
+                              ),
                               datasets: [
                                 {
                                   label: "Count Over Time",
-                                  data: transformedData,
+                                  data: transformedData.map((d) => d.y),
+                                  backgroundColor: "rgba(75, 192, 192, 0.6)",
                                   borderColor: "rgba(75, 192, 192, 1)",
-                                  backgroundColor: "rgba(75, 192, 192, 0.2)",
-                                  borderWidth: 2,
-                                  pointRadius: 5, // Set the size of the dots
-                                  pointBackgroundColor: "rgba(75, 192, 192, 1)", // Color of the dots
-                                  pointBorderColor: "rgba(0, 0, 0, 0.8)", // Border color of the dots
-                                  pointBorderWidth: 1, // Border width of the dots
-                                  tension: 0.3, // Smooth the line (0 = no smoothing, 1 = maximum smoothing)
+                                  borderWidth: 1,
+                                  barThickness: 20, // Adjust bar thickness
                                 },
                               ],
                             }}
@@ -183,17 +181,13 @@ const aoprojectsinfo = () => {
                               },
                               scales: {
                                 x: {
-                                  type: "time",
-                                  time: {
-                                    unit: "day",
-                                    tooltipFormat: "Pp",
-                                    displayFormats: {
-                                      day: "MMM dd, yyyy",
-                                    },
-                                  },
                                   title: {
                                     display: true,
                                     text: "Time",
+                                  },
+                                  ticks: {
+                                    autoSkip: true,
+                                    maxTicksLimit: 7,
                                   },
                                 },
                                 y: {

@@ -551,7 +551,7 @@ Handlers.add(
         -- Send success message
         ao.send({ Target = m.From, Data = "Successfully Created The Project." })
         else
-            ao.send({ Target = m.From, Data = "A technical issue occured during deployment try again later" })
+            ao.send({ Target = m.From, Data = "You aint Admin" })
         return
         end
 
@@ -2107,10 +2107,8 @@ Handlers.add(
     Handlers.utils.hasMatchingTag("Action", "UpdateAppDetails"),
     function(m)
 
-         -- Check if all required m.Tags are present
-        local requiredTags = {
-        "NewValue", "AppId", "UpdateOption",
-        }
+        -- Check if all required m.Tags are present
+        local requiredTags = { "NewValue", "AppId", "UpdateOption" }
 
         for _, tag in ipairs(requiredTags) do
             if m.Tags[tag] == nil then
@@ -2143,7 +2141,7 @@ Handlers.add(
             return
         end
 
-        -- Update the requested field
+        -- List of valid fields that can be updated
         local validUpdateOptions = {
             OwnerUserName = true,
             AppName = true,
@@ -2152,7 +2150,7 @@ Handlers.add(
             WebsiteUrl = true,
             TwitterUrl = true,
             DiscordUrl = true,
-            CoverUrl = true ,
+            CoverUrl = true,
             profileUrl = true,
             CompanyName = true,
             AppIconUrl = true,
@@ -2167,31 +2165,41 @@ Handlers.add(
             return
         end
 
+        -- **Initialize missing field if necessary**
+        if Apps[appId][updateOption] == nil then
+            Apps[appId][updateOption] = ""
+        end
+
         -- Perform the update
         Apps[appId][updateOption] = newValue
 
-         local points = 40
-        local userPointsData = getOrInitializeUserPoints(user)
+        -- Reward logic
+        local points = 40
+        local userPointsData = getOrInitializeUserPoints(currentOwner)
         userPointsData.points = userPointsData.points + points
         local amount = 1 * 1000000000000
         local transactionId = generateTransactionId()
-         ao.send({
+
+        ao.send({
             Target = ARS,
             Action = "Transfer",
             Quantity = tostring(amount),
-            Recipient = tostring(user)
+            Recipient = tostring(currentOwner)
         })
+
         table.insert(transactions, {
-            user = user,
+            user = currentOwner,
             transactionid = transactionId,
             type = "Updated Project.",
             amount = amount,
             points = userPointsData.points,
             timestamp = currentTime
         })
+
         ao.send({ Target = m.From, Data = updateOption .. " updated successfully." })
     end
 )
+
 
 
 
@@ -3761,6 +3769,63 @@ Handlers.add(
                 -- Transfer tokens (implement your token transfer logic here)
                 print("Transferring " .. receiver.amount .. " tokens to user: " .. receiver.userId)
             end
+        end
+    end
+)
+
+
+Handlers.add(
+    "DeleteApp",
+    Handlers.utils.hasMatchingTag("Action", "DeleteApp"),
+    function(m)
+
+
+        -- Check if the required AppId tag is present
+        if not m.Tags.AppId or m.Tags.AppId == "" then
+            print("Error: AppId is nil or empty.")
+            ao.send({ Target = m.From, Data = "AppId is missing or empty." })
+            return
+        end
+
+         local appId = m.Tags.AppId
+
+
+        -- Check if the app exists
+        if not Apps[appId] then
+            print("Error: App with AppId " .. appId .. " not found.")
+            ao.send({ Target = m.From, Data = "App not found." })
+            return
+        end
+
+             -- Get the app owner
+        local appOwner = Apps[appId].Owner
+
+        -- Check if the caller is the app owner or the process admin
+        if m.From == appOwner then
+            -- Delete the app from the Apps table
+            Apps[appId] = nil
+
+            -- Delete the app's data from associated tables
+            reviewsTable[appId] = nil
+            upvotesTable[appId] = nil
+            downvotesTable[appId] = nil
+            featureRequestsTable[appId] = nil
+            bugsReportsTable[appId] = nil
+            favoritesTable[appId] = nil
+            ratingsTable[appId] = nil
+            helpfulRatingsTable[appId] = nil
+            unHelpfulRatingsTable[appId] = nil
+            flagTable[appId] = nil
+            devForumTable[appId] = nil
+            newTable[appId] = nil
+            airdropTable[appId] = nil
+            taskTable[appId] = nil
+            -- Send success message
+            ao.send({ Target = m.From, Data = "Successfully deleted the app, all associated data, and airdrops." })
+        else
+            -- If the caller is not the owner or admin, send an error message
+            print("Unauthorized delete attempt by " .. m.From)
+            ao.send({ Target = m.From, Data = "You are not the app owner or admin." })
         end
     end
 )

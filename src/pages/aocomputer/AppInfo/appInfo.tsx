@@ -736,7 +736,7 @@ const aoprojectsinfo = () => {
               }}
             >
               <Loader active inline="centered" size="large">
-                Loading App Information...
+                Loading App Info...
               </Loader>
             </div>
           ) : appInfo ? (

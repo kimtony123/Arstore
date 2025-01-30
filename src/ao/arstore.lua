@@ -584,12 +584,6 @@ Handlers.add(
             time = currentTime
         }
 
-        -- Add the new user to the Arspoints table
-        arsPoints[userId] = {
-            user = userId,
-            points = 250
-        }
-
         -- Increment the count of verified users
         verifiedUsers.count = verifiedUsers.count + 1
 
@@ -615,6 +609,8 @@ Handlers.add(
         ao.send({ Target = m.From, Data = "Address added successfully for new user: " .. userId .." You have received " ..gift.. "AOS tokens" })
     end
 )
+
+
 
 
 Handlers.add(

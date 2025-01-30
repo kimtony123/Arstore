@@ -736,7 +736,7 @@ const aoprojectsinfo = () => {
               }}
             >
               <Loader active inline="centered" size="large">
-                Loading App Info...
+                Loading App Information...
               </Loader>
             </div>
           ) : appInfo ? (
@@ -745,7 +745,7 @@ const aoprojectsinfo = () => {
                 <Menu pointing>
                   <MenuItem onClick={() => handleProjectInfo(appInfo.AppId)}>
                     <Icon name="pin" />
-                    Project Info.
+                    Project Information .
                   </MenuItem>
                   <MenuMenu position="right">
                     <MenuItem onClick={() => handleProjectStats(appInfo.AppId)}>

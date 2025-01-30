@@ -781,8 +781,10 @@ const aoprojectsinfo = () => {
                         <GridRow>
                           <Statistic size="small">
                             <Statistic.Value>
-                              {appInfo.Ratings.Totalratings /
-                                appInfo.Ratings.count}
+                              {(
+                                appInfo.Ratings.Totalratings /
+                                appInfo.Ratings.count
+                              ).toFixed(1)}
                             </Statistic.Value>
                             <Rating
                               icon="star"
@@ -1082,8 +1084,10 @@ const aoprojectsinfo = () => {
                         <GridRow>
                           <Statistic>
                             <Statistic.Value>
-                              {appInfo.Ratings.Totalratings /
-                                appInfo.Ratings.count}
+                              {(
+                                appInfo.Ratings.Totalratings /
+                                appInfo.Ratings.count
+                              ).toFixed(1)}
                             </Statistic.Value>
                             <Rating
                               icon="star"

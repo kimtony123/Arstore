@@ -784,7 +784,7 @@ const aoprojectsinfo = () => {
                               {(
                                 appInfo.Ratings.Totalratings /
                                 appInfo.Ratings.count
-                              ).toFixed(1)}
+                              ).toFixed(2)}
                             </Statistic.Value>
                             <Rating
                               icon="star"
@@ -1087,7 +1087,7 @@ const aoprojectsinfo = () => {
                               {(
                                 appInfo.Ratings.Totalratings /
                                 appInfo.Ratings.count
-                              ).toFixed(1)}
+                              ).toFixed(2)}
                             </Statistic.Value>
                             <Rating
                               icon="star"
@@ -1170,7 +1170,7 @@ const aoprojectsinfo = () => {
                 <Menu pointing>
                   <MenuItem onClick={() => handleProjectInfo(appInfo.AppId)}>
                     <Icon name="pin" />
-                    Project Info.
+                    Project Information.
                   </MenuItem>
                   <MenuMenu position="right">
                     <MenuItem onClick={() => handleProjectStats(appInfo.AppId)}>

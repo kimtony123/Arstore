@@ -20,12 +20,16 @@ local utils = {
 Variant = "0.0.3"
 
 -- token should be idempotent and not change previous state updates
-Denomination = Denomination or 12
-Balances = Balances or { [ao.id] = utils.toBalanceValue(1000000 * 10 ^ Denomination) }
-TotalSupply = TotalSupply or utils.toBalanceValue(1000000 * 10 ^ Denomination)
+Denomination = 3  -- 3 decimal places (1 token = 10^3 units)
+Balances = Balances or { 
+    [ao.id] = utils.toBalanceValue(198400000 * 10^Denomination)  -- 198.4M tokens in base units
+}
+TotalSupply = TotalSupply or utils.toBalanceValue(198400000 * 10^Denomination)
+
+
 Name = Name or 'Aostore'
 Ticker = Ticker or 'AOS'
-Logo = Logo or 'Ayx4457G_p3xZxv-joIrcjwABct8RUAaInSzYcxi_Wk'
+Logo = Logo or 'X1O5Z0LVO4Pcuvk_G9LBQyoN6KQ7T1Dr4T0X-pl6gqU'
 
 
 Handlers.add('info', Handlers.utils.hasMatchingTag("Action", "Info"), function(msg)

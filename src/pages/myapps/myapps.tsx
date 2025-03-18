@@ -49,7 +49,7 @@ const Home = () => {
   }
 
   useEffect(() => {
-    const fetchApps = async () => {
+    const fetchMyApps = async () => {
       setLoadingApps(true);
       try {
         const messageResponse = await message({
@@ -66,16 +66,40 @@ const Home = () => {
         const { Messages, Error } = resultResponse;
 
         if (Error) {
-          alert("Error fetching apps: " + Error);
+          alert("Error fetching favorite apps: " + Error);
           return;
         }
 
-        if (!Messages || Messages.length === 0) {
+        if (!Messages || Messages.length === 0 || !Messages[0].Data) {
           alert("No messages returned from AO. Please try later.");
           return;
         }
-        const data = JSON.parse(Messages[0].Data);
-        console.log(data);
+
+        const rawData = Messages[0].Data;
+        console.log("Raw Data:", rawData);
+
+        let data;
+        if (typeof rawData === "string") {
+          try {
+            // Remove trailing commas before parsing
+            const cleanedData = rawData
+              .replace(/,\s*}/g, "}")
+              .replace(/,\s*\]/g, "]");
+            data = JSON.parse(cleanedData);
+          } catch (jsonError) {
+            console.error("JSON Parse Error:", jsonError);
+            alert("Invalid JSON format. Check console for details.");
+            return;
+          }
+        } else if (typeof rawData === "object") {
+          data = rawData;
+        } else {
+          alert("Unexpected response format.");
+          console.error("Unexpected response:", rawData);
+          return;
+        }
+
+        console.log("Parsed Data:", data);
         setApps(Object.values(data));
       } catch (error) {
         console.error("Error fetching my apps:", error);
@@ -84,9 +108,7 @@ const Home = () => {
       }
     };
 
-    (async () => {
-      await fetchApps();
-    })();
+    fetchMyApps();
   }, []);
 
   const deleteproject = async (AppId: string) => {
